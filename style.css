@@ -113,8 +113,11 @@ h2 {
  text-shadow:
     2px 2px 2px rgba(0, 0, 0, 0.6),
     0 0 0px rgba(255, 215, 0, 1); 
+}
 
 
+#chat-list h2 {
+  font-size: 1.4rem;
 }
 
 
