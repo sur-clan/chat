@@ -1,0 +1,630 @@
+html, body {
+
+  height: 100%;
+  margin: 0;
+  padding: 0;
+
+  
+
+  font-family: 'Lato', sans-serif;
+  font-weight: 1;
+  color: #e1bd47;
+  text-align: center;
+
+display: flex;
+  flex-direction: column;
+ 
+background: url('castle-sur.png') no-repeat center center fixed;
+  background-size: cover;trans
+  position: relative;
+
+}
+
+
+
+
+.content {
+  position: relative;
+  z-index: 2;
+display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+
+
+header {
+  font-family: 'Cinzel Decorative', serif;
+  background-color: transparent;
+  color: gold;
+  padding: 0rem; 			/* distance from top */
+  margin: 0;
+  box-shadow: 0 0 10px transparent;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.chat-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.page {
+flex: 1;
+display: none;
+  flex-direction: column;
+   min-height: 0; /* this line is VERY important in flexbox */
+  padding: 0 1rem 1rem; /* top right/left bottom */
+  box-sizing: border-box;
+
+}
+
+.page.active {
+  display: flex;
+}
+
+
+#rooms {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0.5rem 0;
+text-align: left;
+}
+
+
+.center-buttons {
+     margin-top: auto; /* push it to the bottom of main */
+display: flex;
+    justify-content: center;
+flex-wrap: nowrap; /* stay in one line */
+  gap: 1rem;
+  padding: 1rem;
+
+}
+
+.center-buttons button {
+  flex: 1 1 0;
+  min-width: 0;
+  background: rgba(0, 0, 0, 0.2);
+
+}
+
+
+
+
+/* Typography & headers */
+
+h2 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: #efca51;
+  text-align: center;
+  margin: 0.5rem 0;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+ text-shadow:
+    2px 2px 2px rgba(0, 0, 0, 0.6),
+    0 0 0px rgba(255, 215, 0, 1); 
+
+
+}
+
+
+.header-with-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+}
+
+button {
+  margin: 0.2rem;
+  padding: 0.3rem 0.7rem;
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid #b3730d;
+  border-radius: 10px;
+  color: #e1bd47;
+  cursor: pointer;
+/* min-width: 40%; */
+/* max-width: 100%; */
+}
+
+button:hover {
+  background: transparent;
+  box-shadow: 0 0 5px gold;
+}
+
+
+
+/* Rooms & list items */
+
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#rooms li small {
+  color: #b6842a;
+}
+
+#rooms li {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #b3730d;
+  border-radius: 10px;
+  margin: 0.3rem 0;
+  padding: 0.5rem;
+  position: relative;
+  text-align: left;
+}
+
+.unread-envelope {
+  font-size: 1.5rem;
+  color: #e1bd47;
+  position: absolute;
+  top: 4px;
+  right: 8px;
+}
+
+
+
+
+/* Input area */
+
+.input-area {
+  display: flex;
+  flex-wrap: nowrap;   /* ensure row alignment */
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+}
+
+.input-area textarea {
+  flex: 1;
+  min-height: 2.5rem;
+  max-height: 5rem;
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
+  border: 1px solid #b3730d;
+  border-radius: 6px;
+  resize: none;
+  padding: 0.3rem;
+}
+
+.input-area button {
+  flex: 0 0 2.5rem;
+   height: 2.5rem;
+  font-size: 1.2rem;          /* adjust icon size here */
+  border: 1px solid gold;
+  border-radius: 10px;
+  color: gold;
+  display: flex;
+align-items: center;        /* center vertically */
+  justify-content: center;    /* center horizontally */
+  background: rgba(0, 0, 0, 0.2);
+}
+
+textarea::placeholder {
+  color: #b3730d; 		/* Type your message… */
+  font-style: italic;
+
+}
+
+/* Modal styles */
+#message-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+#message-modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: #222;
+  padding: 1rem;
+  border-radius: 10px;
+  color: #fff;
+  text-align: center;
+}
+
+.modal-buttons {
+  margin-top: 1rem;
+}
+
+.modal-buttons button {
+  margin: 0.3rem;
+}
+
+
+/* Misc */
+
+.header-button {
+  background: transparent;
+  color: gold;
+  border: 1px solid gold;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  text-align: center;
+  line-height: 2.5rem;
+  padding: 0;
+}
+
+.header-button:hover {
+  box-shadow: 0 0 5px gold;
+}
+
+
+
+/* Footer member buttons */
+
+#members {
+  flex: 1;
+  overflow-y: auto;
+  margin: 1rem 0;
+}
+
+.member-buttons {
+    margin-top: auto;
+display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+ padding: 1rem;
+}
+
+.member-buttons button {
+  width: 100%;
+  font-size: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+
+
+}
+
+#send-message,
+#paste-message {
+  font-size: 1rem;
+  border: 1px solid #b3730d;
+  min-height: 2.5rem;
+  line-height: 2.5rem;
+  text-align: center;
+}
+
+#view-members {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.2rem; /* or whatever looks good */
+  border: 1px solid gold;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.1);
+  color: gold;
+  cursor: pointer;
+  text-align: center;
+  padding: 0;
+}
+
+
+
+
+#messages {
+  flex: 1;
+  overflow-y: scroll;
+  margin: 0.5rem 0;
+  background: rgba(0,0,0,0.5);/* chat background */
+  border: 1px solid #b3730d;	/*chat border */
+  border-radius: 10px;
+  text-align: left;
+  padding: 0.5rem;
+  min-height: 100px; /* optional */
+}
+
+
+
+.message-scroll {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 0;
+  background: transparent;	/* part frame joining messages */
+  padding: 3px;
+  border-radius: 10px;
+  position: relative;
+}
+
+.message-content {
+  background: #444;
+  color: #fff;
+  padding: 0.5rem;
+  border-radius: 10px;
+  flex-grow: 1;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.my-message {
+  justify-content: flex-start;
+  margin-left: 50px;
+}
+
+.my-message .message-content {
+  border: 1px solid #474747;		/* my message border */
+  border-radius: 10px;
+background: rgba(0,0,0,0.5);
+  color: #ccc;				/* Welcome to the chat */
+  text-align: left;
+}
+
+.other-message .message-content {
+   border: 1px solid #474747;		/* inso message border */
+  border-radius: 10px;
+background: rgba(0,0,0,0.5);			/* inso message background */
+  color: #ccc;				/* Thank you! */
+}
+
+.message-header {	
+  font-weight: normal;			/* Both names */
+  color: gold;				/* Insomniak */
+}
+
+.my-message .message-header {
+  color: gold;				/* Shun */
+}
+
+.message-body {
+  margin-top: 2px;
+}
+
+.message-time {
+  font-size: 0.75rem;
+  color: #ccc;
+  text-align: right;
+}
+
+.my-message .message-time {
+  color: #ccc;
+}
+
+.message-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-left: 0.5rem;
+}
+
+.message-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+}
+
+textarea {
+  width: 60%;
+  height: 50px;
+  background: #333;
+  color: #fff;
+  border: 1px solid #666;
+}
+
+
+
+
+
+.other-message .message-actions {
+  flex: 0 0 auto;
+  margin-left: 0px;
+  align-self: flex-start;
+
+}
+
+/* translation button */
+
+.other-message .message-actions button {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  line-height: 48px;
+  font-size: 1.5rem; /* adjust if needed */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  border-radius: 50%; /* ← makes it a circle */
+  cursor: pointer;
+  color: #fff;
+  text-align: center;
+ display: flex;             /* ← ensures centering */
+  justify-content: center;   /* ← center horizontally */
+  align-items: center;       /* ← center vertically */
+  text-align: center;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+
+
+
+.chat-container h2 {
+  margin: 0;
+  padding: 0;
+  line-height: 2;
+}
+
+@media (max-width: 640px) {
+  .chat-container {
+    margin: 40px;
+  }
+}
+
+
+
+#back-btn,
+#create-room,
+#back-to-rooms,
+#back-to-chat,
+#invite-member {
+  font-size: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  line-height: 2.5rem;
+  padding: 0;
+  text-align: center;
+}
+
+
+
+
+
+#member-count {
+  color: #efca51;
+  font-size: 0.9rem;
+}
+
+.members-list {
+   color: #efca51;
+ text-align: left;
+  flex: 1;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.members-list li {
+  background: rgba(0, 0, 0, 0.5);
+  margin: 0.2rem 0;
+  padding: 0.4rem;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+.member-actions {
+  display: flex;
+  gap: 0.3rem; 
+}
+
+
+/* Hide scrollbars (Chrome / Edge / Safari) */
+#messages::-webkit-scrollbar,
+#rooms::-webkit-scrollbar,
+#members::-webkit-scrollbar,
+#contacts-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+/* Firefox & IE/Edge */
+#messages,
+#rooms,
+#members,
+#contacts-list {
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE/Edge */
+}
+
+/* Optional fallback track styling */
+#messages::-webkit-scrollbar-track,
+#messages::-webkit-scrollbar-thumb,
+#rooms::-webkit-scrollbar-track,
+#rooms::-webkit-scrollbar-thumb,
+#members::-webkit-scrollbar-track,
+#members::-webkit-scrollbar-thumb,
+#contacts-list::-webkit-scrollbar-track,
+#contacts-list::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+
+
+/* Small font utilities */
+.big { font-size: 100%; }
+.medium2 { font-size: 95%; }
+.medium { font-size: 75%; }
+.small { font-size: 60%; }
+
+
+
+.message-hidden {
+  color: #aaa;
+  font-style: italic;
+  text-align: center;
+  padding: 0.5em;
+}
+
+.unhide-btn {
+  margin-left: 0.5em;
+  cursor: pointer;
+  color: #ffd700;
+  background: none;
+  border: none;
+}
+
+
+
+.member-menu {
+  position: absolute;
+  background: #222;
+  color: gold;
+  border: 1px solid gold;
+  border-radius: 6px;
+  padding: 0.5rem;
+  z-index: 9999;
+}
+
+.member-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: gold;
+  padding: 0.3rem;
+  cursor: pointer;
+}
+
+.member-menu button:hover {
+  background: rgba(255, 215, 0, 0.2);
+}
+
+
+
+
+
+
+
+

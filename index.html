@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Survivors Clan Chat</title>
+
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative&family=Open+Sans&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+
+<script>
+  window.firebaseConfig = {
+    apiKey: "AIzaSyDoWuCf1HPHk5OLerFZ1QtoM5Hk3aeqyY8",
+    authDomain: "sur-chat.firebaseapp.com",
+    projectId: "sur-chat",
+    storageBucket: "sur-chat.appspot.com",
+    messagingSenderId: "100211930258",
+    appId: "1:100211930258:web:10a730a551498b1c81a24b"
+  };
+</script>
+
+
+
+
+</head>
+
+<body>
+
+<div class="content">
+
+  <header>
+    <h1></h1>
+  </header>
+
+  <div class="chat-content">
+
+    <!-- CHAT LIST -->
+    <section id="chat-list" class="page active">
+      <h2 class="header-with-buttons">
+        <button id="back-btn" class="header-btn">&lt;</button>
+
+        <span class="header-title">
+          <span class="small">&#10022;</span> 
+          S<span class="medium">U</span>R-CL<span class="medium2">a</span>N CHAT 
+          <span class="small">&#10022;</span>
+        </span>   
+
+
+
+
+
+        <button id="create-room" class="header-btn">+</button>
+      </h2>
+
+      <ul id="rooms"></ul>
+
+      <footer class="center-buttons">
+        <button id="contacts">CONTACTS</button>
+        <button id="find-chat">FIND CHAT</button>
+      </footer>
+    </section>
+
+    <!-- CHAT ROOM -->
+    <section id="chat-room" class="page">
+      <h2 class="header-with-buttons">
+        <button id="back-to-rooms" class="header-btn">&lt;</button>
+
+        <span id="room-name-container">
+          <span class="small">&#10022;</span> 
+          <span id="room-name">Room Name</span>
+          <span class="small">&#10022;</span>
+        </span>
+
+        <button id="view-members" class="header-btn" title="View Members" aria-label="View Members">
+          <i class="fa-solid fa-users" style="color: gold;"></i>
+        </button>
+      </h2>
+
+      <div id="messages"></div>
+
+      <div class="input-area">
+        <button id="paste-message">📜</button>
+        <textarea id="message-input" placeholder="Type your message..."></textarea>
+        <button id="send-message">✒️</button>
+      </div>
+    </section>
+
+    <!-- MEMBERS ROOM -->
+    <section id="members-list" class="page">
+      <h2 class="header-with-buttons">
+        <button id="back-to-chat" class="header-btn">&lt;</button>
+
+        <span id="room-name-container">
+          <span class="small">&#10022;</span> 
+          <span id="room-name">Room Name</span>
+          <span class="small">&#10022;</span>
+        </span>
+
+        <button id="invite-member" class="header-btn">+</button>
+      </h2>
+
+      <div class="member-header">
+        <input type="text" id="member-search" placeholder="Search members...">
+        <span id="member-count">
+          <i class="fa-solid fa-users" style="color: gold;"></i>  0 Members
+        </span>
+      </div>
+
+      <ul id="members" class="members-list"></ul>
+
+      <footer class="member-buttons">
+        <button id="leave-chat">Leave Chat</button>
+      </footer>
+    </section>
+
+  </div> <!-- .chat-content -->
+
+</div> <!-- .content -->
+
+<!-- MESSAGE MODAL -->
+<div id="message-modal" class="hidden">
+  <div class="modal-content">
+    <p id="modal-message-text">Your message here</p>
+    <div class="modal-buttons">
+      <button id="modal-reply">Reply</button>
+      <button id="modal-copy">Copy</button>
+      <button id="modal-close">✖</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
