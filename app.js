@@ -317,7 +317,7 @@ const sendMessage = async (text) => {
     const textElem = document.getElementById("modal-message-text");
 
     textElem.innerHTML = `
-      <iframe src="https://your-wix-site.com/profile/${name}"
+      <iframe src="https://www.sur-clan.com/profile/${name}"
               style="width:100%;height:400px;border:none;"></iframe>`;
     modal.classList.remove("hidden");
 
