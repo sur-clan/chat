@@ -56,10 +56,11 @@ let currentUser = {};
 
     currentUser = {
       name: userData.name,
-role: "Administrator"  // 👈 set this if this user should be admin
+      role: "Member",
       id: userData.id,
       avatar: userData.avatar
-};
+    };
+
     
 
     initChat(); // ✅ start chat *after* getting user info
