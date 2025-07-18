@@ -50,7 +50,7 @@ let currentUser = {};
   console.log("Got userData from Wix:", currentUser);
 
   // ensure they're added as a member
-  const memberRef = doc(db, "rooms", "general", "members", currentUser.id);
+  const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
   await setDoc(memberRef, {
     name: currentUser.name,
     role: currentUser.role,
