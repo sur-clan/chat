@@ -56,10 +56,9 @@ let currentUser = {};
 
     currentUser = {
       name: userData.name,
-      role: "Member",
+role: "Administrator"  // 👈 set this if this user should be admin
       id: userData.id,
       avatar: userData.avatar
-role: "Administrator"  // 👈 set this if this user should be admin
 };
     
 
