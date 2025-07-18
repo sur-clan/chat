@@ -98,7 +98,7 @@ const sendMessage = async (text) => {
       <small>${room.lastMessage || ''}</small>`;
 
     li.addEventListener("click", () => {
-  currentRoomName = room.name;
+  currentRoomName = doc.id;  // ← doc.id is the Firestore document ID
   document.getElementById("room-name").textContent = currentRoomName;
   showPage(chatRoomPage);
   populateMessages();
