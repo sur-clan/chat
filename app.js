@@ -1,16 +1,23 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp(window.firebaseConfig);
+const db = getFirestore(app);
+
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
 
 
-// 🔐 Token check
-  if (!window.location.search.includes("token=4850")) {
-    document.body.innerHTML = "<h1 style='text-align:center;color:red;'>Unauthorized</h1>";
-    return;
-  }
 
 
-
-
-  const currentUser = { name: "Shun", role: "Administrator" };
+let currentUser = {};
 
   const chatListPage = document.getElementById("chat-list");
   const chatRoomPage = document.getElementById("chat-room");
@@ -37,6 +44,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const blockedMembers = new Set();
   const mutedMembers = new Set();
+
+
+
+// 🪄 Wait for Wix to send the member info
+  window.addEventListener("message", (event) => {
+    const userData = event.data;
+    if (!userData || !userData.id) return;
+
+    console.log("Got userData from Wix:", userData);
+
+    currentUser = {
+      name: userData.name,
+      role: "Member",
+      id: userData.id,
+      avatar: userData.avatar
+    };
+
+    initChat(); // ✅ start chat *after* getting user info
+  });
+
+
+
+
+const sendMessage = async (text) => {
+  const messagesRef = collection(db, "rooms", "general", "messages");
+
+  await addDoc(messagesRef, {
+    senderId: currentUser.id,
+    senderName: currentUser.name,
+    text: text,
+    timestamp: serverTimestamp()
+  });
+};
+
+
+
+
 
   function showPage(page) {
     pages.forEach(p => p.classList.remove("active"));
