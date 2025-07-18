@@ -3,6 +3,9 @@ import {
   getFirestore, 
   collection, 
   addDoc, 
+  getDocs,
+  setDoc,
+  doc,
   serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -48,11 +51,9 @@ let currentUser = {};
 
 
 // 🪄 Wait for Wix to send the member info
-  window.addEventListener("message", (event) => {
+    window.addEventListener("message", async (event) => {
     const userData = event.data;
     if (!userData || !userData.id) return;
-
-    console.log("Got userData from Wix:", userData);
 
     currentUser = {
       name: userData.name,
@@ -62,6 +63,15 @@ let currentUser = {};
     };
 
     
+  console.log("Got userData from Wix:", currentUser);
+
+  // ensure they're added as a member
+  const memberRef = doc(db, "rooms", "general", "members", currentUser.id);
+  await setDoc(memberRef, {
+    name: currentUser.name,
+    role: currentUser.role,
+    avatar: currentUser.avatar
+  });
 
     initChat(); // ✅ start chat *after* getting user info
   });
@@ -163,9 +173,15 @@ const sendMessage = async (text) => {
   }
 
 
- function populateMembers() {
+ async function populateMembers() {
   const membersUl = document.getElementById("members");
   membersUl.innerHTML = "";
+
+ const querySnapshot = await getDocs(collection(db, "rooms", "general", "members"));
+  const members = [];
+  querySnapshot.forEach((doc) => {
+    members.push(doc.data());
+  });
 
   members.forEach(m => {
     const li = document.createElement("li");
