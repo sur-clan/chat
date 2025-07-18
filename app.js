@@ -64,7 +64,7 @@ let currentUser = {};
 
 
 const sendMessage = async (text) => {
-  const messagesRef = collection(db, "rooms", "general", "messages");
+  const messagesRef = collection(db, "rooms", currentRoomName, "messages");
 
   await addDoc(messagesRef, {
     senderId: currentUser.id,
