@@ -101,6 +101,16 @@ const sendMessage = async (text) => {
   currentRoomName = doc.id;  // ← doc.id is the Firestore document ID
   document.getElementById("room-name").textContent = currentRoomName;
   showPage(chatRoomPage);
+
+ // ensure user is a member of the selected room
+  const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
+  await setDoc(memberRef, {
+    name: currentUser.name,
+    role: currentUser.role,
+    avatar: currentUser.avatar
+  }, { merge: true });
+
+      
   populateMessages();
 });
 
