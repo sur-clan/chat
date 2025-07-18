@@ -173,7 +173,9 @@ async function populateMessages() {
   const membersUl = document.getElementById("members");
   membersUl.innerHTML = "";
 
- const querySnapshot = await getDocs(collection(db, "rooms", "general", "members"));
+     if (!currentRoomName) return;
+
+const querySnapshot = await getDocs(collection(db, "rooms", currentRoomName, "members"));
   const members = [];
   querySnapshot.forEach((doc) => {
     members.push(doc.data());
