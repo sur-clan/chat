@@ -28,22 +28,6 @@ let currentUser = {};
   const pages = [chatListPage, chatRoomPage, membersListPage];
   let currentRoomName = null;
 
-  const rooms = [
-    { name: "SuR-CLAN", unread: true, lastMessage: "Today" },
-    { name: "WARRIORS-K186", unread: false, lastMessage: "Yesterday" },
-    { name: "SuR-MEMBERS", unread: true, lastMessage: "2 weeks ago" }
-  ];
-
-  const messages = [
-    { user: "Shun", text: "Welcome to the chat!", time: "12:01", date: "2025/07/07" },
-    { user: "Insomniak", text: "Thank you!", time: "12:02", date: "2025/07/07" }
-  ];
-
-  const members = [
-    { name: "Shun", role: "Administrator" },
-    { name: "Insomniak", role: "Member" },
-    { name: "Tarn", role: "Member" }
-  ];
 
   const blockedMembers = new Set();
   const mutedMembers = new Set();
@@ -131,26 +115,32 @@ const sendMessage = async (text) => {
     });
   }
 
-  function populateMessages() {
+async function populateMessages() {
     const msgsDiv = document.getElementById("messages");
     msgsDiv.innerHTML = "";
 
-    messages.forEach(msg => {
-      if (blockedMembers.has(msg.user)) return;
-      if (mutedMembers.has(msg.user) && currentUser.role === "Administrator") return;
+  const querySnapshot = await getDocs(collection(db, "rooms", currentRoomName, "messages"));
+  
+  querySnapshot.forEach((doc) => {
+    const msg = doc.data();
 
-      const wrapper = document.createElement("div");
-      wrapper.className = "message-scroll";
-      wrapper.classList.add(msg.user === currentUser.name ? "my-message" : "other-message");
+    if (blockedMembers.has(msg.senderName)) return;
+    if (mutedMembers.has(msg.senderName) && currentUser.role === "Administrator") return;
+
+      
+    const wrapper = document.createElement("div");
+    wrapper.className = "message-scroll";
+    wrapper.classList.add(msg.senderName === currentUser.name ? "my-message" : "other-message");
 
       const content = document.createElement("div");
       content.className = "message-content";
-      content.innerHTML = `
-        <div class="message-header">${msg.user}</div>
-        <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
-        <div class="message-time">${msg.time}</div>
-      `;
+    content.innerHTML = `
+      <div class="message-header">${msg.senderName}</div>
+      <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
+      <div class="message-time">${msg.timestamp?.toDate().toLocaleTimeString() || ''}</div>
+    `;
 
+    
       content.addEventListener("click", () => {
         showModal(msg, wrapper);
       });
@@ -158,7 +148,7 @@ const sendMessage = async (text) => {
       wrapper.appendChild(content);
 
 
- if (msg.user !== currentUser.name) {
+    if (msg.senderName !== currentUser.name) {
       const actions = document.createElement("div");
       actions.className = "message-actions";
 
@@ -223,16 +213,16 @@ const sendMessage = async (text) => {
     membersUl.appendChild(li);
   });
 
-  updateMemberCount();
+  updateMemberCount(members.length);
 }
 
 
 
 
-  function updateMemberCount() {
-    document.getElementById("member-count").innerHTML =
-      `<i class="fa-solid fa-users" style="color: gold;"></i> ${members.length} Members`;
-  }
+function updateMemberCount(count) {
+  document.getElementById("member-count").innerHTML =
+    `<i class="fa-solid fa-users" style="color: gold;"></i> ${count} Members`;
+}
 
 
 
@@ -524,6 +514,15 @@ document.getElementById("create-room").addEventListener("click", async () => {
     unread: false
   });
 
+
+   // Add yourself to the new room
+  await setDoc(doc(db, "rooms", roomId, "members", currentUser.id), {
+    name: currentUser.name,
+    role: currentUser.role,
+    avatar: currentUser.avatar
+  });
+
+  
   populateRooms();
 });
 
