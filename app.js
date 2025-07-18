@@ -482,6 +482,13 @@ if (currentUser.role === "Administrator") {
 
     wrapper.appendChild(content);
     document.getElementById("messages").appendChild(wrapper);
+
+
+ // 🪄 Auto-scroll to the bottom after sending
+  const msgsDiv = document.getElementById("messages");
+msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
+
+
     document.getElementById("message-input").value = "";
   });
 
