@@ -99,13 +99,19 @@ const sendMessage = async (text) => {
     page.classList.add("active");
   }
 
-  function populateRooms() {
+    async function populateRooms() {
     const roomsUl = document.getElementById("rooms");
     roomsUl.innerHTML = "";
-    rooms.forEach(room => {
-      const li = document.createElement("li");
-      li.innerHTML = `<strong>${room.name}</strong><br><small>${room.lastMessage}</small>`;
 
+    const querySnapshot = await getDocs(collection(db, "rooms"));
+    querySnapshot.forEach((doc) => {
+        const room = doc.data();
+
+    
+      const li = document.createElement("li");
+    li.innerHTML = `
+      <strong>${room.name || 'Unnamed Room'}</strong><br>
+      <small>${room.lastMessage || ''}</small>`;
 
     li.addEventListener("click", () => {
   currentRoomName = room.name;
@@ -500,7 +506,30 @@ if (currentUser.role === "Administrator") {
     }
   });
 
-  document.getElementById("create-room").addEventListener("click", () => alert("Create room clicked!"));
+document.getElementById("create-room").addEventListener("click", async () => {
+  const roomName = prompt("Enter a name for the new room:");
+  if (!roomName) return;
+
+  const roomId = roomName.replace(/\s+/g, "_").toLowerCase(); // e.g., "My Room" → "my_room"
+  const roomRef = doc(db, "rooms", roomId);
+
+  const now = new Date().toISOString();
+
+  // Save the new room
+  await setDoc(roomRef, {
+    name: roomName,
+    createdBy: currentUser.name,
+    createdAt: now,
+    lastMessage: "Room created",
+    unread: false
+  });
+
+  populateRooms();
+});
+
+
+
+  
   document.getElementById("back-btn").addEventListener("click", () => showPage(chatListPage));
   document.getElementById("back-to-rooms").addEventListener("click", () => showPage(chatListPage));
 
