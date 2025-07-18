@@ -97,12 +97,11 @@ const sendMessage = async (text) => {
       <strong>${room.name || 'Unnamed Room'}</strong><br>
       <small>${room.lastMessage || ''}</small>`;
 
-    li.addEventListener("click", () => {
-  currentRoomName = doc.id;  // ← doc.id is the Firestore document ID
+    li.addEventListener("click", async () => {
+  currentRoomName = doc.id;
   document.getElementById("room-name").textContent = currentRoomName;
   showPage(chatRoomPage);
 
- // ensure user is a member of the selected room
   const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
   await setDoc(memberRef, {
     name: currentUser.name,
@@ -110,7 +109,6 @@ const sendMessage = async (text) => {
     avatar: currentUser.avatar
   }, { merge: true });
 
-      
   populateMessages();
 });
 
