@@ -653,7 +653,36 @@ msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
     showPage(chatListPage);
   });
 
-  document.getElementById("contacts").addEventListener("click", () => alert("Show contacts modal."));
+document.getElementById("contacts").addEventListener("click", async () => {
+  const modal = document.getElementById("contacts-modal");
+  const list = modal.querySelector(".contacts-list");
+  list.innerHTML = "Loading…";
+
+  const snapshot = await getDocs(collection(db, "members"));
+  list.innerHTML = ""; // clear the "Loading…" text
+
+  if (snapshot.empty) {
+    list.innerHTML = "<li>No members found.</li>";
+  } else {
+    snapshot.forEach(doc => {
+      const m = doc.data();
+      const li = document.createElement("li");
+      li.textContent = m.name + (m.role === "Administrator" ? " (Admin)" : "");
+      list.appendChild(li);
+    });
+  }
+
+  modal.classList.remove("hidden");
+});
+
+
+
+
+
+
+
+
+  
   document.getElementById("find-chat").addEventListener("click", () => alert("Show find chat modal."));
 
   const modalCloseBtn = document.getElementById("modal-close");
