@@ -250,7 +250,7 @@ textarea::placeholder {
 
 #contacts-modal {
   position: fixed;
-  top: 3rem;            /* 👈 pushes it down from the very top */
+  top: 50%;            /* 👈 pushes it down from the very top */
   left: 50%;
   transform: translate(-50%, -50%);background: transparent;
   display: flex;
@@ -270,7 +270,7 @@ textarea::placeholder {
   padding: 1rem;
   border-radius: 6px;
   text-align: center;
- max-width: 300px; /* 👈 stays narrow, centered */
+ max-width: 400px; /* 👈 stays narrow, centered */
   width: 90%;       /* responsive on small screens */
   max-height: 90%;
   overflow-y: auto;
