@@ -48,20 +48,23 @@ window.addEventListener("message", async (event) => {
 
   console.log("✅ Got userData from Wix:", currentUser);
 
-  // Optional: Automatically add user to a default room
-  const roomId = "general"; // 👈 change if you want a different default
+  const roomId = "general"; // 👈 default room
 
   try {
     const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
-    await setDoc(memberRef, {
+
+    const memberData = {
       name: currentUser.name,
       role: currentUser.role,
-      avatar: currentUser.avatar
-    }, { merge: true });
+    };
+    if (currentUser.avatar) {
+      memberData.avatar = currentUser.avatar;
+    }
+
+    await setDoc(memberRef, memberData, { merge: true });
 
     console.log("✅ Added user to default room:", roomId);
 
-    // Optional: auto-join that room visually
     currentRoomName = roomId;
     document.getElementById("room-name").textContent = currentRoomName;
     showPage(chatRoomPage);
@@ -71,9 +74,8 @@ window.addEventListener("message", async (event) => {
   } catch (err) {
     console.error("🔥 Failed to add user to default room:", err);
   }
-
-  initChat?.(); // ✅ start chat *after* getting user info (if needed)
 });
+
 
 
 
@@ -126,11 +128,19 @@ if (!currentUser.id) {
 
 try {
   const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
-  await setDoc(memberRef, {
-    name: currentUser.name,
-    role: currentUser.role,
-    avatar: currentUser.avatar
-  }, { merge: true });
+const memberData = {
+  name: currentUser.name,
+  role: currentUser.role
+};
+if (currentUser.avatar) {
+  memberData.avatar = currentUser.avatar;
+}
+await setDoc(memberRef, memberData, { merge: true });
+
+
+
+
+  
   console.log("✅ Member added to:", currentRoomName);
 } catch (err) {
   console.error("🔥 Failed to add member:", err);
