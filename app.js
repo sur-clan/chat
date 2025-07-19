@@ -36,8 +36,12 @@ let currentUser = {};
 
 // 🪄 Wait for Wix to send the member info
 window.addEventListener("message", async (event) => {
+if (!event.origin.endsWith("sur-clan.com")) return;
+
   const userData = event.data;
   if (!userData || !userData.id) return;
+  
+  console.log("✅ Got userData from Wix:", userData);
 
   currentUser = {
     name: userData.name,
