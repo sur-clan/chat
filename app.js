@@ -666,6 +666,7 @@ msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
 
 // open contacts modal & populate list
 document.getElementById("contacts").addEventListener("click", async () => {
+    console.log("📣 CONTACTS CLICKED!");
   const modal = document.getElementById("contacts-modal");
   const listEl = modal.querySelector(".contacts-list"); // your <ul> or <div>
   listEl.innerHTML = "Loading…";
@@ -673,6 +674,7 @@ document.getElementById("contacts").addEventListener("click", async () => {
   try {
     // adjust the collection name based on your DB structure
     const snapshot = await getDocs(collection(db, "users")); 
+    console.log("📄 Got snapshot:", snapshot);
 
     listEl.innerHTML = ""; // clear Loading…
 
