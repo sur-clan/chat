@@ -105,8 +105,10 @@ const sendMessage = async (text) => {
     roomsUl.innerHTML = "";
 
     const querySnapshot = await getDocs(collection(db, "rooms"));
-    querySnapshot.forEach((doc) => {
-        const room = doc.data();
+
+      
+  querySnapshot.forEach((roomDoc) => {  // ✅ renamed from (doc) to (roomDoc)
+    const room = roomDoc.data();
 
     
       const li = document.createElement("li");
@@ -115,9 +117,9 @@ const sendMessage = async (text) => {
       <small>${room.lastMessage || ''}</small>`;
 
     li.addEventListener("click", async () => {
-  currentRoomName = doc.id;
-  document.getElementById("room-name").textContent = currentRoomName;
-  showPage(chatRoomPage);
+      currentRoomName = roomDoc.id;
+      document.getElementById("room-name").textContent = currentRoomName;
+      showPage(chatRoomPage);
 
 console.log("Joining room:", currentRoomName, "as user:", currentUser);
 
