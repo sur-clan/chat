@@ -246,6 +246,10 @@ textarea::placeholder {
   display: none;
 }
 
+#contacts-modal {
+  display: none;
+}
+
 .modal-content {
   background: #222;
   padding: 1rem;
