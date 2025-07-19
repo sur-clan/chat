@@ -254,7 +254,7 @@ textarea::placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;
 }
 
 #contacts-modal {
@@ -271,7 +271,7 @@ textarea::placeholder {
   overflow-y: auto;
   box-shadow: 0 2px 10px rgba(0,0,0,0.3);
   border-radius: 6px;
-  text-align: left;
+  text-align: center;
 }
 
 .modal-content {
