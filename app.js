@@ -653,27 +653,41 @@ msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
     showPage(chatListPage);
   });
 
+// open contacts modal & populate list
 document.getElementById("contacts").addEventListener("click", async () => {
   const modal = document.getElementById("contacts-modal");
-  const list = modal.querySelector(".contacts-list");
-  list.innerHTML = "Loading…";
+  const listEl = modal.querySelector(".contacts-list"); // your <ul> or <div>
+  listEl.innerHTML = "Loading…";
 
-  const snapshot = await getDocs(collection(db, "members"));
-  list.innerHTML = ""; // clear the "Loading…" text
+  try {
+    // adjust the collection name based on your DB structure
+    const snapshot = await getDocs(collection(db, "users")); 
 
-  if (snapshot.empty) {
-    list.innerHTML = "<li>No members found.</li>";
-  } else {
-    snapshot.forEach(doc => {
-      const m = doc.data();
-      const li = document.createElement("li");
-      li.textContent = m.name + (m.role === "Administrator" ? " (Admin)" : "");
-      list.appendChild(li);
-    });
+    listEl.innerHTML = ""; // clear Loading…
+
+    if (snapshot.empty) {
+      listEl.innerHTML = "<li>No members found.</li>";
+    } else {
+      snapshot.forEach(doc => {
+        const m = doc.data();
+        const li = document.createElement("li");
+        li.textContent = m.name + (m.role === "Administrator" ? " (Admin)" : "");
+        listEl.appendChild(li);
+      });
+    }
+  } catch (err) {
+    listEl.innerHTML = `<li>Error loading members: ${err.message}</li>`;
+    console.error(err);
   }
 
   modal.classList.remove("hidden");
 });
+
+// close contacts modal
+document.getElementById("contacts-close").addEventListener("click", () => {
+  document.getElementById("contacts-modal").classList.add("hidden");
+});
+
 
 
 
