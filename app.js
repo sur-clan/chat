@@ -702,7 +702,7 @@ modal.style.display = "block";
 
 // close contacts modal
 document.getElementById("contacts-close").addEventListener("click", () => {
-  document.getElementById("contacts-modal").classList.add("hidden");
+  document.getElementById("contacts-modal").style.display = "none";
 });
 
 
