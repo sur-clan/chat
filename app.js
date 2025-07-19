@@ -697,7 +697,7 @@ document.getElementById("contacts").addEventListener("click", async () => {
     console.error(err);
   }
 
-  modal.classList.remove("hidden");
+modal.style.display = "block";
 });
 
 // close contacts modal
@@ -718,7 +718,8 @@ document.getElementById("contacts-close").addEventListener("click", () => {
 
   const modalCloseBtn = document.getElementById("modal-close");
   const modal = document.getElementById("message-modal");
-  modalCloseBtn.onclick = () => modal.classList.add("hidden");
+  modalCloseBtn.onclick = () => modal.style.display = "none";
+
 
   populateRooms();
   showPage(chatListPage);
