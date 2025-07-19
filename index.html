@@ -130,24 +130,18 @@
   </div>
 </div>
 
+<!-- CONTACTS MODAL -->
 
-<div id="contacts-modal" class="hidden" style="
-  position: fixed;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  border: 2px solid #ccc;
-  padding: 20px;
-  z-index: 1000;
-  max-width: 300px;
-  max-height: 400px;
-  overflow-y: auto;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-">
-  <h3>All Website Members</h3>
-  <ul class="contacts-list" style="list-style: none; padding: 0;"></ul>
-  <button id="contacts-close">Close</button>
-
+<div id="contacts-modal" class="hidden">
+  <div class="modal-content">
+    <p class="modal-title">All Website Members</p>
+    <div class="modal-body">
+      <ul class="contacts-list" style="list-style: none; padding: 0;"></ul>
+    </div>
+    <div class="modal-buttons">
+      <button id="contacts-close">Close</button>
+    </div>
+  </div>
 </div>
 
 
