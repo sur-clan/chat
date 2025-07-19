@@ -48,6 +48,16 @@ window.addEventListener("message", async (event) => {
 
   console.log("✅ Got userData from Wix:", currentUser);
 
+ // save to users/
+  const userRef = doc(db, "users", currentUser.id);
+  await setDoc(userRef, {
+    name: currentUser.name,
+    role: currentUser.role,
+    avatar: currentUser.avatar
+  }, { merge: true });
+
+  // and add to default room
+  
   const roomId = "general"; // 👈 default room
 
   try {
