@@ -249,7 +249,9 @@ textarea::placeholder {
 }
 
 #contacts-modal {
-  position: absolute;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
   background: #222;
   display: flex;
   align-items: center;
@@ -263,7 +265,7 @@ textarea::placeholder {
 
 #contacts-modal .modal-content {
   background: #222;
-  color: #gold;
+  color: gold;
   border: 1px solid gold;
   padding: 0.5rem;
   max-width: 90%;
