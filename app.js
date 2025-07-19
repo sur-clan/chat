@@ -35,30 +35,45 @@ let currentUser = {};
 
 
 // 🪄 Wait for Wix to send the member info
-    window.addEventListener("message", async (event) => {
-    const userData = event.data;
-    if (!userData || !userData.id) return;
+window.addEventListener("message", async (event) => {
+  const userData = event.data;
+  if (!userData || !userData.id) return;
 
-    currentUser = {
-      name: userData.name,
-      role: "Member",
-      id: userData.id,
-      avatar: userData.avatar
-    };
+  currentUser = {
+    name: userData.name,
+    role: "Member",
+    id: userData.id,
+    avatar: userData.avatar
+  };
 
-    
-  console.log("Got userData from Wix:", currentUser);
+  console.log("✅ Got userData from Wix:", currentUser);
 
-  // ensure they're added as a member
-  const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
-  await setDoc(memberRef, {
-    name: currentUser.name,
-    role: currentUser.role,
-    avatar: currentUser.avatar
-  });
+  // Optional: Automatically add user to a default room
+  const roomId = "general"; // 👈 change if you want a different default
 
-    initChat(); // ✅ start chat *after* getting user info
-  });
+  try {
+    const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
+    await setDoc(memberRef, {
+      name: currentUser.name,
+      role: currentUser.role,
+      avatar: currentUser.avatar
+    }, { merge: true });
+
+    console.log("✅ Added user to default room:", roomId);
+
+    // Optional: auto-join that room visually
+    currentRoomName = roomId;
+    document.getElementById("room-name").textContent = currentRoomName;
+    showPage(chatRoomPage);
+    populateMessages();
+    populateMembers();
+
+  } catch (err) {
+    console.error("🔥 Failed to add user to default room:", err);
+  }
+
+  initChat?.(); // ✅ start chat *after* getting user info (if needed)
+});
 
 
 
