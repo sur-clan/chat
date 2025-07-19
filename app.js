@@ -15,6 +15,7 @@ const db = getFirestore(app);
 
 
 
+document.addEventListener("DOMContentLoaded", () => {
 
 
 
@@ -716,3 +717,4 @@ document.getElementById("contacts-close").addEventListener("click", () => {
   populateRooms();
   showPage(chatListPage);
 
+});
