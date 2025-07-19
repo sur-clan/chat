@@ -102,12 +102,25 @@ const sendMessage = async (text) => {
   document.getElementById("room-name").textContent = currentRoomName;
   showPage(chatRoomPage);
 
+console.log("Joining room:", currentRoomName, "as user:", currentUser);
+
+if (!currentUser.id) {
+  console.error("❌ currentUser.id is undefined!");
+  return;
+}
+
+try {
   const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
   await setDoc(memberRef, {
     name: currentUser.name,
     role: currentUser.role,
     avatar: currentUser.avatar
   }, { merge: true });
+  console.log("✅ Member added to:", currentRoomName);
+} catch (err) {
+  console.error("🔥 Failed to add member:", err);
+}
+
 
   populateMessages();
 });
