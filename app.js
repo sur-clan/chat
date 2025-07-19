@@ -48,30 +48,33 @@ window.addEventListener("message", async (event) => {
 
   console.log("✅ Got userData from Wix:", currentUser);
 
- // save to users/
-  const userRef = doc(db, "users", currentUser.id);
-  await setDoc(userRef, {
+  // prepare user data without undefined
+  const userPayload = {
     name: currentUser.name,
     role: currentUser.role,
-    avatar: currentUser.avatar
-  }, { merge: true });
+  };
+  if (currentUser.avatar != null) {
+    userPayload.avatar = currentUser.avatar;
+  }
+
+  // save to users/
+  const userRef = doc(db, "users", currentUser.id);
+  await setDoc(userRef, userPayload, { merge: true });
 
   // and add to default room
-  
   const roomId = "general"; // 👈 default room
 
   try {
-    const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
-
-    const memberData = {
+    const memberPayload = {
       name: currentUser.name,
       role: currentUser.role,
     };
-    if (currentUser.avatar) {
-      memberData.avatar = currentUser.avatar;
+    if (currentUser.avatar != null) {
+      memberPayload.avatar = currentUser.avatar;
     }
 
-    await setDoc(memberRef, memberData, { merge: true });
+    const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
+    await setDoc(memberRef, memberPayload, { merge: true });
 
     console.log("✅ Added user to default room:", roomId);
 
@@ -85,8 +88,6 @@ window.addEventListener("message", async (event) => {
     console.error("🔥 Failed to add user to default room:", err);
   }
 });
-
-
 
 
 
