@@ -1,10 +1,10 @@
 html, body {
-
-  height: 100%;
   margin: 0;
   padding: 0;
-
-  
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: fixed;
 
   font-family: 'Lato', sans-serif;
   font-weight: 1;
@@ -26,11 +26,12 @@ background: url('castle-sur.png') no-repeat center center fixed;
 
 
 .content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
   position: relative;
   z-index: 2;
-display: flex;
-  flex-direction: column;
-  height: 100vh;
 }
 
 
@@ -59,13 +60,13 @@ main {
 }
 
 .page {
-flex: 1;
-display: none;
+  flex: 1 1 auto;
+  display: none;
   flex-direction: column;
-   min-height: 0; /* this line is VERY important in flexbox */
-  padding: 0 1rem 1rem; /* top right/left bottom */
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 1rem 1rem;
   box-sizing: border-box;
-
 }
 
 .page.active {
@@ -87,7 +88,7 @@ display: flex;
     justify-content: center;
 flex-wrap: nowrap; /* stay in one line */
   gap: 1rem;
-  padding: 1rem;
+  padding: 0.5rem;
 
 }
 
@@ -201,6 +202,7 @@ ul {
   width: 100%;
   box-sizing: border-box;
   justify-content: center;
+  margin-bottom: 10px;
 }
 
 .input-area textarea {
@@ -369,7 +371,7 @@ textarea::placeholder {
 display: flex;
   flex-direction: column;
   gap: 0.5rem;
- padding: 1rem;
+ padding: 0.5rem;
 }
 
 .member-buttons button {
