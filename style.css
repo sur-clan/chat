@@ -444,6 +444,8 @@ display: flex;
   max-width: 100%;
   display: flex;
   flex-direction: column;
+  font-size: 13px;
+  line-height: 1.3;
 }
 
 .my-message {
@@ -469,6 +471,8 @@ background: rgba(0,0,0,0.5);			/* inso message background */
 .message-header {	
   font-weight: normal;			/* Both names */
   color: gold;				/* Insomniak */
+  font-size: 13px;
+  line-height: 1.3;
 }
 
 .my-message .message-header {
@@ -483,6 +487,8 @@ background: rgba(0,0,0,0.5);			/* inso message background */
   font-size: 0.75rem;
   color: #ccc;
   text-align: right;
+  font-size: 11px;
+
 }
 
 .my-message .message-time {
@@ -509,6 +515,8 @@ textarea {
   background: #333;
   color: #fff;
   border: 1px solid #666;
+  font-size: 12px;
+  line-height: 1.2;
 }
 
 
