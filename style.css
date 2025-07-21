@@ -88,7 +88,7 @@ display: flex;
     justify-content: center;
 flex-wrap: nowrap; /* stay in one line */
   gap: 1rem;
-  padding: 1rem;
+  padding: 0.5rem;
 
 }
 
@@ -202,7 +202,7 @@ ul {
   width: 100%;
   box-sizing: border-box;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .input-area textarea {
@@ -371,7 +371,7 @@ textarea::placeholder {
 display: flex;
   flex-direction: column;
   gap: 0.5rem;
- padding: 1rem;
+ padding: 0.5rem;
 }
 
 .member-buttons button {
