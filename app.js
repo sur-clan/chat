@@ -668,19 +668,22 @@ msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
     showPage(chatListPage);
   });
 
-// open contacts modal & populate list
-document.getElementById("contacts").addEventListener("click", async () => {
-    console.log("📣 CONTACTS CLICKED!");
-  const modal = document.getElementById("contacts-modal");
-  const listEl = modal.querySelector(".contacts-list"); // your <ul> or <div>
+// open contacts page & populate list
+document.getElementById("contacts").addEventListener("click", () => {
+  console.log("📣 CONTACTS CLICKED!");
+  showPage(document.getElementById("contacts-page"));
+  populateContacts();
+});
+
+async function populateContacts() {
+  const listEl = document.getElementById("contacts-list");
   listEl.innerHTML = "Loading…";
 
   try {
-    // adjust the collection name based on your DB structure
-    const snapshot = await getDocs(collection(db, "users")); 
+    const snapshot = await getDocs(collection(db, "users"));
     console.log("📄 Got snapshot:", snapshot);
 
-    listEl.innerHTML = ""; // clear Loading…
+    listEl.innerHTML = "";
 
     if (snapshot.empty) {
       listEl.innerHTML = "<li>No members found.</li>";
@@ -696,20 +699,12 @@ document.getElementById("contacts").addEventListener("click", async () => {
     listEl.innerHTML = `<li>Error loading members: ${err.message}</li>`;
     console.error(err);
   }
+}
 
-modal.style.display = "block";
+
+document.getElementById("back-to-rooms-from-contacts").addEventListener("click", () => {
+  showPage(chatListPage);
 });
-
-// close contacts modal
-document.getElementById("contacts-close").addEventListener("click", () => {
-  document.getElementById("contacts-modal").style.display = "none";
-});
-
-
-
-
-
-
 
 
 
