@@ -674,7 +674,7 @@ msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
 // open contacts page & populate list
 document.getElementById("contacts").addEventListener("click", () => {
   console.log("📣 CONTACTS CLICKED!");
-  showPage(document.getElementById("contacts-page"));
+showPage(contactsPage);
   populateContacts();
 });
 
