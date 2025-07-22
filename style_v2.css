@@ -110,9 +110,9 @@ h2 {
   font-weight: 400;
   color: #efca51;
   text-align: center;
-  margin: 0.5rem 0;
+  margin: 0rem 0;
   line-height: 1.2;
-  margin-bottom: 1rem;
+  margin-bottom: rem;
  text-shadow:
     2px 2px 2px rgba(0, 0, 0, 0.6),
     0 0 0px rgba(255, 215, 0, 1); 
@@ -327,6 +327,12 @@ textarea::placeholder {
   box-shadow: 0 0 5px gold;
 }
 
+
+#contacts-list {
+  flex: 1;
+  overflow-y: auto;
+  margin: 1rem 0;
+}
 
 
 /* Footer member buttons */
