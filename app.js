@@ -25,7 +25,10 @@ let currentUser = {};
   const chatListPage = document.getElementById("chat-list");
   const chatRoomPage = document.getElementById("chat-room");
   const membersListPage = document.getElementById("members-list");
-  const pages = [chatListPage, chatRoomPage, membersListPage];
+  const contactsPage = document.getElementById("contacts-page");
+
+  const pages = [chatListPage, chatRoomPage, membersListPage, contactsPage];
+  
   let currentRoomName = null;
 
 
