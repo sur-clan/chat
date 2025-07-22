@@ -541,7 +541,24 @@ if (currentUser.role === "Administrator") {
  
   }
 
-  // search bar
+
+
+// contacts search bar
+
+    document.getElementById("contacts-search").addEventListener("input", (e) => {
+  const term = e.target.value.trim().toLowerCase();
+  const contactsUl = document.getElementById("contacts-list");
+  const lis = contactsUl.querySelectorAll("li");
+
+  lis.forEach(li => {
+    const name = li.textContent.trim().toLowerCase();
+    li.style.display = name.startsWith(term) ? "flex" : "none";
+  });
+});
+
+
+  
+  // member search bar
   document.getElementById("member-search").addEventListener("input", (e) => {
     const term = e.target.value.trim().toLowerCase();
     const membersUl = document.getElementById("members");
