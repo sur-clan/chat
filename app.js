@@ -6,7 +6,10 @@ import {
   getDocs,
   setDoc,
   doc,
-  serverTimestamp 
+  serverTimestamp,
+  query,
+  orderBy,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app = initializeApp(window.firebaseConfig);
@@ -181,14 +184,32 @@ await setDoc(memberRef, memberData, { merge: true });
     });
   }
 
-async function populateMessages() {
-    const msgsDiv = document.getElementById("messages");
-    msgsDiv.innerHTML = "";
+let unsubscribeMessages = null;
 
-  const querySnapshot = await getDocs(collection(db, "rooms", currentRoomName, "messages"));
-  
-  querySnapshot.forEach((doc) => {
-    const msg = doc.data();
+function populateMessages() {
+  const msgsDiv = document.getElementById("messages");
+  msgsDiv.innerHTML = "";
+
+  if (!currentRoomName) {
+    console.error("❌ currentRoomName is not set yet");
+    return;
+  }
+
+  const messagesRef = collection(db, "rooms", currentRoomName, "messages");
+  const q = query(messagesRef, orderBy("timestamp"));
+
+  // 🧹 Clean up old listener
+  if (unsubscribeMessages) {
+    unsubscribeMessages();
+    unsubscribeMessages = null;
+  }
+
+  unsubscribeMessages = onSnapshot(q, (snapshot) => {
+    msgsDiv.innerHTML = ""; // Clear before re-rendering
+
+    snapshot.forEach((doc) => {
+      const msg = doc.data();
+
 
     if (blockedMembers.has(msg.senderName)) return;
     if (mutedMembers.has(msg.senderName) && currentUser.role === "Administrator") return;
@@ -232,6 +253,10 @@ async function populateMessages() {
 
       msgsDiv.appendChild(wrapper);
     });
+
+    // Auto-scroll to bottom
+    msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
+  });
   }
 
 
