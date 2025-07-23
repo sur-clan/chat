@@ -140,6 +140,14 @@ const sendMessage = async (text) => {
     li.addEventListener("click", async () => {
       currentRoomName = roomDoc.id;
       document.getElementById("room-name").textContent = currentRoomName;
+
+ const msgsDiv = document.getElementById("messages");
+
+  // 🚀 Clear immediately and show loading
+  msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading messages…</div>`;
+
+
+      
       showPage(chatRoomPage);
 
 console.log("Joining room:", currentRoomName, "as user:", currentUser);
@@ -186,7 +194,7 @@ await setDoc(memberRef, memberData, { merge: true });
 
 let unsubscribeMessages = null;
 
-async function populateMessages() {
+function populateMessages() {
   if (!currentRoomName) {
     console.error("❌ currentRoomName is not set yet");
     return;
@@ -196,30 +204,21 @@ async function populateMessages() {
   const msgsDiv = document.getElementById("messages");
 
 
+
  // 🧹 Stop the old listener *first*
   if (unsubscribeMessages) {
     unsubscribeMessages();
     unsubscribeMessages = null;
   }
 
-  
+  // clear messages & show placeholder immediately
+msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading messages…</div>`;
+
   const messagesRef = collection(db, "rooms", currentRoomName, "messages");
   const q = query(messagesRef, orderBy("timestamp"));
 
-  
- // Fetch cached/current data immediately
-  const cachedSnapshot = await getDocs(q);
-  renderMessages(cachedSnapshot);
-
-  // Then listen for real-time updates
-  unsubscribeMessages = onSnapshot(q, (snapshot) => {
-    renderMessages(snapshot);
-  });
-}
-
-function renderMessages(snapshot) {
-  const msgsDiv = document.getElementById("messages");
-  const frag = document.createDocumentFragment();
+    unsubscribeMessages = onSnapshot(q, (snapshot) => {
+    const frag = document.createDocumentFragment();  
 
   if (snapshot.empty) {
     msgsDiv.innerHTML = `<div style="text-align:center; color:gray;">No messages yet…</div>`;
@@ -278,7 +277,7 @@ function renderMessages(snapshot) {
 
     // Auto-scroll to bottom
     msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
-  
+    });
   }
 
 
