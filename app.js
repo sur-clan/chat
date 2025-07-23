@@ -6,7 +6,10 @@ import {
   getDocs,
   setDoc,
   doc,
-  serverTimestamp 
+  serverTimestamp,
+  onSnapshot,
+  query,
+  orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app = initializeApp(window.firebaseConfig);
@@ -187,11 +190,21 @@ function populateMessages() {
   const msgsDiv = document.getElementById("messages");
   msgsDiv.innerHTML = "";
 
+  if (!currentRoomName) {
+    console.error("❌ currentRoomName is not set yet");
+    return;
+  }
+
   const messagesRef = collection(db, "rooms", currentRoomName, "messages");
   const q = query(messagesRef, orderBy("timestamp"));
 
-  onSnapshot(q, (snapshot) => {
-    msgsDiv.innerHTML = ""; // clear before rendering fresh
+  // 🧹 Clean up old listener if switching rooms
+  if (window._unsubscribeMessages) {
+    window._unsubscribeMessages();
+  }
+
+  window._unsubscribeMessages = onSnapshot(q, (snapshot) => {
+    msgsDiv.innerHTML = ""; // Clear messages before re-rendering
 
     snapshot.forEach((doc) => {
       const msg = doc.data();
@@ -232,10 +245,10 @@ function populateMessages() {
       }
 
       msgsDiv.appendChild(wrapper);
-
-      // Auto-scroll to bottom
-      msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
     });
+
+    // Auto-scroll to bottom
+    msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
   });
 }
 
