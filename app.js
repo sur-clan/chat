@@ -181,58 +181,63 @@ await setDoc(memberRef, memberData, { merge: true });
     });
   }
 
-async function populateMessages() {
-    const msgsDiv = document.getElementById("messages");
-    msgsDiv.innerHTML = "";
+import { collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const querySnapshot = await getDocs(collection(db, "rooms", currentRoomName, "messages"));
-  
-  querySnapshot.forEach((doc) => {
-    const msg = doc.data();
+function populateMessages() {
+  const msgsDiv = document.getElementById("messages");
+  msgsDiv.innerHTML = "";
 
-    if (blockedMembers.has(msg.senderName)) return;
-    if (mutedMembers.has(msg.senderName) && currentUser.role === "Administrator") return;
+  const messagesRef = collection(db, "rooms", currentRoomName, "messages");
+  const q = query(messagesRef, orderBy("timestamp"));
 
-      
-    const wrapper = document.createElement("div");
-    wrapper.className = "message-scroll";
-    wrapper.classList.add(msg.senderName === currentUser.name ? "my-message" : "other-message");
+  onSnapshot(q, (snapshot) => {
+    msgsDiv.innerHTML = ""; // clear before rendering fresh
+
+    snapshot.forEach((doc) => {
+      const msg = doc.data();
+
+      if (blockedMembers.has(msg.senderName)) return;
+      if (mutedMembers.has(msg.senderName) && currentUser.role === "Administrator") return;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "message-scroll";
+      wrapper.classList.add(msg.senderName === currentUser.name ? "my-message" : "other-message");
 
       const content = document.createElement("div");
       content.className = "message-content";
-    content.innerHTML = `
-      <div class="message-header">${msg.senderName}</div>
-      <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
-      <div class="message-time">${msg.timestamp?.toDate().toLocaleTimeString() || ''}</div>
-    `;
+      content.innerHTML = `
+        <div class="message-header">${msg.senderName}</div>
+        <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
+        <div class="message-time">${msg.timestamp?.toDate().toLocaleTimeString() || ''}</div>
+      `;
 
-    
       content.addEventListener("click", () => {
         showModal(msg, wrapper);
       });
 
       wrapper.appendChild(content);
 
+      if (msg.senderName !== currentUser.name) {
+        const actions = document.createElement("div");
+        actions.className = "message-actions";
 
-    if (msg.senderName !== currentUser.name) {
-      const actions = document.createElement("div");
-      actions.className = "message-actions";
+        const translateBtn = document.createElement("button");
+        translateBtn.textContent = "🌐";
+        translateBtn.addEventListener("click", () => {
+          alert("Translate message");
+        });
 
-      const translateBtn = document.createElement("button");
-      translateBtn.textContent = "🌐";
-      translateBtn.addEventListener("click", () => {
-        alert("Translate message");
-      });
-
-      actions.appendChild(translateBtn);
-      wrapper.appendChild(actions);
-    }
-
-   
+        actions.appendChild(translateBtn);
+        wrapper.appendChild(actions);
+      }
 
       msgsDiv.appendChild(wrapper);
+
+      // Auto-scroll to bottom
+      msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
     });
-  }
+  });
+}
 
 
  async function populateMembers() {
