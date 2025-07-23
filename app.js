@@ -187,25 +187,29 @@ await setDoc(memberRef, memberData, { merge: true });
 let unsubscribeMessages = null;
 
 function populateMessages() {
-  const msgsDiv = document.getElementById("messages");
-  msgsDiv.innerHTML = "";
-
   if (!currentRoomName) {
     console.error("❌ currentRoomName is not set yet");
     return;
   }
 
-  const messagesRef = collection(db, "rooms", currentRoomName, "messages");
-  const q = query(messagesRef, orderBy("timestamp"));
+  
+  const msgsDiv = document.getElementById("messages");
 
-  // 🧹 Clean up old listener
+  // Show placeholder while waiting for snapshot
+  msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading messages…</div>`;
+
+   // Clean up old listener
   if (unsubscribeMessages) {
     unsubscribeMessages();
     unsubscribeMessages = null;
   }
 
+  const messagesRef = collection(db, "rooms", currentRoomName, "messages");
+  const q = query(messagesRef, orderBy("timestamp"));
+
+  
   unsubscribeMessages = onSnapshot(q, (snapshot) => {
-    msgsDiv.innerHTML = ""; // Clear before re-rendering
+    const frag = document.createDocumentFragment();
 
     snapshot.forEach((doc) => {
       const msg = doc.data();
@@ -250,9 +254,12 @@ function populateMessages() {
     }
 
    
-
-      msgsDiv.appendChild(wrapper);
+      frag.appendChild(wrapper);
     });
+
+    // Clear & append everything at once to prevent flicker
+    msgsDiv.innerHTML = "";
+    msgsDiv.appendChild(frag);
 
     // Auto-scroll to bottom
     msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
