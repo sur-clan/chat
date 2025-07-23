@@ -659,34 +659,7 @@ document.getElementById("create-room").addEventListener("click", async () => {
     const text = document.getElementById("message-input").value.trim();
     if (!text) return;
 
-    const now = new Date();
-    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const date = now.toLocaleDateString();
-
-    const wrapper = document.createElement("div");
-    wrapper.className = "message-scroll my-message";
-
-    const content = document.createElement("div");
-    content.className = "message-content";
-
-    content.innerHTML = `
-      <div class="message-header">${currentUser.name}</div>
-      <div class="message-body">${text.replace(/\n/g, "<br>")}</div>
-      <div class="message-time">${time}</div>
-    `;
-
-    content.addEventListener("click", () => {
-      const msgObj = { user: currentUser.name, text, time, date };
-      showModal(msgObj, wrapper);
-    });
-
-    wrapper.appendChild(content);
-    document.getElementById("messages").appendChild(wrapper);
-
-
- // 🪄 Auto-scroll to the bottom after sending
-  const msgsDiv = document.getElementById("messages");
-msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
+     await sendMessage(text);
 
 
     document.getElementById("message-input").value = "";
