@@ -655,7 +655,7 @@ document.getElementById("create-room").addEventListener("click", async () => {
 
   document.getElementById("back-to-chat").addEventListener("click", () => showPage(chatRoomPage));
 
-  document.getElementById("send-message").addEventListener("click", () => {
+document.getElementById("send-message").addEventListener("click", async () => {
     const text = document.getElementById("message-input").value.trim();
     if (!text) return;
 
