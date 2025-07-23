@@ -278,7 +278,7 @@ function renderMessages(snapshot) {
 
     // Auto-scroll to bottom
     msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
-  });
+  
   }
 
 
