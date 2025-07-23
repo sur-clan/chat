@@ -186,7 +186,7 @@ await setDoc(memberRef, memberData, { merge: true });
 
 let unsubscribeMessages = null;
 
-function populateMessages() {
+async function populateMessages() {
   if (!currentRoomName) {
     console.error("❌ currentRoomName is not set yet");
     return;
@@ -202,20 +202,29 @@ function populateMessages() {
     unsubscribeMessages = null;
   }
 
-  // 🔷 Immediately show placeholder
-  msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading messages…</div>`;
-
-
+  
   const messagesRef = collection(db, "rooms", currentRoomName, "messages");
   const q = query(messagesRef, orderBy("timestamp"));
 
   
+ // Fetch cached/current data immediately
+  const cachedSnapshot = await getDocs(q);
+  renderMessages(cachedSnapshot);
+
+  // Then listen for real-time updates
   unsubscribeMessages = onSnapshot(q, (snapshot) => {
+    renderMessages(snapshot);
+  });
+}
 
+function renderMessages(snapshot) {
+  const msgsDiv = document.getElementById("messages");
+  const frag = document.createDocumentFragment();
 
-
-    
-    const frag = document.createDocumentFragment();
+  if (snapshot.empty) {
+    msgsDiv.innerHTML = `<div style="text-align:center; color:gray;">No messages yet…</div>`;
+    return;
+  }
 
     snapshot.forEach((doc) => {
       const msg = doc.data();
