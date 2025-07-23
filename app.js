@@ -186,7 +186,9 @@ await setDoc(memberRef, memberData, { merge: true });
 
 import { collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-function populateMessages() {
+let unsubscribeMessages = null;
+
+async function populateMessages() {
   const msgsDiv = document.getElementById("messages");
   msgsDiv.innerHTML = "";
 
@@ -198,59 +200,65 @@ function populateMessages() {
   const messagesRef = collection(db, "rooms", currentRoomName, "messages");
   const q = query(messagesRef, orderBy("timestamp"));
 
-  // 🧹 Clean up old listener if switching rooms
-  if (window._unsubscribeMessages) {
-    window._unsubscribeMessages();
+  // 🧹 Clean up old listener
+  if (unsubscribeMessages) {
+    unsubscribeMessages();
   }
 
-  window._unsubscribeMessages = onSnapshot(q, (snapshot) => {
-    msgsDiv.innerHTML = ""; // Clear messages before re-rendering
+  // Return a promise that resolves on first snapshot
+  return new Promise((resolve) => {
+    unsubscribeMessages = onSnapshot(q, (snapshot) => {
+      msgsDiv.innerHTML = ""; // Clear messages before re-rendering
 
-    snapshot.forEach((doc) => {
-      const msg = doc.data();
+      snapshot.forEach((doc) => {
+        const msg = doc.data();
 
-      if (blockedMembers.has(msg.senderName)) return;
-      if (mutedMembers.has(msg.senderName) && currentUser.role === "Administrator") return;
+        if (blockedMembers.has(msg.senderName)) return;
+        if (mutedMembers.has(msg.senderName) && currentUser.role === "Administrator") return;
 
-      const wrapper = document.createElement("div");
-      wrapper.className = "message-scroll";
-      wrapper.classList.add(msg.senderName === currentUser.name ? "my-message" : "other-message");
+        const wrapper = document.createElement("div");
+        wrapper.className = "message-scroll";
+        wrapper.classList.add(msg.senderName === currentUser.name ? "my-message" : "other-message");
 
-      const content = document.createElement("div");
-      content.className = "message-content";
-      content.innerHTML = `
-        <div class="message-header">${msg.senderName}</div>
-        <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
-        <div class="message-time">${msg.timestamp?.toDate().toLocaleTimeString() || ''}</div>
-      `;
+        const content = document.createElement("div");
+        content.className = "message-content";
+        content.innerHTML = `
+          <div class="message-header">${msg.senderName}</div>
+          <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
+          <div class="message-time">${msg.timestamp?.toDate().toLocaleTimeString() || ''}</div>
+        `;
 
-      content.addEventListener("click", () => {
-        showModal(msg, wrapper);
-      });
-
-      wrapper.appendChild(content);
-
-      if (msg.senderName !== currentUser.name) {
-        const actions = document.createElement("div");
-        actions.className = "message-actions";
-
-        const translateBtn = document.createElement("button");
-        translateBtn.textContent = "🌐";
-        translateBtn.addEventListener("click", () => {
-          alert("Translate message");
+        content.addEventListener("click", () => {
+          showModal(msg, wrapper);
         });
 
-        actions.appendChild(translateBtn);
-        wrapper.appendChild(actions);
-      }
+        wrapper.appendChild(content);
 
-      msgsDiv.appendChild(wrapper);
+        if (msg.senderName !== currentUser.name) {
+          const actions = document.createElement("div");
+          actions.className = "message-actions";
+
+          const translateBtn = document.createElement("button");
+          translateBtn.textContent = "🌐";
+          translateBtn.addEventListener("click", () => {
+            alert("Translate message");
+          });
+
+          actions.appendChild(translateBtn);
+          wrapper.appendChild(actions);
+        }
+
+        msgsDiv.appendChild(wrapper);
+      });
+
+      // Auto-scroll to bottom
+      msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
+
+      resolve(); // resolve the promise on first load
     });
-
-    // Auto-scroll to bottom
-    msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
   });
 }
+
 
 
  async function populateMembers() {
