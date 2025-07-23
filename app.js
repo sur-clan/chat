@@ -654,10 +654,18 @@ document.getElementById("send-message").addEventListener("click", async () => {
   const text = document.getElementById("message-input").value.trim();
   if (!text) return;
 
+  if (!currentRoomName) {
+    console.error("❌ Cannot send message — no room joined yet!");
+    return;
+  }
+
+  console.log("🚀 Sending message to:", currentRoomName);
+
   await sendMessage(text);
 
   document.getElementById("message-input").value = "";
 });
+
 
 
 
