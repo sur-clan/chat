@@ -6,10 +6,7 @@ import {
   getDocs,
   setDoc,
   doc,
-  serverTimestamp,
-  onSnapshot,
-  query,
-  orderBy
+  serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app = initializeApp(window.firebaseConfig);
@@ -184,81 +181,58 @@ await setDoc(memberRef, memberData, { merge: true });
     });
   }
 
-import { collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-let unsubscribeMessages = null;
-
 async function populateMessages() {
-  const msgsDiv = document.getElementById("messages");
-  msgsDiv.innerHTML = "";
+    const msgsDiv = document.getElementById("messages");
+    msgsDiv.innerHTML = "";
 
-  if (!currentRoomName) {
-    console.error("❌ currentRoomName is not set yet");
-    return;
-  }
+  const querySnapshot = await getDocs(collection(db, "rooms", currentRoomName, "messages"));
+  
+  querySnapshot.forEach((doc) => {
+    const msg = doc.data();
 
-  const messagesRef = collection(db, "rooms", currentRoomName, "messages");
-  const q = query(messagesRef, orderBy("timestamp"));
+    if (blockedMembers.has(msg.senderName)) return;
+    if (mutedMembers.has(msg.senderName) && currentUser.role === "Administrator") return;
 
-  // 🧹 Clean up old listener
-  if (unsubscribeMessages) {
-    unsubscribeMessages();
-  }
+      
+    const wrapper = document.createElement("div");
+    wrapper.className = "message-scroll";
+    wrapper.classList.add(msg.senderName === currentUser.name ? "my-message" : "other-message");
 
-  // Return a promise that resolves on first snapshot
-  return new Promise((resolve) => {
-    unsubscribeMessages = onSnapshot(q, (snapshot) => {
-      msgsDiv.innerHTML = ""; // Clear messages before re-rendering
+      const content = document.createElement("div");
+      content.className = "message-content";
+    content.innerHTML = `
+      <div class="message-header">${msg.senderName}</div>
+      <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
+      <div class="message-time">${msg.timestamp?.toDate().toLocaleTimeString() || ''}</div>
+    `;
 
-      snapshot.forEach((doc) => {
-        const msg = doc.data();
-
-        if (blockedMembers.has(msg.senderName)) return;
-        if (mutedMembers.has(msg.senderName) && currentUser.role === "Administrator") return;
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "message-scroll";
-        wrapper.classList.add(msg.senderName === currentUser.name ? "my-message" : "other-message");
-
-        const content = document.createElement("div");
-        content.className = "message-content";
-        content.innerHTML = `
-          <div class="message-header">${msg.senderName}</div>
-          <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
-          <div class="message-time">${msg.timestamp?.toDate().toLocaleTimeString() || ''}</div>
-        `;
-
-        content.addEventListener("click", () => {
-          showModal(msg, wrapper);
-        });
-
-        wrapper.appendChild(content);
-
-        if (msg.senderName !== currentUser.name) {
-          const actions = document.createElement("div");
-          actions.className = "message-actions";
-
-          const translateBtn = document.createElement("button");
-          translateBtn.textContent = "🌐";
-          translateBtn.addEventListener("click", () => {
-            alert("Translate message");
-          });
-
-          actions.appendChild(translateBtn);
-          wrapper.appendChild(actions);
-        }
-
-        msgsDiv.appendChild(wrapper);
+    
+      content.addEventListener("click", () => {
+        showModal(msg, wrapper);
       });
 
-      // Auto-scroll to bottom
-      msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
+      wrapper.appendChild(content);
 
-      resolve(); // resolve the promise on first load
+
+    if (msg.senderName !== currentUser.name) {
+      const actions = document.createElement("div");
+      actions.className = "message-actions";
+
+      const translateBtn = document.createElement("button");
+      translateBtn.textContent = "🌐";
+      translateBtn.addEventListener("click", () => {
+        alert("Translate message");
+      });
+
+      actions.appendChild(translateBtn);
+      wrapper.appendChild(actions);
+    }
+
+   
+
+      msgsDiv.appendChild(wrapper);
     });
-  });
-}
-
+  }
 
 
  async function populateMembers() {
