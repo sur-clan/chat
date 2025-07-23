@@ -195,20 +195,26 @@ function populateMessages() {
   
   const msgsDiv = document.getElementById("messages");
 
-  // Show placeholder while waiting for snapshot
-  msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading messages…</div>`;
 
-   // Clean up old listener
+ // 🧹 Stop the old listener *first*
   if (unsubscribeMessages) {
     unsubscribeMessages();
     unsubscribeMessages = null;
   }
+
+  // 🔷 Immediately show placeholder
+  msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading messages…</div>`;
+
 
   const messagesRef = collection(db, "rooms", currentRoomName, "messages");
   const q = query(messagesRef, orderBy("timestamp"));
 
   
   unsubscribeMessages = onSnapshot(q, (snapshot) => {
+
+
+
+    
     const frag = document.createDocumentFragment();
 
     snapshot.forEach((doc) => {
