@@ -654,12 +654,14 @@ document.getElementById("create-room").addEventListener("click", async () => {
 
 
     // Add self to members subcollection with Administrator role
-    const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
-    await setDoc(memberRef, {
-      name: currentUser.name,
-      role: "Administrator",
-      avatar: currentUser.avatar || null
-    });
+  console.log("📥 Creating admin member doc...");
+await setDoc(doc(db, "rooms", roomId, "members", currentUser.id), {
+  name: currentUser.name,
+  role: "Administrator",
+  avatar: currentUser.avatar
+});
+console.log("✅ Admin member doc created.");
+
    
     console.log(`✅ Room '${roomName}' created and ${currentUser.name} added as Administrator`);
 
