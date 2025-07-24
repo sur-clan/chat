@@ -677,6 +677,8 @@ await setDoc(
   adminData
 );
 
+   currentUser.role = "Administrator";  // 🪄 You are now admin!
+
 console.log("✅ Admin member doc created.");
 
     console.log(`✅ Room '${roomName}' created and ${currentUser.name} added as Administrator`);
