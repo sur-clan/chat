@@ -86,7 +86,13 @@ try {
   await setDoc(memberRef, memberPayload, { merge: true });
 
   console.log("✅ Added user to default room:", roomId);
+
+      populateRooms();
+    showPage(chatListPage);
   // 👇 No auto-navigation — just ensure they're in the room list
+
+
+  
 } catch (err) {
   console.error("🔥 Failed to add user to default room:", err);
 }
