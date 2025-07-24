@@ -159,23 +159,26 @@ if (!currentUser.id) {
 
 try {
   const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
-const memberData = {
-  name: currentUser.name,
-  role: currentUser.role
-};
-if (currentUser.avatar) {
-  memberData.avatar = currentUser.avatar;
-}
-await setDoc(memberRef, memberData, { merge: true });
+  const memberSnap = await getDoc(memberRef);
 
+  if (!memberSnap.exists()) {
+    const memberData = {
+      name: currentUser.name,
+      role: currentUser.role
+    };
+    if (currentUser.avatar) {
+      memberData.avatar = currentUser.avatar;
+    }
 
-
-
-  
-  console.log("✅ Member added to:", currentRoomName);
+    await setDoc(memberRef, memberData);
+    console.log("✅ Member added to:", currentRoomName);
+  } else {
+    console.log("👀 Member already exists — role preserved.");
+  }
 } catch (err) {
   console.error("🔥 Failed to add member:", err);
 }
+
 
 
   populateMessages();
