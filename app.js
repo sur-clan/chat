@@ -631,35 +631,44 @@ document.getElementById("create-room").addEventListener("click", async () => {
   const roomName = prompt("Enter a name for the new room:");
   if (!roomName) return;
 
+ if (!currentUser?.id || !currentUser.name) {
+    alert("❌ Cannot create room — currentUser is not ready yet.");
+    console.error("🚫 currentUser is not set properly:", currentUser);
+    return;
+  }
+  
   const roomId = roomName.replace(/\s+/g, "_").toLowerCase(); // e.g., "My Room" → "my_room"
   const roomRef = doc(db, "rooms", roomId);
 
   const now = new Date().toISOString();
 
-  // Save the new room
-  await setDoc(roomRef, {
-    name: roomName,
-    createdBy: currentUser.name,
-    createdAt: now,
-    lastMessage: "Room created",
-    unread: false
-  });
+ try {
+    // Save the room document
+    await setDoc(roomRef, {
+      name: roomName,
+      createdBy: currentUser.name,
+      createdAt: now,
+      lastMessage: "Room created",
+      unread: false
+    });
 
 
-   // Add yourself to the new room
-  try {
-  await setDoc(doc(db, "rooms", roomId, "members", currentUser.id), {
-    name: currentUser.name,
-    role: "Administrator",
-    avatar: currentUser.avatar
-  });
-  console.log(`✅ Added ${currentUser.name} as Administrator in ${roomId}`);
-} catch (err) {
-  console.error("🔥 Failed to add admin to new room:", err);
-}
+    // Add self to members subcollection with Administrator role
+    const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
+    await setDoc(memberRef, {
+      name: currentUser.name,
+      role: "Administrator",
+      avatar: currentUser.avatar || null
+    });
+   
+    console.log(`✅ Room '${roomName}' created and ${currentUser.name} added as Administrator`);
 
-  
+ 
   populateRooms();
+  } catch (err) {
+    console.error("🔥 Error creating room or adding admin member:", err);
+    alert("Error creating room — see console.");
+  }
 });
 
 
