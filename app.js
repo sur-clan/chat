@@ -628,6 +628,13 @@ if (currentUser.role === "Administrator") {
   });
 
 document.getElementById("create-room").addEventListener("click", async () => {
+ if (!currentUser || !currentUser.id || !currentUser.name) {
+    alert("❌ Cannot create room — currentUser is not ready yet.");
+    console.error("currentUser object is incomplete:", currentUser);
+    return;
+  }
+
+  
   const roomName = prompt("Enter a name for the new room:");
   if (!roomName) return;
 
