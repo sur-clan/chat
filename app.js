@@ -71,33 +71,26 @@ if (!event.origin.endsWith("sur-clan.com")) return;
   const userRef = doc(db, "users", currentUser.id);
   await setDoc(userRef, userPayload, { merge: true });
 
-  // and add to default room
-  const roomId = "general"; // 👈 default room
+ const roomId = "general"; // 👈 default room
 
-  try {
-    const memberPayload = {
-      name: currentUser.name,
-      role: currentUser.role,
-    };
-    if (currentUser.avatar != null) {
-      memberPayload.avatar = currentUser.avatar;
-    }
-
-    const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
-    await setDoc(memberRef, memberPayload, { merge: true });
-
-    console.log("✅ Added user to default room:", roomId);
-
-    currentRoomName = roomId;
-    document.getElementById("room-name").textContent = currentRoomName;
-    showPage(chatRoomPage);
-    populateMessages();
-    populateMembers();
-
-  } catch (err) {
-    console.error("🔥 Failed to add user to default room:", err);
+try {
+  const memberPayload = {
+    name: currentUser.name,
+    role: currentUser.role,
+  };
+  if (currentUser.avatar != null) {
+    memberPayload.avatar = currentUser.avatar;
   }
-});
+
+  const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
+  await setDoc(memberRef, memberPayload, { merge: true });
+
+  console.log("✅ Added user to default room:", roomId);
+  // 👇 No auto-navigation — just ensure they're in the room list
+} catch (err) {
+  console.error("🔥 Failed to add user to default room:", err);
+}
+
 
 
 
