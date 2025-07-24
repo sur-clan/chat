@@ -647,11 +647,16 @@ document.getElementById("create-room").addEventListener("click", async () => {
 
 
    // Add yourself to the new room
+  try {
   await setDoc(doc(db, "rooms", roomId, "members", currentUser.id), {
     name: currentUser.name,
-    role: currentUser.role,
+    role: "Administrator",
     avatar: currentUser.avatar
   });
+  console.log(`✅ Added ${currentUser.name} as Administrator in ${roomId}`);
+} catch (err) {
+  console.error("🔥 Failed to add admin to new room:", err);
+}
 
   
   populateRooms();
