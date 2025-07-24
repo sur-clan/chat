@@ -71,32 +71,33 @@ if (!event.origin.endsWith("sur-clan.com")) return;
   const userRef = doc(db, "users", currentUser.id);
   await setDoc(userRef, userPayload, { merge: true });
 
- const roomId = "general"; // 👈 default room
+  // and add to default room
+  const roomId = "general"; // 👈 default room
 
-try {
-  const memberPayload = {
-    name: currentUser.name,
-    role: currentUser.role,
-  };
-  if (currentUser.avatar != null) {
-    memberPayload.avatar = currentUser.avatar;
+  try {
+    const memberPayload = {
+      name: currentUser.name,
+      role: currentUser.role,
+    };
+    if (currentUser.avatar != null) {
+      memberPayload.avatar = currentUser.avatar;
+    }
+
+    const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
+    await setDoc(memberRef, memberPayload, { merge: true });
+
+    console.log("✅ Added user to default room:", roomId);
+
+    currentRoomName = roomId;
+    document.getElementById("room-name").textContent = currentRoomName;
+    showPage(chatRoomPage);
+    populateMessages();
+    populateMembers();
+
+  } catch (err) {
+    console.error("🔥 Failed to add user to default room:", err);
   }
-
-  const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
-  await setDoc(memberRef, memberPayload, { merge: true });
-
-  console.log("✅ Added user to default room:", roomId);
-
-      populateRooms();
-    showPage(chatListPage);
-  // 👇 No auto-navigation — just ensure they're in the room list
-
-
-  
-} catch (err) {
-  console.error("🔥 Failed to add user to default room:", err);
-}
-
+});
 
 
 
@@ -158,26 +159,23 @@ if (!currentUser.id) {
 
 try {
   const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
-  const memberSnap = await getDoc(memberRef);
+const memberData = {
+  name: currentUser.name,
+  role: currentUser.role
+};
+if (currentUser.avatar) {
+  memberData.avatar = currentUser.avatar;
+}
+await setDoc(memberRef, memberData, { merge: true });
 
-  if (!memberSnap.exists()) {
-    const memberData = {
-      name: currentUser.name,
-      role: currentUser.role
-    };
-    if (currentUser.avatar) {
-      memberData.avatar = currentUser.avatar;
-    }
 
-    await setDoc(memberRef, memberData);
-    console.log("✅ Member added to:", currentRoomName);
-  } else {
-    console.log("👀 Member already exists — role preserved.");
-  }
+
+
+  
+  console.log("✅ Member added to:", currentRoomName);
 } catch (err) {
   console.error("🔥 Failed to add member:", err);
 }
-
 
 
   populateMessages();
@@ -630,67 +628,33 @@ if (currentUser.role === "Administrator") {
   });
 
 document.getElementById("create-room").addEventListener("click", async () => {
- if (!currentUser || !currentUser.id || !currentUser.name) {
-    alert("❌ Cannot create room — currentUser is not ready yet.");
-    console.error("currentUser object is incomplete:", currentUser);
-    return;
-  }
-
-  
   const roomName = prompt("Enter a name for the new room:");
   if (!roomName) return;
 
- if (!currentUser?.id || !currentUser.name) {
-    alert("❌ Cannot create room — currentUser is not ready yet.");
-    console.error("🚫 currentUser is not set properly:", currentUser);
-    return;
-  }
-  
   const roomId = roomName.replace(/\s+/g, "_").toLowerCase(); // e.g., "My Room" → "my_room"
   const roomRef = doc(db, "rooms", roomId);
 
   const now = new Date().toISOString();
 
- try {
-    // Save the room document
-    await setDoc(roomRef, {
-      name: roomName,
-      createdBy: currentUser.name,
-      createdAt: now,
-      lastMessage: "Room created",
-      unread: false
-    });
+  // Save the new room
+  await setDoc(roomRef, {
+    name: roomName,
+    createdBy: currentUser.name,
+    createdAt: now,
+    lastMessage: "Room created",
+    unread: false
+  });
 
-   
-// Add self to members subcollection with Administrator role
-console.log("📥 Creating admin member doc...");
 
-const adminData = {
-  name: currentUser.name,
-  role: "Administrator"
-};
+   // Add yourself to the new room
+  await setDoc(doc(db, "rooms", roomId, "members", currentUser.id), {
+    name: currentUser.name,
+    role: currentUser.role,
+    avatar: currentUser.avatar
+  });
 
-if (currentUser.avatar !== undefined) {
-  adminData.avatar = currentUser.avatar;
-}
-
-await setDoc(
-  doc(db, "rooms", roomId, "members", currentUser.id),
-  adminData
-);
-
-   currentUser.role = "Administrator";  // 🪄 You are now admin!
-
-console.log("✅ Admin member doc created.");
-
-    console.log(`✅ Room '${roomName}' created and ${currentUser.name} added as Administrator`);
-
- 
+  
   populateRooms();
-  } catch (err) {
-    console.error("🔥 Error creating room or adding admin member:", err);
-    alert("Error creating room — see console.");
-  }
 });
 
 
