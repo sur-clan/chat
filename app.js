@@ -659,17 +659,26 @@ document.getElementById("create-room").addEventListener("click", async () => {
       unread: false
     });
 
+   
+// Add self to members subcollection with Administrator role
+console.log("📥 Creating admin member doc...");
 
-    // Add self to members subcollection with Administrator role
-  console.log("📥 Creating admin member doc...");
-await setDoc(doc(db, "rooms", roomId, "members", currentUser.id), {
+const adminData = {
   name: currentUser.name,
-  role: "Administrator",
-  avatar: currentUser.avatar
-});
+  role: "Administrator"
+};
+
+if (currentUser.avatar !== undefined) {
+  adminData.avatar = currentUser.avatar;
+}
+
+await setDoc(
+  doc(db, "rooms", roomId, "members", currentUser.id),
+  adminData
+);
+
 console.log("✅ Admin member doc created.");
 
-   
     console.log(`✅ Room '${roomName}' created and ${currentUser.name} added as Administrator`);
 
  
