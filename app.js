@@ -49,19 +49,9 @@ if (!event.origin.endsWith("sur-clan.com")) return;
   
   console.log("✅ Got userData from Wix:", userData);
 
- // 👇 Fetch the user's saved role from Firestore
-const userRef = doc(db, "users", userData.id);
-const userSnap = await getDoc(userRef);
-
-let role = "Member"; // Default
-if (userSnap.exists()) {
-  const data = userSnap.data();
-  if (data.role) role = data.role;
-}
-
 currentUser = {
   name: userData.name,
-  role,
+  role: "Member",
   id: userData.id,
   avatar: userData.avatar
 };
