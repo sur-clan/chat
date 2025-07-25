@@ -44,9 +44,12 @@ let currentUser = {};
 window.addEventListener("message", async (event) => {
 if (!event.origin.endsWith("sur-clan.com")) return;
 
-  const userData = event.data;
-  if (!userData || !userData.id) return;
-  
+const userData = event.data;
+  if (!userData || !userData.id || !userData.name) {
+    console.error("❌ Invalid userData from Wix:", userData);
+    return;
+  }
+                        
   console.log("✅ Got userData from Wix:", userData);
 
 // 👇 Fetch the user's saved role from Firestore
@@ -58,6 +61,9 @@ if (userSnap.exists()) {
   const data = userSnap.data();
   if (data.role) role = data.role;
 }
+ 
+  
+  // ✅ Now safe to construct currentUser
 
 currentUser = {
   name: userData.name,
