@@ -45,10 +45,11 @@ window.addEventListener("message", async (event) => {
 if (!event.origin.endsWith("sur-clan.com")) return;
 
 const userData = event.data;
-  if (!userData || !userData.id || !userData.name) {
-    console.error("❌ Invalid userData from Wix:", userData);
-    return;
-  }
+if (!currentUser || !currentUser.id || !currentUser.name) {
+  alert("❌ currentUser not ready. See console.");
+  console.log("🧪 currentUser on failure:", currentUser);
+  return;
+}
                         
   console.log("✅ Got userData from Wix:", userData);
 
