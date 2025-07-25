@@ -89,10 +89,9 @@ if (!event.origin.endsWith("sur-clan.com")) return;
     console.log("✅ Added user to default room:", roomId);
 
     currentRoomName = roomId;
-    document.getElementById("room-name").textContent = currentRoomName;
-    showPage(chatRoomPage);
-    populateMessages();
-    populateMembers();
+    populateRooms(); // ✅ Load the list of rooms
+    showPage(chatListPage);
+  
 
   } catch (err) {
     console.error("🔥 Failed to add user to default room:", err);
