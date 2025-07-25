@@ -19,7 +19,6 @@ const db = getFirestore(app);
 
 
 document.addEventListener("DOMContentLoaded", () => {
-document.getElementById("create-room").disabled = true;
 
 
 
@@ -45,35 +44,18 @@ let currentUser = {};
 window.addEventListener("message", async (event) => {
 if (!event.origin.endsWith("sur-clan.com")) return;
 
-const userData = event.data;
-if (!currentUser || !currentUser.id || !currentUser.name) {
-  alert("❌ currentUser not ready. See console.");
-  console.log("🧪 currentUser on failure:", currentUser);
-  return;
-}
-                        
+  const userData = event.data;
+  if (!userData || !userData.id) return;
+  
   console.log("✅ Got userData from Wix:", userData);
 
-// 👇 Fetch the user's saved role from Firestore
-const userReadRef = doc(db, "users", userData.id);
-const userSnap = await getDoc(userReadRef);
+  currentUser = {
+    name: userData.name,
+    role: "Member",
+    id: userData.id,
+    avatar: userData.avatar
+  };
 
-let role = "Member"; // Default
-if (userSnap.exists()) {
-  const data = userSnap.data();
-  if (data.role) role = data.role;
-}
- 
-  
-  // ✅ Now safe to construct currentUser
-
-currentUser = {
-  name: userData.name,
-  role,
-  id: userData.id,
-  avatar: userData.avatar
-};
-  
   console.log("✅ Got userData from Wix:", currentUser);
 
   // prepare user data without undefined
@@ -109,9 +91,7 @@ currentUser = {
     currentRoomName = roomId;
     populateRooms(); // ✅ Load the list of rooms
     showPage(chatListPage);
-  document.getElementById("create-room").disabled = false;  // ✅ enable once ready
-console.log("✅ create-room button enabled");
-
+  
 
   } catch (err) {
     console.error("🔥 Failed to add user to default room:", err);
@@ -697,12 +677,7 @@ await setDoc(
 );
 
    currentUser.role = "Administrator";  // 🪄 You are now admin!
-await setDoc(
-  doc(db, "users", currentUser.id),
-  { role: "Administrator" },
-  { merge: true }
-);
-   
+
 console.log("✅ Admin member doc created.");
 
     console.log(`✅ Room '${roomName}' created and ${currentUser.name} added as Administrator`);
