@@ -49,12 +49,22 @@ if (!event.origin.endsWith("sur-clan.com")) return;
   
   console.log("✅ Got userData from Wix:", userData);
 
-  currentUser = {
-    name: userData.name,
-    role: "Member",
-    id: userData.id,
-    avatar: userData.avatar
-  };
+ // 👇 Fetch the user's saved role from Firestore
+const userRef = doc(db, "users", userData.id);
+const userSnap = await getDoc(userRef);
+
+let role = "Member"; // Default
+if (userSnap.exists()) {
+  const data = userSnap.data();
+  if (data.role) role = data.role;
+}
+
+currentUser = {
+  name: userData.name,
+  role,
+  id: userData.id,
+  avatar: userData.avatar
+};
 
   console.log("✅ Got userData from Wix:", currentUser);
 
