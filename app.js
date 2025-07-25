@@ -19,6 +19,7 @@ const db = getFirestore(app);
 
 
 document.addEventListener("DOMContentLoaded", () => {
+document.getElementById("create-room").disabled = true;
 
 
 
@@ -108,7 +109,9 @@ currentUser = {
     currentRoomName = roomId;
     populateRooms(); // ✅ Load the list of rooms
     showPage(chatListPage);
-  
+  document.getElementById("create-room").disabled = false;  // ✅ enable once ready
+console.log("✅ create-room button enabled");
+
 
   } catch (err) {
     console.error("🔥 Failed to add user to default room:", err);
