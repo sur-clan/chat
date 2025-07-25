@@ -15,7 +15,56 @@ import {
 const app = initializeApp(window.firebaseConfig);
 const db = getFirestore(app);
 
+async function translateWithDetection(text, targetLang = "en") {
+  const apiKey = "AIzaSyAhzQjyx7jNIlIuqFl2dMKuEZVh4VxNXyU";  // 🔁 Replace this with your real key
+  const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
 
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        q: text,
+        target: targetLang,
+        format: "text"
+      })
+    });
+
+    const data = await res.json();
+    const translation = data.data.translations[0];
+    return {
+      translated: translation.translatedText,
+      detectedSourceLanguage: translation.detectedSourceLanguage
+    };
+  } catch (err) {
+    console.error("❌ Translate error:", err);
+    return {
+      translated: "[Translation failed]",
+      detectedSourceLanguage: "unknown"
+    };
+  }
+}
+
+function languageNameFromCode(code) {
+  const names = {
+    af: "Afrikaans", ar: "Arabic", az: "Azerbaijani", be: "Belarusian",
+    bg: "Bulgarian", bn: "Bengali", ca: "Catalan", cs: "Czech",
+    da: "Danish", de: "German", el: "Greek", en: "English",
+    es: "Spanish", et: "Estonian", fa: "Persian", fi: "Finnish",
+    fr: "French", gu: "Gujarati", he: "Hebrew", hi: "Hindi",
+    hr: "Croatian", hu: "Hungarian", id: "Indonesian", it: "Italian",
+    ja: "Japanese", ka: "Georgian", ko: "Korean", lt: "Lithuanian",
+    lv: "Latvian", ml: "Malayalam", mr: "Marathi", ms: "Malay",
+    nl: "Dutch", no: "Norwegian", pa: "Punjabi", pl: "Polish",
+    pt: "Portuguese", ro: "Romanian", ru: "Russian", sk: "Slovak",
+    sl: "Slovenian", sr: "Serbian", sv: "Swedish", ta: "Tamil",
+    te: "Telugu", th: "Thai", tr: "Turkish", uk: "Ukrainian",
+    ur: "Urdu", vi: "Vietnamese", zh: "Chinese"
+  };
+  return names[code] || code;
+}
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -258,9 +307,30 @@ msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading message
 
       const translateBtn = document.createElement("button");
       translateBtn.textContent = "🌐";
-      translateBtn.addEventListener("click", () => {
-        alert("Translate message");
-      });
+      
+   translateBtn.addEventListener("click", async () => {
+  const messageBody = wrapper.querySelector(".message-body");
+
+  // Toggle: if already translated, revert to original
+  if (messageBody.dataset.originalText) {
+    messageBody.innerHTML = messageBody.dataset.originalText;
+    delete messageBody.dataset.originalText;
+    return;
+  }
+
+  // Save original HTML before translation
+  messageBody.dataset.originalText = messageBody.innerHTML;
+
+  const result = await translateWithDetection(msg.text, "en"); // translate to English
+
+  messageBody.innerHTML = `
+    ${result.translated}
+    <div style="color: #bbb; font-size: 0.8rem; font-style: italic; margin-top: 4px;">
+      original: ${languageNameFromCode(result.detectedSourceLanguage)}
+    </div>
+  `;
+});
+
 
       actions.appendChild(translateBtn);
       wrapper.appendChild(actions);
