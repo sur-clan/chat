@@ -49,13 +49,23 @@ if (!event.origin.endsWith("sur-clan.com")) return;
   
   console.log("✅ Got userData from Wix:", userData);
 
+// 👇 Fetch the user's saved role from Firestore
+const userRef = doc(db, "users", userData.id);
+const userSnap = await getDoc(userRef);
+
+let role = "Member"; // Default
+if (userSnap.exists()) {
+  const data = userSnap.data();
+  if (data.role) role = data.role;
+}
+
 currentUser = {
   name: userData.name,
-  role: "Member",
+  role,
   id: userData.id,
   avatar: userData.avatar
 };
-
+  
   console.log("✅ Got userData from Wix:", currentUser);
 
   // prepare user data without undefined
@@ -677,7 +687,11 @@ await setDoc(
 );
 
    currentUser.role = "Administrator";  // 🪄 You are now admin!
-
+await setDoc(
+  doc(db, "users", currentUser.id),
+  { role: "Administrator" },
+  { merge: true }
+);
 console.log("✅ Admin member doc created.");
 
     console.log(`✅ Room '${roomName}' created and ${currentUser.name} added as Administrator`);
