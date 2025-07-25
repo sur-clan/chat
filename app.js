@@ -16,7 +16,7 @@ const app = initializeApp(window.firebaseConfig);
 const db = getFirestore(app);
 
 async function translateWithDetection(text, targetLang = "en") {
-  const apiKey = "AIzaSyAhzQjyx7jNIlIuqFl2dMKuEZVh4VxNXyU";  // 🔁 Replace this with your real key
+  const apiKey = "INSERTKEY";  // 🔁 Replace this with your real key
   const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
 
   try {
