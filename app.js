@@ -581,14 +581,29 @@ function updateMemberCount(count) {
 
 
  // Format message for modal (styled like chat)
- textElem.innerHTML = `
-  <div class="message-scroll ${msg.senderName === currentUser.name ? "my-message" : "other-message"}">
-    <div class="message-content">
-      <div class="message-header">${msg.senderName}</div>
-      <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
+if (msg.hidden) {
+  // 🔒 If message is hidden in Firestore → show hidden notice
+  textElem.innerHTML = `
+    <div class="message-scroll other-message">
+      <div class="message-content">
+        <div style="font-style: italic; color: gray;">
+          This message has been hidden by admin.
+        </div>
+      </div>
     </div>
-  </div>
-`;
+  `;
+} else {
+  // ✅ Normal display
+  textElem.innerHTML = `
+    <div class="message-scroll ${msg.senderName === currentUser.name ? "my-message" : "other-message"}">
+      <div class="message-content">
+        <div class="message-header">${msg.senderName}</div>
+        <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
+      </div>
+    </div>
+  `;
+}
+
 
 
     modal.classList.remove("hidden");
@@ -602,14 +617,21 @@ replyBtn.onclick = () => {
     modal.classList.add("hidden");
   };
 
-  copyBtn.onclick = () => {
-const ts = msg.timestamp?.toDate ? msg.timestamp.toDate() : new Date();
-const formatted = `${ts.toLocaleDateString()} ${ts.toLocaleTimeString()} ${msg.senderName}:\n${msg.text}`;
-    navigator.clipboard.writeText(formatted)
-      .then(() => alert("✅ Message copied!"))
-      .catch(err => alert("❌ Failed to copy: " + err));
+copyBtn.onclick = () => {
+  if (msg.hidden) {
+    alert("⚠️ This message is hidden and cannot be copied.");
     modal.classList.add("hidden");
-  };
+    return;
+  }
+
+  const ts = msg.timestamp?.toDate ? msg.timestamp.toDate() : new Date();
+  const formatted = `${ts.toLocaleDateString()} ${ts.toLocaleTimeString()} ${msg.senderName}:\n${msg.text}`;
+  navigator.clipboard.writeText(formatted)
+    .then(() => alert("✅ Message copied!"))
+    .catch(err => alert("❌ Failed to copy: " + err));
+  modal.classList.add("hidden");
+};
+
 
 
  closeBtn.onclick = () => {
