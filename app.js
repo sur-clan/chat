@@ -570,14 +570,15 @@ function updateMemberCount(count) {
 
 
  // Format message for modal (styled like chat)
-  textElem.innerHTML = `
-    <div class="message-scroll ${msg.user === currentUser.name ? "my-message" : "other-message"}">
-      <div class="message-content">
-        <div class="message-header">${msg.user}</div>
-        <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
-      </div>
+ textElem.innerHTML = `
+  <div class="message-scroll ${msg.senderName === currentUser.name ? "my-message" : "other-message"}">
+    <div class="message-content">
+      <div class="message-header">${msg.senderName}</div>
+      <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
     </div>
-  `;
+  </div>
+`;
+
 
     modal.classList.remove("hidden");
 
@@ -591,7 +592,8 @@ replyBtn.onclick = () => {
   };
 
   copyBtn.onclick = () => {
-    const formatted = `${msg.date} ${msg.time} ${msg.user}:\n${msg.text}`;
+const ts = msg.timestamp?.toDate ? msg.timestamp.toDate() : new Date();
+const formatted = `${ts.toLocaleDateString()} ${ts.toLocaleTimeString()} ${msg.senderName}:\n${msg.text}`;
     navigator.clipboard.writeText(formatted)
       .then(() => alert("✅ Message copied!"))
       .catch(err => alert("❌ Failed to copy: " + err));
