@@ -610,135 +610,114 @@ function updateMemberCount(count) {
 
 
 async function showModal(msg, wrapper) {
+  // ✅ 1. Double-check your role before opening the modal
   try {
-    // ✅ Double-check your role before opening modal
     const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
     const memberSnap = await getDoc(memberRef);
     if (memberSnap.exists()) {
       const data = memberSnap.data();
       if (data.role) {
-        currentUser.role = data.role;
+        currentUser.role = data.role;  // 🔄 Always refresh local role from Firestore
       }
     }
   } catch (err) {
     console.error("⚠️ Could not refresh role before showing modal:", err);
-    // continue anyway — modal will still open
+    // ⚠️ We won’t stop the modal from opening if the role check fails
   }
 
-    
-    const modal = document.getElementById("message-modal");
-    const textElem = document.getElementById("modal-message-text");
-    const replyBtn = document.getElementById("modal-reply");
-    const copyBtn = document.getElementById("modal-copy");
-    const closeBtn = document.getElementById("modal-close");
+  // ✅ 2. Get modal elements
+  const modal = document.getElementById("message-modal");
+  const textElem = document.getElementById("modal-message-text");
+  const replyBtn = document.getElementById("modal-reply");
+  const copyBtn = document.getElementById("modal-copy");
+  const closeBtn = document.getElementById("modal-close");
 
-
- // Save original message HTML if not already saved
-  if (!wrapper.dataset.originalHtml) {
-    wrapper.dataset.originalHtml = wrapper.innerHTML;
-  }
-
-
- // Format message for modal (styled like chat)
-if (msg.hidden) {
-  textElem.innerHTML = `
-    <div class="message-scroll ${msg.senderName === currentUser.name ? "my-message" : "other-message"}">
-      <div class="message-content">
-        <div class="message-header">${msg.senderName}</div>
-        <div class="message-body" style="font-style: italic; color: gray;">
-          This message has been hidden by admin.
+  // ✅ 3. Build modal content
+  if (msg.hidden) {
+    textElem.innerHTML = `
+      <div class="message-scroll ${msg.senderName === currentUser.name ? "my-message" : "other-message"}">
+        <div class="message-content">
+          <div class="message-header">${msg.senderName}</div>
+          <div class="message-body" style="font-style: italic; color: gray;">
+            This message has been hidden by admin.
+          </div>
         </div>
       </div>
-    </div>
-  `;
-} else {
-  textElem.innerHTML = `
-    <div class="message-scroll ${msg.senderName === currentUser.name ? "my-message" : "other-message"}">
-      <div class="message-content">
-        <div class="message-header">${msg.senderName}</div>
-        <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
+    `;
+  } else {
+    textElem.innerHTML = `
+      <div class="message-scroll ${msg.senderName === currentUser.name ? "my-message" : "other-message"}">
+        <div class="message-content">
+          <div class="message-header">${msg.senderName}</div>
+          <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
+        </div>
       </div>
-    </div>
-  `;
-}
+    `;
+  }
 
+  // ✅ 4. Show modal
+  modal.classList.remove("hidden");
 
-
-
-    modal.classList.remove("hidden");
-
-replyBtn.style.display = "inline-block";
+  // ✅ 5. Show reply/copy/close buttons
+  replyBtn.style.display = "inline-block";
   copyBtn.style.display = "inline-block";
   closeBtn.style.display = "inline-block";
 
-replyBtn.onclick = () => {
-  // ✅ Always reply to the sender’s name, even if the text is hidden
-  document.getElementById("message-input").value = `${msg.senderName}, `;
-  modal.classList.add("hidden");
-};
-
-
-
-
-copyBtn.onclick = () => {
-  if (msg.hidden) {
-    alert("⚠️ This message is hidden and cannot be copied.");
-    modal.classList.add("hidden");
-    return;
-  }
-
-  const ts = msg.timestamp?.toDate ? msg.timestamp.toDate() : new Date();
-  const formatted = `${ts.toLocaleDateString()} ${ts.toLocaleTimeString()} ${msg.senderName}:\n${msg.text}`;
-  navigator.clipboard.writeText(formatted)
-    .then(() => alert("✅ Message copied!"))
-    .catch(err => alert("❌ Failed to copy: " + err));
-  modal.classList.add("hidden");
-};
-
-
-
- closeBtn.onclick = () => {
+  // ✅ Reply to the sender (always replies to the name, even if hidden)
+  replyBtn.onclick = () => {
+    document.getElementById("message-input").value = `${msg.senderName}, `;
     modal.classList.add("hidden");
   };
 
+  // ✅ Copy the message (blocked if hidden)
+  copyBtn.onclick = () => {
+    if (msg.hidden) {
+      alert("⚠️ This message is hidden and cannot be copied.");
+      modal.classList.add("hidden");
+      return;
+    }
 
-// Remove any previous extra hide button
-const oldHideBtn = document.getElementById("modal-hide");
-if (oldHideBtn) oldHideBtn.remove();
+    const ts = msg.timestamp?.toDate ? msg.timestamp.toDate() : new Date();
+    const formatted = `${ts.toLocaleDateString()} ${ts.toLocaleTimeString()} ${msg.senderName}:\n${msg.text}`;
+    navigator.clipboard.writeText(formatted)
+      .then(() => alert("✅ Message copied!"))
+      .catch(err => alert("❌ Failed to copy: " + err));
+    modal.classList.add("hidden");
+  };
 
-if (currentUser.role === "Administrator") {
-  const hideBtn = document.createElement("button");
-  hideBtn.id = "modal-hide";
-  hideBtn.style.marginLeft = "8px";
+  // ✅ Close modal
+  closeBtn.onclick = () => {
+    modal.classList.add("hidden");
+  };
 
-  const contentDiv = wrapper.querySelector(".message-content");
+  // ✅ 6. Remove any previous Hide/Unhide button
+  const oldHideBtn = document.getElementById("modal-hide");
+  if (oldHideBtn) oldHideBtn.remove();
 
-  // Check if already hidden
-  if (contentDiv.dataset.original) {
-    hideBtn.textContent = "Unhide";
-  } else {
-    hideBtn.textContent = "Hide";
+  // ✅ 7. Add Hide/Unhide button ONLY if user is an Administrator
+  if (currentUser.role === "Administrator") {
+    const hideBtn = document.createElement("button");
+    hideBtn.id = "modal-hide";
+    hideBtn.style.marginLeft = "8px";
+    hideBtn.textContent = msg.hidden ? "Unhide" : "Hide";  // ✅ dynamic label
+
+    closeBtn.parentElement.insertBefore(hideBtn, closeBtn);
+
+    // ✅ Hide/unhide toggle logic
+    hideBtn.onclick = async () => {
+      const msgRef = doc(db, "rooms", currentRoomName, "messages", wrapper.dataset.messageId);
+
+      if (!msg.hidden) {
+        await updateDoc(msgRef, { hidden: true });
+      } else {
+        await updateDoc(msgRef, { hidden: false });
+      }
+
+      modal.classList.add("hidden");
+    };
   }
-
-  closeBtn.parentElement.insertBefore(hideBtn, closeBtn);
-
-  hideBtn.onclick = async () => {
-  const msgRef = doc(db, "rooms", currentRoomName, "messages", wrapper.dataset.messageId);
-
-  // If message is currently not hidden in Firestore → hide it
-  if (!msg.hidden) {
-    await updateDoc(msgRef, { hidden: true });
-  } 
-  // Otherwise, if it's already hidden → unhide it
-  else {
-    await updateDoc(msgRef, { hidden: false });
-  }
-
-  // Close the modal after updating
-  modal.classList.add("hidden");
-};
-
 }
+
 
 
 
