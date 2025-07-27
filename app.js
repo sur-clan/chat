@@ -244,7 +244,7 @@ try {
       
 
 
-  populateMessages();
+  safePopulateMessages();
 });
 
 
@@ -265,7 +265,10 @@ function populateMessages() {
     console.error("❌ currentRoomName is not set yet");
     return;
   }
-
+ if (!currentUser.role) {
+    console.warn("⚠️ populateMessages() called before role was set – stopping");
+    return;
+  }
   
   const msgsDiv = document.getElementById("messages");
 
@@ -381,6 +384,25 @@ msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading message
     });
   }
 
+
+async function safePopulateMessages(retries = 10) {
+   if (!currentUser.role) {
+     if (retries <= 0) {
+       console.error("❌ Role not loaded after multiple attempts.");
+       return;
+     }
+     console.log("⏳ Waiting for role to load...");
+     await new Promise(resolve => setTimeout(resolve, 300)); 
+     return safePopulateMessages(retries - 1);
+   }
+   populateMessages();
+}
+
+
+
+
+
+  
 
  async function populateMembers() {
   const membersUl = document.getElementById("members");
