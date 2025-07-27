@@ -208,23 +208,40 @@ if (!currentUser.id) {
 
 try {
   const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
-const memberData = {
-  name: currentUser.name,
-  role: currentUser.role
-};
-if (currentUser.avatar) {
-  memberData.avatar = currentUser.avatar;
-}
-await setDoc(memberRef, memberData, { merge: true });
+  const existingMemberSnap = await getDoc(memberRef);
 
+  if (existingMemberSnap.exists()) {
+    // ✅ Member already exists – don’t overwrite role
+    const existingData = existingMemberSnap.data();
 
+    // 🔄 Sync local role with Firestore role
+    if (existingData.role) {
+      currentUser.role = existingData.role;
+    }
 
+    // ✅ Only update name/avatar (never touch role again)
+    await setDoc(memberRef, {
+      name: currentUser.name,
+      avatar: currentUser.avatar || null
+    }, { merge: true });
 
-  
+  } else {
+    // 🚀 First time joining – set the role
+    const memberData = {
+      name: currentUser.name,
+      role: currentUser.role,
+      avatar: currentUser.avatar || null
+    };
+    await setDoc(memberRef, memberData);
+  }
+
   console.log("✅ Member added to:", currentRoomName);
 } catch (err) {
   console.error("🔥 Failed to add member:", err);
 }
+
+
+      
 
 
   populateMessages();
