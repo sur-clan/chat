@@ -609,7 +609,18 @@ function updateMemberCount(count) {
 
 
 
-  function showModal(msg, wrapper) {
+async function showModal(msg, wrapper) {
+  // ✅ Double-check your role from Firestore every time you tap a message
+  const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
+  const memberSnap = await getDoc(memberRef);
+  if (memberSnap.exists()) {
+    const data = memberSnap.data();
+    if (data.role) {
+      currentUser.role = data.role;
+    }
+  }
+
+    
     const modal = document.getElementById("message-modal");
     const textElem = document.getElementById("modal-message-text");
     const replyBtn = document.getElementById("modal-reply");
