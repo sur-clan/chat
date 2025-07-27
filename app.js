@@ -617,9 +617,11 @@ replyBtn.style.display = "inline-block";
   closeBtn.style.display = "inline-block";
 
 replyBtn.onclick = () => {
-    document.getElementById("message-input").value = `${msg.user}, `;
-    modal.classList.add("hidden");
+  // ✅ Always reply to the sender’s name, even if the text is hidden
+  document.getElementById("message-input").value = `${msg.senderName}, `;
+  modal.classList.add("hidden");
 };
+
 
 
 
