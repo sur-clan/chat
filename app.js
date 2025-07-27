@@ -610,14 +610,19 @@ function updateMemberCount(count) {
 
 
 async function showModal(msg, wrapper) {
-  // ✅ Double-check your role from Firestore every time you tap a message
-  const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
-  const memberSnap = await getDoc(memberRef);
-  if (memberSnap.exists()) {
-    const data = memberSnap.data();
-    if (data.role) {
-      currentUser.role = data.role;
+  try {
+    // ✅ Double-check your role before opening modal
+    const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
+    const memberSnap = await getDoc(memberRef);
+    if (memberSnap.exists()) {
+      const data = memberSnap.data();
+      if (data.role) {
+        currentUser.role = data.role;
+      }
     }
+  } catch (err) {
+    console.error("⚠️ Could not refresh role before showing modal:", err);
+    // continue anyway — modal will still open
   }
 
     
