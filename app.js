@@ -5,6 +5,7 @@ import {
   addDoc, 
   getDocs,
   setDoc,
+  updateDoc,
   doc,
   serverTimestamp,
   query,
@@ -283,15 +284,25 @@ msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading message
       
     const wrapper = document.createElement("div");
     wrapper.className = "message-scroll";
+    wrapper.dataset.messageId = doc.id;  // ✅ so we know which Firestore doc to update
     wrapper.classList.add(msg.senderName === currentUser.name ? "my-message" : "other-message");
 
       const content = document.createElement("div");
       content.className = "message-content";
-    content.innerHTML = `
-      <div class="message-header">${msg.senderName}</div>
-      <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
-      <div class="message-time">${msg.timestamp?.toDate().toLocaleTimeString() || ''}</div>
-    `;
+    
+      if (msg.hidden) {
+  content.innerHTML = `
+    <div style="font-style: italic; color: gray;">
+      This message has been hidden by admin.
+    </div>`;
+} else {
+  content.innerHTML = `
+    <div class="message-header">${msg.senderName}</div>
+    <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
+    <div class="message-time">${msg.timestamp?.toDate().toLocaleTimeString() || ''}</div>
+  `;
+}
+
 
     
       content.addEventListener("click", () => {
@@ -626,29 +637,22 @@ if (currentUser.role === "Administrator") {
 
   closeBtn.parentElement.insertBefore(hideBtn, closeBtn);
 
-  hideBtn.onclick = () => {
-    if (!contentDiv.dataset.original) {
-      // Save original and hide
-      contentDiv.dataset.original = contentDiv.innerHTML;
-      contentDiv.innerHTML = `
-        <div style="font-style: italic; color: gray;">
-          This message has been hidden by admin.
-          <button id="unhide-btn">Unhide</button>
-        </div>`;
+  hideBtn.onclick = async () => {
+  const msgRef = doc(db, "rooms", currentRoomName, "messages", wrapper.dataset.messageId);
 
-      contentDiv.querySelector("#unhide-btn").onclick = (e) => {
-        e.stopPropagation(); // prevent triggering modal on click
-        contentDiv.innerHTML = contentDiv.dataset.original;
-        delete contentDiv.dataset.original;
-      };
-    } else {
-      // Already hidden → unhide
-      contentDiv.innerHTML = contentDiv.dataset.original;
-      delete contentDiv.dataset.original;
-    }
+  // If message is currently not hidden in Firestore → hide it
+  if (!msg.hidden) {
+    await updateDoc(msgRef, { hidden: true });
+  } 
+  // Otherwise, if it's already hidden → unhide it
+  else {
+    await updateDoc(msgRef, { hidden: false });
+  }
 
-    modal.classList.add("hidden");
-  };
+  // Close the modal after updating
+  modal.classList.add("hidden");
+};
+
 }
 
 
