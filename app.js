@@ -290,11 +290,14 @@ msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading message
       const content = document.createElement("div");
       content.className = "message-content";
     
-      if (msg.hidden) {
+     if (msg.hidden) {
   content.innerHTML = `
-    <div style="font-style: italic; color: gray;">
+    <div class="message-header">${msg.senderName}</div>
+    <div class="message-body" style="font-style: italic; color: gray;">
       This message has been hidden by admin.
-    </div>`;
+    </div>
+    <div class="message-time">${msg.timestamp?.toDate().toLocaleTimeString() || ''}</div>
+  `;
 } else {
   content.innerHTML = `
     <div class="message-header">${msg.senderName}</div>
@@ -302,6 +305,7 @@ msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading message
     <div class="message-time">${msg.timestamp?.toDate().toLocaleTimeString() || ''}</div>
   `;
 }
+
 
 
     
@@ -582,18 +586,17 @@ function updateMemberCount(count) {
 
  // Format message for modal (styled like chat)
 if (msg.hidden) {
-  // 🔒 If message is hidden in Firestore → show hidden notice
   textElem.innerHTML = `
-    <div class="message-scroll other-message">
+    <div class="message-scroll ${msg.senderName === currentUser.name ? "my-message" : "other-message"}">
       <div class="message-content">
-        <div style="font-style: italic; color: gray;">
+        <div class="message-header">${msg.senderName}</div>
+        <div class="message-body" style="font-style: italic; color: gray;">
           This message has been hidden by admin.
         </div>
       </div>
     </div>
   `;
 } else {
-  // ✅ Normal display
   textElem.innerHTML = `
     <div class="message-scroll ${msg.senderName === currentUser.name ? "my-message" : "other-message"}">
       <div class="message-content">
@@ -606,6 +609,7 @@ if (msg.hidden) {
 
 
 
+
     modal.classList.remove("hidden");
 
 replyBtn.style.display = "inline-block";
@@ -613,15 +617,10 @@ replyBtn.style.display = "inline-block";
   closeBtn.style.display = "inline-block";
 
 replyBtn.onclick = () => {
-  if (msg.hidden) {
-    alert("⚠️ You can’t reply to a hidden message.");
+    document.getElementById("message-input").value = `${msg.user}, `;
     modal.classList.add("hidden");
-    return;
-  }
-
-  document.getElementById("message-input").value = `${msg.senderName}, `;
-  modal.classList.add("hidden");
 };
+
 
 
 copyBtn.onclick = () => {
