@@ -724,7 +724,7 @@ async function showModal(msg, wrapper) {
    
 
  
-  }
+  
 
 
 
