@@ -613,9 +613,16 @@ replyBtn.style.display = "inline-block";
   closeBtn.style.display = "inline-block";
 
 replyBtn.onclick = () => {
-    document.getElementById("message-input").value = `${msg.user}, `;
+  if (msg.hidden) {
+    alert("⚠️ You can’t reply to a hidden message.");
     modal.classList.add("hidden");
-  };
+    return;
+  }
+
+  document.getElementById("message-input").value = `${msg.senderName}, `;
+  modal.classList.add("hidden");
+};
+
 
 copyBtn.onclick = () => {
   if (msg.hidden) {
