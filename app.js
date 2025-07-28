@@ -173,10 +173,13 @@ const sendMessage = async (text) => {
 
     async function populateRooms() {
     const roomsUl = document.getElementById("rooms");
-    roomsUl.innerHTML = "";
+roomsUl.innerHTML = `<li style="text-align:center; color:gold;">Loading rooms…</li>`;
 
+ try {
     const querySnapshot = await getDocs(collection(db, "rooms"));
 
+    // ✅ Build the list off-DOM first
+    const frag = document.createDocumentFragment();
       
   querySnapshot.forEach((roomDoc) => {  // ✅ renamed from (doc) to (roomDoc)
     const room = roomDoc.data();
@@ -255,9 +258,20 @@ try {
         icon.innerHTML = "✉";
         li.appendChild(icon);
       }
-      roomsUl.appendChild(li);
+
+    
+      frag.appendChild(li);
     });
+
+    // ✅ Replace the “Loading…” with final list ONCE
+    roomsUl.innerHTML = "";
+    roomsUl.appendChild(frag);
+
+  } catch (err) {
+    console.error("🔥 Failed to load rooms:", err);
+    roomsUl.innerHTML = `<li style="color:red;">Error loading rooms</li>`;
   }
+}
 
 let unsubscribeMessages = null;
 
