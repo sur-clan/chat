@@ -628,10 +628,12 @@ if (data.role) {
     // ⚠️ We won’t stop the modal from opening if the role check fails
   }
 
+    console.log("👑 Role check:", freshRole); // 🔍 DEBUGGING LINE
+
   // ✅ STEP 2: Build modal only after role is confirmed
 const modal = document.getElementById("message-modal");
 modal.classList.remove("hidden");
-document.getElementById("modal-message-text").innerHTML = "<i>Checking permissions...</i>";
+  
   const textElem = document.getElementById("modal-message-text");
   const replyBtn = document.getElementById("modal-reply");
   const copyBtn = document.getElementById("modal-copy");
@@ -699,6 +701,8 @@ document.getElementById("modal-message-text").innerHTML = "<i>Checking permissio
 
  // ✅ STEP 3: Only add Hide/Unhide button if freshRole is admin
   if (freshRole === "Administrator") {
+        console.log("✅ Adding Hide/Unhide button for admin");
+
     const hideBtn = document.createElement("button");
     hideBtn.id = "modal-hide";
     hideBtn.style.marginLeft = "8px";
@@ -718,6 +722,10 @@ document.getElementById("modal-message-text").innerHTML = "<i>Checking permissio
 
       modal.classList.add("hidden");
     };
+
+ } else {
+    console.log("❌ User is NOT admin – no Hide/Unhide button");
+    
   }
 }
 
