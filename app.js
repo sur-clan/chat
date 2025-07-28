@@ -610,14 +610,17 @@ function updateMemberCount(count) {
 
 
 async function showModal(msg, wrapper) {
-  // ✅ 1. Double-check your role before opening the modal
+  // ✅ STEP 1: Confirm the user's role from Firestore first
+  let freshRole = currentUser.role;
+
   try {
     const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
     const memberSnap = await getDoc(memberRef);
     if (memberSnap.exists()) {
       const data = memberSnap.data();
-      if (data.role) {
-        currentUser.role = data.role;  // 🔄 Always refresh local role from Firestore
+if (data.role) {
+        freshRole = data.role;
+        currentUser.role = data.role;  // 🔄 update locally too
       }
     }
   } catch (err) {
@@ -625,8 +628,10 @@ async function showModal(msg, wrapper) {
     // ⚠️ We won’t stop the modal from opening if the role check fails
   }
 
-  // ✅ 2. Get modal elements
-  const modal = document.getElementById("message-modal");
+  // ✅ STEP 2: Build modal only after role is confirmed
+const modal = document.getElementById("message-modal");
+modal.classList.remove("hidden");
+document.getElementById("modal-message-text").innerHTML = "<i>Checking permissions...</i>";
   const textElem = document.getElementById("modal-message-text");
   const replyBtn = document.getElementById("modal-reply");
   const copyBtn = document.getElementById("modal-copy");
@@ -655,8 +660,6 @@ async function showModal(msg, wrapper) {
     `;
   }
 
-  // ✅ 4. Show modal
-  modal.classList.remove("hidden");
 
   // ✅ 5. Show reply/copy/close buttons
   replyBtn.style.display = "inline-block";
@@ -694,8 +697,8 @@ async function showModal(msg, wrapper) {
   const oldHideBtn = document.getElementById("modal-hide");
   if (oldHideBtn) oldHideBtn.remove();
 
-  // ✅ 7. Add Hide/Unhide button ONLY if user is an Administrator
-  if (currentUser.role === "Administrator") {
+ // ✅ STEP 3: Only add Hide/Unhide button if freshRole is admin
+  if (freshRole === "Administrator") {
     const hideBtn = document.createElement("button");
     hideBtn.id = "modal-hide";
     hideBtn.style.marginLeft = "8px";
