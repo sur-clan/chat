@@ -173,7 +173,11 @@ const sendMessage = async (text) => {
 
     async function populateRooms() {
     const roomsUl = document.getElementById("rooms");
-roomsUl.innerHTML = `<li style="text-align:center; color:gold;">Loading rooms…</li>`;
+
+    // ✅ Only show "Loading rooms…" if nothing is already there
+    if (!roomsUl.hasChildNodes() || roomsUl.innerHTML.trim() === "") {
+        roomsUl.innerHTML = `<li style="text-align:center; color:gold;">Loading rooms…</li>`;
+    }
 
  try {
     const querySnapshot = await getDocs(collection(db, "rooms"));
