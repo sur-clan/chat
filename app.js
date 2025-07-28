@@ -329,9 +329,9 @@ msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading message
 
 
     
-      content.addEventListener("click", () => {
-        showModal(msg, wrapper);
-      });
+content.addEventListener("click", async () => {
+  await showModal(msg, wrapper);
+});
 
       wrapper.appendChild(content);
 
