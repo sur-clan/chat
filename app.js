@@ -1029,25 +1029,9 @@ document.getElementById("send-message").addEventListener("click", async () => {
     }
   });
 
-document.getElementById("paste-message").addEventListener("click", async () => {
-  try {
-    // Try modern clipboard API first (works in most desktop browsers)
-    if (navigator.clipboard && window.isSecureContext) {
-      const text = await navigator.clipboard.readText();
-      document.getElementById("message-input").value = text;
-      return;
-    }
-  } catch (err) {
-    // If modern API fails, show helpful instructions
-    console.log("Clipboard API not available or blocked");
-  }
-  
-  // Fallback: Give clear instructions for manual paste
-  alert("📋 Please paste using Ctrl+V (or Cmd+V on Mac) in the text box");
-  
-  // Auto-focus the text input so they can paste immediately
-  document.getElementById("message-input").focus();
-});
+document.getElementById("paste-message").addEventListener("click", () => {
+    alert("Please paste manually using Ctrl+V (or Cmd+V on Mac)");
+  });
 
   document.getElementById("leave-chat").addEventListener("click", () => {
     if (!currentRoomName) return;
