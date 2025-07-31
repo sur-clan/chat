@@ -794,20 +794,56 @@ modal.classList.remove("hidden");
   };
 
   // ✅ Copy the message (blocked if hidden)
-  copyBtn.onclick = () => {
-    if (msg.hidden) {
-      alert("⚠️ This message is hidden and cannot be copied.");
-      modal.classList.add("hidden");
-      return;
-    }
-
-    const ts = msg.timestamp?.toDate ? msg.timestamp.toDate() : new Date();
-    const formatted = `${ts.toLocaleDateString()} ${ts.toLocaleTimeString()} ${msg.senderName}:\n${msg.text}`;
-    navigator.clipboard.writeText(formatted)
-      .then(() => alert("✅ Message copied!"))
-      .catch(err => alert("❌ Failed to copy: " + err));
+// Replace the copyBtn.onclick in your showModal function with this:
+copyBtn.onclick = () => {
+  if (msg.hidden) {
+    alert("⚠️ This message is hidden and cannot be copied.");
     modal.classList.add("hidden");
-  };
+    return;
+  }
+
+  const ts = msg.timestamp?.toDate ? msg.timestamp.toDate() : new Date();
+  const formatted = `${ts.toLocaleDateString()} ${ts.toLocaleTimeString()} ${msg.senderName}:\n${msg.text}`;
+  
+  // Try modern clipboard API first (works on iPhone and modern Android)
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(formatted)
+      .then(() => {
+        alert("✅ Message copied!");
+        modal.classList.add("hidden");
+      })
+      .catch(err => {
+        // Fallback for Android if modern API fails
+        copyWithFallback(formatted);
+        modal.classList.add("hidden");
+      });
+  } else {
+    // Fallback for older browsers/Android
+    copyWithFallback(formatted);
+    modal.classList.add("hidden");
+  }
+};
+
+function copyWithFallback(text) {
+  // Create temporary textarea (same approach as your paste function)
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position = "fixed";
+  textArea.style.top = "-1000px";
+  textArea.style.left = "-1000px";
+  textArea.style.opacity = "0";
+  document.body.appendChild(textArea);
+  textArea.select();
+  
+  try {
+    document.execCommand('copy');
+    alert("✅ Message copied!");
+  } catch (err) {
+    alert("❌ Failed to copy message");
+  }
+  
+  document.body.removeChild(textArea);
+}
 
   // ✅ Close modal
   closeBtn.onclick = () => {
@@ -1020,20 +1056,64 @@ document.getElementById("send-message").addEventListener("click", async () => {
     }
   });
 
-  document.getElementById("paste-message").addEventListener("click", () => {
-    navigator.clipboard.readText().then(text => {
+document.getElementById("paste-message").addEventListener("click", async () => {
+  try {
+    // Try modern clipboard API first (works on iOS and modern Android)
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      const text = await navigator.clipboard.readText();
       document.getElementById("message-input").value = text;
-    });
-  });
+      return;
+    }
+  } catch (err) {
+    console.log("Clipboard API failed, trying fallback for Android:", err);
+  }
+  
+  // Android fallback - create a temporary input for pasting
+  try {
+    const tempInput = document.createElement("input");
+    tempInput.type = "text";
+    tempInput.style.position = "fixed";
+    tempInput.style.top = "50%";
+    tempInput.style.left = "50%";
+    tempInput.style.transform = "translate(-50%, -50%)";
+    tempInput.style.opacity = "0.01"; // Nearly invisible but not completely hidden
+    tempInput.style.zIndex = "9999";
+    tempInput.style.fontSize = "16px"; // Prevents zoom on mobile
+    tempInput.style.width = "1px";
+    tempInput.style.height = "1px";
+    tempInput.style.border = "none";
+    tempInput.style.outline = "none";
+    
+    document.body.appendChild(tempInput);
+    
+    // Focus the temporary input
+    tempInput.focus();
+    tempInput.select();
+    
+    // Try to paste using execCommand
+    const success = document.execCommand('paste');
+    
+    // Small delay to ensure paste completes
+    setTimeout(() => {
+      if (tempInput.value) {
+        document.getElementById("message-input").value = tempInput.value;
+      }
+      
+      // Clean up
+      document.body.removeChild(tempInput);
+      
+      // Focus back to the message input
+      document.getElementById("message-input").focus();
+    }, 100);
+    
+  } catch (err) {
+    console.log("Android paste fallback failed:", err);
+    // Focus the message input as final fallback
+    document.getElementById("message-input").focus();
+  }
+});
 
-  document.getElementById("leave-chat").addEventListener("click", () => {
-    if (!currentRoomName) return;
-    const idx = rooms.findIndex(r => r.name === currentRoomName);
-    if (idx !== -1) rooms.splice(idx, 1);
-    populateRooms();
-    showPage(chatListPage);
-  });
-
+  
 // open contacts page & populate list
 document.getElementById("contacts").addEventListener("click", () => {
   console.log("📣 CONTACTS CLICKED!");
