@@ -1029,11 +1029,47 @@ document.getElementById("send-message").addEventListener("click", async () => {
     }
   });
 
-  document.getElementById("paste-message").addEventListener("click", () => {
-    navigator.clipboard.readText().then(text => {
-      document.getElementById("message-input").value = text;
-    });
-  });
+  document.getElementById("paste-message").addEventListener("click", async () => {
+  try {
+    // Try modern clipboard API first
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById("message-input").value = text;
+        return;
+      } catch (err) {
+        console.log("Modern clipboard failed, trying fallback");
+      }
+    }
+    
+    // Fallback method - create a temporary input field
+    const tempInput = document.createElement("input");
+    tempInput.style.position = "fixed";
+    tempInput.style.left = "-999999px";
+    tempInput.style.top = "-999999px";
+    document.body.appendChild(tempInput);
+    
+    // Focus the temporary input and trigger paste
+    tempInput.focus();
+    tempInput.select();
+    
+    // Execute paste command
+    const result = document.execCommand('paste');
+    
+    if (result && tempInput.value) {
+      document.getElementById("message-input").value = tempInput.value;
+      document.body.removeChild(tempInput);
+    } else {
+      document.body.removeChild(tempInput);
+      // Final fallback - show instructions
+      alert("📋 Please paste manually using Ctrl+V (or Cmd+V on Mac)");
+    }
+    
+  } catch (err) {
+    console.error("Paste error:", err);
+    alert("📋 Please paste manually using Ctrl+V (or Cmd+V on Mac)");
+  }
+});
 
   document.getElementById("leave-chat").addEventListener("click", () => {
     if (!currentRoomName) return;
