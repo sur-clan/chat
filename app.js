@@ -1044,3 +1044,4 @@ modalCloseBtn.onclick = () => modal.style.display = "none";
 
 populateRooms();
 showPage(chatListPage);
+});
