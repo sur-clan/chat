@@ -290,29 +290,24 @@ const sendMessage = async (text) => {
 }
 
 
-let unsubscribeRoomListener = null;
+let roomListRefreshInterval = null;
 
 function setupRoomListener() {
-  // Stop any existing listener first
-  if (unsubscribeRoomListener) {
-    unsubscribeRoomListener();
+  // Stop any existing interval
+  if (roomListRefreshInterval) {
+    clearInterval(roomListRefreshInterval);
   }
 
   if (!currentUser.id) return;
 
-  // Simple approach: Listen to ALL rooms collection changes
-  // This will trigger when new rooms are created OR when membership changes
-  const roomsRef = collection(db, "rooms");
-  
-  unsubscribeRoomListener = onSnapshot(roomsRef, (snapshot) => {
-    // Only refresh if we're currently on the chat list page
+  // Check for room changes every 3 seconds, but only when on chat list page
+  roomListRefreshInterval = setInterval(() => {
     if (document.getElementById("chat-list").classList.contains("active")) {
-      console.log("🔄 Rooms collection changed - refreshing room list");
+      console.log("🔄 Periodic room list refresh");
       populateRooms();
     }
-  });
+  }, 3000); // Check every 3 seconds
 }
-
 
 
   
@@ -1256,13 +1251,26 @@ class InviteSystem {
         }
         
         await setDoc(memberRef, memberData, { merge: true });
-      }
+   }      
+      
+      // Add this:
+// Trigger immediate refresh for all users on chat list page
+setTimeout(() => {
+  if (document.getElementById("chat-list").classList.contains("active")) {
+    populateRooms();
+  }
+}, 500);
+     
 
       const names = selectedContactDetails.map(c => c.name).join(', ');
       alert(`✅ Successfully invited ${names} to ${this.currentRoomName}!`);
 
       this.closeModal();
-      populateMembers();
+populateMembers();
+
+// Immediately refresh room lists to show new invitations
+console.log("🔄 Forcing room list refresh after invitations");
+populateRooms();
 
     } catch (error) {
       console.error('Error inviting members:', error);
