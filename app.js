@@ -1030,25 +1030,72 @@ document.getElementById("send-message").addEventListener("click", async () => {
   });
 
 document.getElementById("paste-message").addEventListener("click", () => {
-    navigator.clipboard.readText().then(text => {
-      document.getElementById("message-input").value = text;
-    });
-  });
-
-  document.getElementById("leave-chat").addEventListener("click", () => {
-    if (!currentRoomName) return;
-    const idx = rooms.findIndex(r => r.name === currentRoomName);
-    if (idx !== -1) rooms.splice(idx, 1);
-    populateRooms();
-    showPage(chatListPage);
-  });
-
-// open contacts page & populate list
-document.getElementById("contacts").addEventListener("click", () => {
-  console.log("📣 CONTACTS CLICKED!");
-showPage(contactsPage);
-  populateContacts();
+  // First try the modern clipboard API
+  if (navigator.clipboard && navigator.clipboard.readText) {
+    navigator.clipboard.readText()
+      .then(text => {
+        document.getElementById("message-input").value = text;
+        // Focus the input after pasting
+        document.getElementById("message-input").focus();
+      })
+      .catch(err => {
+        console.log("Clipboard API failed, using fallback:", err);
+        // Fallback for when clipboard API doesn't work
+        useTouchFriendlyPaste();
+      });
+  } else {
+    // Use fallback immediately if clipboard API is not available
+    useTouchFriendlyPaste();
+  }
 });
+
+function useTouchFriendlyPaste() {
+  const messageInput = document.getElementById("message-input");
+  
+  // Check if we're on a mobile device
+  const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  if (isMobile) {
+    // On mobile, focus the input and let the user paste manually
+    messageInput.focus();
+    
+    // Show a helpful message
+    const originalPlaceholder = messageInput.placeholder;
+    messageInput.placeholder = "Tap and hold here, then select 'Paste'";
+    
+    // Restore original placeholder after a few seconds
+    setTimeout(() => {
+      messageInput.placeholder = originalPlaceholder;
+    }, 3000);
+    
+    // Also show an alert to guide the user
+    alert("💡 Tap and hold in the message box, then select 'Paste' from the menu");
+    
+  } else {
+    // Desktop fallback - try execCommand
+    try {
+      // Focus the message input directly
+      messageInput.focus();
+      messageInput.select();
+      
+      const success = document.execCommand('paste');
+      if (!success) {
+        // If execCommand doesn't work, use prompt
+        const userText = prompt("Paste your text here:");
+        if (userText !== null) {
+          messageInput.value = userText;
+        }
+      }
+    } catch (err) {
+      console.error("execCommand paste failed:", err);
+      // Last resort: prompt the user
+      const userText = prompt("Paste your text here:");
+      if (userText !== null) {
+        messageInput.value = userText;
+      }
+    }
+  }
+}
 
 async function populateContacts() {
   const listEl = document.getElementById("contacts-list");
