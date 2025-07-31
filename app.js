@@ -1059,8 +1059,8 @@ document.getElementById("send-message").addEventListener("click", async () => {
 document.getElementById("paste-message").addEventListener("click", async () => {
   const messageInput = document.getElementById("message-input");
   
+  // Method 1: Modern clipboard API (iPhone + newer Android)
   try {
-    // Try modern clipboard API first (works on iOS and some Android)
     if (navigator.clipboard && navigator.clipboard.readText) {
       const text = await navigator.clipboard.readText();
       messageInput.value = text;
@@ -1068,64 +1068,87 @@ document.getElementById("paste-message").addEventListener("click", async () => {
       return;
     }
   } catch (err) {
-    console.log("Clipboard API failed, trying Android direct paste:", err);
+    // Continue to fallback methods
   }
   
-  // Android direct paste - intercept paste event
+  // Method 2: Direct paste into the actual message input (like Total Battle probably does)
   try {
-    // Create a hidden textarea that can receive paste events
-    const pasteTarget = document.createElement("textarea");
-    pasteTarget.style.position = "fixed";
-    pasteTarget.style.top = "-9999px";
-    pasteTarget.style.left = "-9999px";
-    pasteTarget.style.opacity = "0";
-    pasteTarget.style.pointerEvents = "none";
-    pasteTarget.style.zIndex = "-1";
+    // Store original state
+    const originalValue = messageInput.value;
+    const originalStart = messageInput.selectionStart;
+    const originalEnd = messageInput.selectionEnd;
     
-    document.body.appendChild(pasteTarget);
+    // Focus and select all in the actual input field
+    messageInput.focus();
+    messageInput.setSelectionRange(0, messageInput.value.length);
     
-    // Set up paste event listener
-    const handlePaste = (e) => {
-      e.preventDefault();
-      const clipboardData = e.clipboardData || window.clipboardData;
-      if (clipboardData) {
-        const pastedText = clipboardData.getData('text');
-        if (pastedText) {
-          messageInput.value = pastedText;
-          messageInput.focus();
-        }
-      }
-      
-      // Clean up
-      pasteTarget.removeEventListener('paste', handlePaste);
-      document.body.removeChild(pasteTarget);
-    };
-    
-    pasteTarget.addEventListener('paste', handlePaste);
-    
-    // Focus the hidden textarea and trigger paste
-    pasteTarget.focus();
-    pasteTarget.select();
-    
-    // Try to trigger paste
+    // Try to paste directly into the target input
     const success = document.execCommand('paste');
     
-    // Fallback cleanup if execCommand didn't trigger paste event
+    // If paste didn't work or no change occurred, restore original state
     setTimeout(() => {
-      if (document.body.contains(pasteTarget)) {
-        pasteTarget.removeEventListener('paste', handlePaste);
-        document.body.removeChild(pasteTarget);
-        
-        // Last resort - focus message input for manual paste
-        messageInput.focus();
+      if (!success || messageInput.value === originalValue) {
+        messageInput.value = originalValue;
+        messageInput.setSelectionRange(originalStart, originalEnd);
       }
-    }, 500);
+      messageInput.focus();
+    }, 100);
+    
+    return;
     
   } catch (err) {
-    console.log("Android paste failed:", err);
+    console.log("Direct input paste failed:", err);
+  }
+  
+  // Method 3: Invisible input overlay method
+  try {
+    const overlay = document.createElement('input');
+    overlay.type = 'text';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '50%';
+    overlay.style.left = '50%';
+    overlay.style.transform = 'translate(-50%, -50%)';
+    overlay.style.zIndex = '999999';
+    overlay.style.opacity = '0.01';
+    overlay.style.width = '100px';
+    overlay.style.height = '50px';
+    overlay.style.fontSize = '16px';
+    overlay.style.border = 'none';
+    overlay.style.background = 'transparent';
+    
+    document.body.appendChild(overlay);
+    
+    // Force focus and paste
+    overlay.focus();
+    overlay.click();
+    overlay.select();
+    
+    // Multiple paste attempts
+    document.execCommand('selectAll');
+    document.execCommand('paste');
+    
+    setTimeout(() => {
+      if (overlay.value) {
+        messageInput.value = overlay.value;
+        messageInput.focus();
+      }
+      document.body.removeChild(overlay);
+    }, 200);
+    
+  } catch (err) {
+    console.log("Overlay method failed:", err);
+    
+    // Final fallback - focus the target input
     messageInput.focus();
   }
 });
+
+
+
+
+
+
+  
 
   
 // open contacts page & populate list
