@@ -864,5 +864,126 @@ textarea {
 }
 
 
+/* ============ FIND CHAT MODAL STYLES ============ */
+#find-chat-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
 
+#find-chat-modal.hidden {
+  display: none;
+}
+
+.find-chat-modal-content {
+  background: #222;
+  border: 2px solid #b3730d;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  color: #e1bd47;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.find-chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #b3730d;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 13px 13px 0 0;
+}
+
+.find-chat-header h3 {
+  margin: 0;
+  font-family: 'Cinzel Decorative', serif;
+  color: #efca51;
+  font-size: 1.2rem;
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6);
+}
+
+.find-chat-close-btn {
+  background: transparent;
+  border: none;
+  color: #e1bd47;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.find-chat-close-btn:hover {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+}
+
+.find-chat-search {
+  padding: 1.5rem;
+}
+
+.find-chat-search input {
+  width: 100%;
+  padding: 0.8rem;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #b3730d;
+  border-radius: 8px;
+  color: #e1bd47;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.find-chat-search input::placeholder {
+  color: #b3730d;
+  font-style: italic;
+}
+
+.find-chat-search input:focus {
+  outline: none;
+  border-color: #efca51;
+  box-shadow: 0 0 5px rgba(239, 202, 81, 0.3);
+}
+
+.find-chat-buttons {
+  padding: 0 1.5rem 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.find-chat-join-btn {
+  background: rgba(0, 0, 0, 0.2);
+  border: 2px solid #efca51;
+  border-radius: 10px;
+  color: #efca51;
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+  font-family: 'Cinzel', serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.find-chat-join-btn:hover {
+  background: #efca51;
+  color: #222;
+  box-shadow: 0 0 10px rgba(239, 202, 81, 0.5);
+}
+
+.find-chat-join-btn:disabled {
+  border-color: #666;
+  color: #666;
+  cursor: not-allowed;
+  box-shadow: none;
+}
 
