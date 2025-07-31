@@ -1033,125 +1033,44 @@ document.getElementById("paste-message").addEventListener("click", async () => {
   const messageInput = document.getElementById("message-input");
   
   try {
-    // Method 1: Modern Clipboard API (works on most modern browsers including mobile)
+    // First try the modern clipboard API
     if (navigator.clipboard && navigator.clipboard.readText) {
       const text = await navigator.clipboard.readText();
       messageInput.value = text;
-      messageInput.focus();
       return;
     }
   } catch (err) {
-    console.log("Clipboard API failed, trying fallback methods:", err);
+    // Modern API failed, try execCommand method
   }
   
-  // Method 2: Create a contenteditable div for pasting (works better on mobile)
+  // Fallback using execCommand (to match your copy function approach)
   try {
-    const pasteDiv = document.createElement('div');
-    pasteDiv.contentEditable = true;
-    pasteDiv.style.position = 'fixed';
-    pasteDiv.style.top = '0px';
-    pasteDiv.style.left = '0px';
-    pasteDiv.style.width = '1px';
-    pasteDiv.style.height = '1px';
-    pasteDiv.style.opacity = '0';
-    pasteDiv.style.overflow = 'hidden';
-    pasteDiv.style.zIndex = '-1';
+    // Create a temporary input element (similar to your copy method)
+    const tempInput = document.createElement("input");
+    tempInput.style.position = "fixed";
+    tempInput.style.top = "-1000px";
+    tempInput.style.left = "-1000px";
+    tempInput.style.opacity = "0";
+    document.body.appendChild(tempInput);
     
-    document.body.appendChild(pasteDiv);
+    // Focus and try to paste into the temp input
+    tempInput.focus();
+    tempInput.select();
     
-    // Focus and select the div
-    pasteDiv.focus();
+    const success = document.execCommand('paste');
     
-    // For mobile devices, we need to handle the selection differently
-    if (window.getSelection && document.createRange) {
-      const selection = window.getSelection();
-      const range = document.createRange();
-      range.selectNodeContents(pasteDiv);
-      selection.removeAllRanges();
-      selection.addRange(range);
+    if (success && tempInput.value) {
+      messageInput.value = tempInput.value;
     }
     
-    // Try to paste
-    const success = document.execCommand('paste');
-    
-    // Small delay to ensure paste operation completes
-    setTimeout(() => {
-      const pastedText = pasteDiv.textContent || pasteDiv.innerText;
-      if (pastedText) {
-        messageInput.value = pastedText;
-        messageInput.focus();
-      } else if (!success) {
-        // Method 3: Try with a textarea fallback
-        tryTextAreaPaste();
-      }
-      
-      // Clean up
-      document.body.removeChild(pasteDiv);
-    }, 100);
-    
-    return;
+    // Clean up
+    document.body.removeChild(tempInput);
     
   } catch (err) {
-    console.log("ContentEditable paste failed:", err);
+    // Silent failure - no alerts or popups
+    console.log("Paste not available");
   }
-  
-  // Method 3: Textarea fallback
-  tryTextAreaPaste();
 });
-
-function tryTextAreaPaste() {
-  const messageInput = document.getElementById("message-input");
-  
-  // Create textarea that's more likely to work on mobile
-  const textarea = document.createElement('textarea');
-  textarea.style.position = 'fixed';
-  textarea.style.top = '50%';
-  textarea.style.left = '50%';
-  textarea.style.transform = 'translate(-50%, -50%)';
-  textarea.style.width = '1px';
-  textarea.style.height = '1px';
-  textarea.style.padding = '0';
-  textarea.style.border = 'none';
-  textarea.style.outline = 'none';
-  textarea.style.boxShadow = 'none';
-  textarea.style.background = 'transparent';
-  textarea.style.fontSize = '16px'; // Prevents zoom on iOS
-  textarea.style.zIndex = '9999';
-  
-  document.body.appendChild(textarea);
-  
-  // Focus and select
-  textarea.focus();
-  textarea.select();
-  
-  try {
-    // Try paste command
-    const success = document.execCommand('paste');
-    
-    setTimeout(() => {
-      if (textarea.value) {
-        messageInput.value = textarea.value;
-        messageInput.focus();
-      } else {
-        // Final fallback - temporarily focus the actual input and try paste there
-        messageInput.focus();
-        messageInput.select();
-        document.execCommand('paste');
-      }
-      
-      // Clean up
-      document.body.removeChild(textarea);
-    }, 100);
-    
-  } catch (err) {
-    console.error("All paste methods failed:", err);
-    document.body.removeChild(textarea);
-    
-    // Very last resort - focus the input and let user know to paste manually
-    messageInput.focus();
-    alert("Please paste manually using Ctrl+V (or Cmd+V on Mac)");
-  }
-}
 
 async function populateContacts() {
   const listEl = document.getElementById("contacts-list");
