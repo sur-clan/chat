@@ -7,6 +7,7 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
   doc,
   serverTimestamp,
   query,
@@ -172,89 +173,97 @@ const sendMessage = async (text) => {
   }
 
     async function populateRooms() {
-    const roomsUl = document.getElementById("rooms");
+  const roomsUl = document.getElementById("rooms");
 
-    // ✅ Only show "Loading rooms…" if nothing is already there
-    if (!roomsUl.hasChildNodes() || roomsUl.innerHTML.trim() === "") {
-        roomsUl.innerHTML = `<li style="text-align:center; color:gold;">Loading rooms…</li>`;
+  // ✅ Only show "Loading rooms…" if nothing is already there
+  if (!roomsUl.hasChildNodes() || roomsUl.innerHTML.trim() === "") {
+      roomsUl.innerHTML = `<li style="text-align:center; color:gold;">Loading rooms…</li>`;
+  }
+
+  try {
+    const allRoomsSnapshot = await getDocs(collection(db, "rooms"));
+    const userRooms = [];
+
+    // Check each room to see if current user is a member
+    for (const roomDoc of allRoomsSnapshot.docs) {
+      const roomData = roomDoc.data();
+      
+      // Check if current user is a member of this room
+      const memberRef = doc(db, "rooms", roomDoc.id, "members", currentUser.id);
+      const memberSnap = await getDoc(memberRef);
+      
+      if (memberSnap.exists()) {
+        userRooms.push({
+          id: roomDoc.id,
+          data: roomData
+        });
+      }
     }
-
- try {
-    const querySnapshot = await getDocs(collection(db, "rooms"));
 
     // ✅ Build the list off-DOM first
     const frag = document.createDocumentFragment();
       
-  querySnapshot.forEach((roomDoc) => {  // ✅ renamed from (doc) to (roomDoc)
-    const room = roomDoc.data();
-
-    
+    userRooms.forEach((roomInfo) => {
+      const room = roomInfo.data;
+      
       const li = document.createElement("li");
-    li.innerHTML = `
-      <strong>${room.name || 'Unnamed Room'}</strong><br>
-      <small>${room.lastMessage || ''}</small>`;
+      li.innerHTML = `
+        <strong>${room.name || 'Unnamed Room'}</strong><br>
+        <small>${room.lastMessage || ''}</small>`;
 
-    li.addEventListener("click", async () => {
-      currentRoomName = roomDoc.id;
-      document.getElementById("room-name").textContent = currentRoomName;
+      li.addEventListener("click", async () => {
+        currentRoomName = roomInfo.id;
+        document.getElementById("room-name").textContent = currentRoomName;
 
- const msgsDiv = document.getElementById("messages");
+        const msgsDiv = document.getElementById("messages");
+        // 🚀 Clear immediately and show loading
+        msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading messages…</div>`;
+        
+        showPage(chatRoomPage);
 
-  // 🚀 Clear immediately and show loading
-  msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading messages…</div>`;
+        console.log("Joining room:", currentRoomName, "as user:", currentUser);
 
+        if (!currentUser.id) {
+          console.error("❌ currentUser.id is undefined!");
+          return;
+        }
 
-      
-      showPage(chatRoomPage);
+        try {
+          const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
+          const existingMemberSnap = await getDoc(memberRef);
 
-console.log("Joining room:", currentRoomName, "as user:", currentUser);
+          if (existingMemberSnap.exists()) {
+            // ✅ Member already exists – don't overwrite role
+            const existingData = existingMemberSnap.data();
 
-if (!currentUser.id) {
-  console.error("❌ currentUser.id is undefined!");
-  return;
-}
+            // 🔄 Sync local role with Firestore role
+            if (existingData.role) {
+              currentUser.role = existingData.role;
+            }
 
-try {
-  const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
-  const existingMemberSnap = await getDoc(memberRef);
+            // ✅ Only update name/avatar (never touch role again)
+            await setDoc(memberRef, {
+              name: currentUser.name,
+              avatar: currentUser.avatar || null
+            }, { merge: true });
 
-  if (existingMemberSnap.exists()) {
-    // ✅ Member already exists – don’t overwrite role
-    const existingData = existingMemberSnap.data();
+          } else {
+            // 🚀 First time joining – set the role
+            const memberData = {
+              name: currentUser.name,
+              role: currentUser.role,
+              avatar: currentUser.avatar || null
+            };
+            await setDoc(memberRef, memberData);
+          }
 
-    // 🔄 Sync local role with Firestore role
-    if (existingData.role) {
-      currentUser.role = existingData.role;
-    }
+          console.log("✅ Member added to:", currentRoomName);
+        } catch (err) {
+          console.error("🔥 Failed to add member:", err);
+        }
 
-    // ✅ Only update name/avatar (never touch role again)
-    await setDoc(memberRef, {
-      name: currentUser.name,
-      avatar: currentUser.avatar || null
-    }, { merge: true });
-
-  } else {
-    // 🚀 First time joining – set the role
-    const memberData = {
-      name: currentUser.name,
-      role: currentUser.role,
-      avatar: currentUser.avatar || null
-    };
-    await setDoc(memberRef, memberData);
-  }
-
-  console.log("✅ Member added to:", currentRoomName);
-} catch (err) {
-  console.error("🔥 Failed to add member:", err);
-}
-
-
-      
-
-
-  safePopulateMessages();
-});
-
+        safePopulateMessages();
+      });
 
       if (room.unread) {
         const icon = document.createElement("span");
@@ -262,20 +271,45 @@ try {
         icon.innerHTML = "✉";
         li.appendChild(icon);
       }
-
     
       frag.appendChild(li);
     });
 
-    // ✅ Replace the “Loading…” with final list ONCE
+    // ✅ Replace the "Loading…" with final list ONCE
     roomsUl.innerHTML = "";
-    roomsUl.appendChild(frag);
+    if (userRooms.length === 0) {
+      roomsUl.innerHTML = `<li style="text-align:center; color:gray;">No rooms available</li>`;
+    } else {
+      roomsUl.appendChild(frag);
+    }
 
   } catch (err) {
     console.error("🔥 Failed to load rooms:", err);
     roomsUl.innerHTML = `<li style="color:red;">Error loading rooms</li>`;
   }
 }
+
+  // Function to check if current user was removed from current room
+async function checkIfRemovedFromCurrentRoom() {
+  if (!currentRoomName || !currentUser.id) return;
+  
+  try {
+    const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
+    const memberSnap = await getDoc(memberRef);
+    
+    if (!memberSnap.exists()) {
+      // User was removed from current room - kick them out
+      alert("⚠️ You have been removed from this room");
+      showPage(chatListPage);
+      populateRooms(); // Refresh room list
+    }
+  } catch (error) {
+    console.error("Error checking room membership:", error);
+  }
+}
+
+// Call this periodically or when messages update
+setInterval(checkIfRemovedFromCurrentRoom, 5000); // Check every 5 seconds
 
 let unsubscribeMessages = null;
 
@@ -451,20 +485,44 @@ const querySnapshot = await getDocs(collection(db, "rooms", currentRoomName, "me
 
     li.appendChild(nameSpan);
 
-    if (currentUser.role === "Administrator" && m.name !== currentUser.name) {
-      const btn = document.createElement("button");
-      btn.textContent = "❌";
-      btn.addEventListener("click", () => {
-        if (confirm(`Remove ${m.name} from this room?`)) {
-          const idx = members.findIndex(mem => mem.name === m.name);
-          if (idx !== -1) {
-            members.splice(idx, 1);
-            populateMembers();
+if (currentUser.role === "Administrator" && m.name !== currentUser.name) {
+  const btn = document.createElement("button");
+  btn.textContent = "❌";
+  btn.addEventListener("click", async () => {
+    if (confirm(`Remove ${m.name} from this room?`)) {
+      try {
+        // Find the member's ID from Firebase
+        const membersSnapshot = await getDocs(collection(db, "rooms", currentRoomName, "members"));
+        let memberToRemoveId = null;
+        
+        membersSnapshot.forEach(doc => {
+          const memberData = doc.data();
+          if (memberData.name === m.name) {
+            memberToRemoveId = doc.id;
           }
+        });
+
+        if (memberToRemoveId) {
+          // Remove from Firebase
+          const memberRef = doc(db, "rooms", currentRoomName, "members", memberToRemoveId);
+          await deleteDoc(memberRef);
+          
+          console.log(`✅ Removed ${m.name} from ${currentRoomName}`);
+          alert(`✅ ${m.name} has been removed from the room`);
+          
+          // Refresh the members list
+          populateMembers();
+        } else {
+          alert(`❌ Could not find ${m.name} to remove`);
         }
-      });
-      li.appendChild(btn);
+      } catch (error) {
+        console.error("🔥 Error removing member:", error);
+        alert("❌ Error removing member. Please try again.");
+      }
     }
+  });
+  li.appendChild(btn);
+}
 
     membersUl.appendChild(li);
   });
