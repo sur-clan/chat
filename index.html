@@ -167,6 +167,30 @@
     </div>
   </div>
 </div>
+
+<!-- INVITE MEMBERS MODAL -->
+<div id="invite-modal" class="hidden">
+  <div class="invite-modal-content">
+    <div class="invite-header">
+      <h3>Invite Members</h3>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <button id="invite-confirm-btn" class="invite-tick-btn" disabled>✓</button>
+        <button id="invite-close-btn" class="invite-close-btn">✕</button>
+      </div>
+    </div>
+    
+    <div class="invite-search">
+      <input type="text" id="invite-search-input" placeholder="Search contacts...">
+    </div>
+    
+    <ul id="invite-contacts-list" class="invite-contacts-list">
+      <li class="invite-loading">Loading contacts...</li>
+    </ul>
+  </div>
+</div>
+
+
+
   
 <script src="app.js" type="module"></script>
 </body>
