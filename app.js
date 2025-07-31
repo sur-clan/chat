@@ -1030,7 +1030,9 @@ document.getElementById("send-message").addEventListener("click", async () => {
   });
 
 document.getElementById("paste-message").addEventListener("click", () => {
-    alert("Please paste manually using Ctrl+V (or Cmd+V on Mac)");
+    navigator.clipboard.readText().then(text => {
+      document.getElementById("message-input").value = text;
+    });
   });
 
   document.getElementById("leave-chat").addEventListener("click", () => {
