@@ -140,10 +140,10 @@ if (!event.origin.endsWith("sur-clan.com")) return;
 
     console.log("✅ Added user to default room:", roomId);
 
-    currentRoomName = roomId;
-    populateRooms(); // ✅ Load the list of rooms
-    showPage(chatListPage);
-  
+currentRoomName = roomId;
+  populateRooms(); // ✅ Load the list of rooms
+  setupRoomListener(); // ← Add this line
+  showPage(chatListPage);
 
   } catch (err) {
     console.error("🔥 Failed to add user to default room:", err);
@@ -289,6 +289,52 @@ const sendMessage = async (text) => {
   }
 }
 
+
+let unsubscribeRoomListener = null;
+
+function setupRoomListener() {
+  // Stop any existing listener first
+  if (unsubscribeRoomListener) {
+    unsubscribeRoomListener();
+  }
+
+  if (!currentUser.id) return;
+
+  // Listen to changes in all rooms where user is a member
+  const roomsRef = collection(db, "rooms");
+  
+  unsubscribeRoomListener = onSnapshot(roomsRef, async (snapshot) => {
+    let shouldRefreshRooms = false;
+
+    // Check if user was added to or removed from any rooms
+    for (const change of snapshot.docChanges()) {
+      const roomId = change.doc.id;
+      
+      // Check if current user is a member of this room
+      try {
+        const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
+        const memberSnap = await getDoc(memberRef);
+        
+        if (memberSnap.exists()) {
+          // User is a member - should show this room
+          shouldRefreshRooms = true;
+          break;
+        }
+      } catch (error) {
+        console.error("Error checking room membership:", error);
+      }
+    }
+
+    if (shouldRefreshRooms) {
+      console.log("🔄 Room membership changed - refreshing room list");
+      populateRooms();
+    }
+  });
+}
+
+
+
+  
 // Function to check if current user was removed from current room (one-time check)
 let hasBeenKicked = false;
 
@@ -335,6 +381,13 @@ function populateMessages() {
     console.warn("⚠️ populateMessages() called before role was set – stopping");
     return;
   }
+
+
+
+
+
+
+
   
   const msgsDiv = document.getElementById("messages");
 
@@ -445,8 +498,8 @@ content.addEventListener("click", async () => {
     msgsDiv.innerHTML = "";
     msgsDiv.appendChild(frag);
 
-    // Auto-scroll to bottom
-    msgsDiv.scrollTo({ top: msgsDiv.scrollHeight, behavior: "smooth" });
+    msgsDiv.scrollTop = msgsDiv.scrollHeight;
+
     });
   }
 
