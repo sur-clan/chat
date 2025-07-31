@@ -1057,59 +1057,73 @@ document.getElementById("send-message").addEventListener("click", async () => {
   });
 
 document.getElementById("paste-message").addEventListener("click", async () => {
+  const messageInput = document.getElementById("message-input");
+  
   try {
-    // Try modern clipboard API first (works on iOS and modern Android)
+    // Try modern clipboard API first (works on iOS and some Android)
     if (navigator.clipboard && navigator.clipboard.readText) {
       const text = await navigator.clipboard.readText();
-      document.getElementById("message-input").value = text;
+      messageInput.value = text;
+      messageInput.focus();
       return;
     }
   } catch (err) {
-    console.log("Clipboard API failed, trying fallback for Android:", err);
+    console.log("Clipboard API failed, trying Android direct paste:", err);
   }
   
-  // Android fallback - create a temporary input for pasting
+  // Android direct paste - intercept paste event
   try {
-    const tempInput = document.createElement("input");
-    tempInput.type = "text";
-    tempInput.style.position = "fixed";
-    tempInput.style.top = "50%";
-    tempInput.style.left = "50%";
-    tempInput.style.transform = "translate(-50%, -50%)";
-    tempInput.style.opacity = "0.01"; // Nearly invisible but not completely hidden
-    tempInput.style.zIndex = "9999";
-    tempInput.style.fontSize = "16px"; // Prevents zoom on mobile
-    tempInput.style.width = "1px";
-    tempInput.style.height = "1px";
-    tempInput.style.border = "none";
-    tempInput.style.outline = "none";
+    // Create a hidden textarea that can receive paste events
+    const pasteTarget = document.createElement("textarea");
+    pasteTarget.style.position = "fixed";
+    pasteTarget.style.top = "-9999px";
+    pasteTarget.style.left = "-9999px";
+    pasteTarget.style.opacity = "0";
+    pasteTarget.style.pointerEvents = "none";
+    pasteTarget.style.zIndex = "-1";
     
-    document.body.appendChild(tempInput);
+    document.body.appendChild(pasteTarget);
     
-    // Focus the temporary input
-    tempInput.focus();
-    tempInput.select();
-    
-    // Try to paste using execCommand
-    const success = document.execCommand('paste');
-    
-    // Small delay to ensure paste completes
-    setTimeout(() => {
-      if (tempInput.value) {
-        document.getElementById("message-input").value = tempInput.value;
+    // Set up paste event listener
+    const handlePaste = (e) => {
+      e.preventDefault();
+      const clipboardData = e.clipboardData || window.clipboardData;
+      if (clipboardData) {
+        const pastedText = clipboardData.getData('text');
+        if (pastedText) {
+          messageInput.value = pastedText;
+          messageInput.focus();
+        }
       }
       
       // Clean up
-      document.body.removeChild(tempInput);
-      
-      // Focus back to the message input
-      document.getElementById("message-input").focus();
-    }, 100);
+      pasteTarget.removeEventListener('paste', handlePaste);
+      document.body.removeChild(pasteTarget);
+    };
+    
+    pasteTarget.addEventListener('paste', handlePaste);
+    
+    // Focus the hidden textarea and trigger paste
+    pasteTarget.focus();
+    pasteTarget.select();
+    
+    // Try to trigger paste
+    const success = document.execCommand('paste');
+    
+    // Fallback cleanup if execCommand didn't trigger paste event
+    setTimeout(() => {
+      if (document.body.contains(pasteTarget)) {
+        pasteTarget.removeEventListener('paste', handlePaste);
+        document.body.removeChild(pasteTarget);
+        
+        // Last resort - focus message input for manual paste
+        messageInput.focus();
+      }
+    }, 500);
     
   } catch (err) {
-    console.log("Android paste fallback failed:", err);
-    // Focus the message input as final fallback
-    document.getElementById("message-input").focus();
+    console.log("Android paste failed:", err);
+    messageInput.focus();
   }
 });
 
