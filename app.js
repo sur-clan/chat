@@ -788,13 +788,37 @@ modal.classList.remove("hidden");
     updateMemberCount();
   });
 
-  document.getElementById("invite-member").addEventListener("click", () => {
-    const name = prompt("Enter new member name:");
-    if (name) {
-      members.push({ name, role: "Member" });
-      populateMembers();
+  document.getElementById("invite-member").addEventListener("click", async () => {
+  if (!currentRoomName) {
+    alert("❌ No room selected");
+    return;
+  }
+
+  // Get current room members
+  try {
+    const membersSnapshot = await getDocs(collection(db, "rooms", currentRoomName, "members"));
+    const currentMembers = [];
+    membersSnapshot.forEach(doc => {
+      const memberData = doc.data();
+      currentMembers.push({
+        id: doc.id,
+        name: memberData.name
+      });
+    });
+
+    // Initialize invite system if not already done
+    if (!inviteSystem) {
+      inviteSystem = new InviteSystem();
     }
-  });
+
+    // Open the invite modal
+    inviteSystem.openModal(currentRoomName, currentMembers);
+    
+  } catch (error) {
+    console.error('Error loading current members:', error);
+    alert('❌ Error loading members. Please try again.');
+  }
+});
 
 document.getElementById("create-room").addEventListener("click", async () => {
  if (!currentUser || !currentUser.id || !currentUser.name) {
@@ -961,4 +985,189 @@ document.getElementById("back-to-rooms-from-contacts").addEventListener("click",
   populateRooms();
   showPage(chatListPage);
 
+  // ============ INVITE SYSTEM ============
+class InviteSystem {
+  constructor() {
+    this.selectedContacts = new Set();
+    this.allContacts = [];
+    this.currentRoomMembers = new Set();
+    this.init();
+  }
+
+  init() {
+    this.bindEvents();
+  }
+
+  bindEvents() {
+    document.getElementById('invite-confirm-btn').addEventListener('click', () => {
+      this.confirmInvites();
+    });
+
+    document.getElementById('invite-close-btn').addEventListener('click', () => {
+      this.closeModal();
+    });
+
+    document.getElementById('invite-search-input').addEventListener('input', (e) => {
+      this.filterContacts(e.target.value);
+    });
+
+    document.getElementById('invite-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('invite-modal')) {
+        this.closeModal();
+      }
+    });
+  }
+
+  async openModal(currentRoomName, currentRoomMembers = []) {
+    this.currentRoomName = currentRoomName;
+    this.currentRoomMembers = new Set(currentRoomMembers.map(m => m.id || m.name));
+    this.selectedContacts.clear();
+    
+    document.getElementById('invite-modal').classList.remove('hidden');
+    await this.loadContacts();
+    document.getElementById('invite-search-input').value = '';
+    this.updateConfirmButton();
+  }
+
+  closeModal() {
+    document.getElementById('invite-modal').classList.add('hidden');
+    this.selectedContacts.clear();
+  }
+
+  async loadContacts() {
+    const listEl = document.getElementById('invite-contacts-list');
+    listEl.innerHTML = '<li class="invite-loading">Loading contacts...</li>';
+
+    try {
+      const snapshot = await getDocs(collection(db, "users"));
+      this.allContacts = [];
+      
+      snapshot.forEach(doc => {
+        const userData = doc.data();
+        this.allContacts.push({
+          id: doc.id,
+          name: userData.name,
+          role: userData.role || "Member",
+          avatar: userData.avatar
+        });
+      });
+
+      this.allContacts = this.allContacts.filter(contact => contact.id !== currentUser.id);
+      this.renderContacts(this.allContacts);
+      
+    } catch (error) {
+      console.error('Error loading contacts:', error);
+      listEl.innerHTML = '<li class="invite-empty">Error loading contacts</li>';
+    }
+  }
+
+  renderContacts(contacts) {
+    const listEl = document.getElementById('invite-contacts-list');
+    
+    if (contacts.length === 0) {
+      listEl.innerHTML = '<li class="invite-empty">No contacts found</li>';
+      return;
+    }
+
+    listEl.innerHTML = '';
+    
+    contacts.forEach(contact => {
+      const isAlreadyMember = this.currentRoomMembers.has(contact.id) || this.currentRoomMembers.has(contact.name);
+      
+      const li = document.createElement('li');
+      li.className = `invite-contact-item ${isAlreadyMember ? 'already-member' : ''}`;
+      
+      li.innerHTML = `
+        <input type="checkbox" 
+               class="invite-checkbox" 
+               data-contact-id="${contact.id}"
+               ${isAlreadyMember ? 'disabled' : ''}
+               ${this.selectedContacts.has(contact.id) ? 'checked' : ''}>
+        <span class="invite-contact-name">
+          ${contact.name} ${contact.role === 'Administrator' ? '(Admin)' : ''}
+        </span>
+        ${isAlreadyMember ? '<span class="already-member-text">Already in room</span>' : ''}
+      `;
+
+      if (!isAlreadyMember) {
+        const checkbox = li.querySelector('.invite-checkbox');
+        checkbox.addEventListener('change', (e) => {
+          if (e.target.checked) {
+            this.selectedContacts.add(contact.id);
+          } else {
+            this.selectedContacts.delete(contact.id);
+          }
+          this.updateConfirmButton();
+        });
+
+        li.addEventListener('click', (e) => {
+          if (e.target !== checkbox) {
+            checkbox.checked = !checkbox.checked;
+            checkbox.dispatchEvent(new Event('change'));
+          }
+        });
+      }
+
+      listEl.appendChild(li);
+    });
+  }
+
+  filterContacts(searchTerm) {
+    const filtered = this.allContacts.filter(contact => 
+      contact.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    this.renderContacts(filtered);
+  }
+
+  updateConfirmButton() {
+    const confirmBtn = document.getElementById('invite-confirm-btn');
+    confirmBtn.disabled = this.selectedContacts.size === 0;
+  }
+
+  async confirmInvites() {
+    if (this.selectedContacts.size === 0) return;
+
+    const confirmBtn = document.getElementById('invite-confirm-btn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '⏳';
+    confirmBtn.disabled = true;
+
+    try {
+      const selectedContactDetails = this.allContacts.filter(contact => 
+        this.selectedContacts.has(contact.id)
+      );
+
+      for (const contact of selectedContactDetails) {
+        const memberRef = doc(db, "rooms", this.currentRoomName, "members", contact.id);
+        
+        const memberData = {
+          name: contact.name,
+          role: contact.role || "Member",
+          joinedAt: serverTimestamp()
+        };
+        
+        if (contact.avatar) {
+          memberData.avatar = contact.avatar;
+        }
+        
+        await setDoc(memberRef, memberData, { merge: true });
+      }
+
+      const names = selectedContactDetails.map(c => c.name).join(', ');
+      alert(`✅ Successfully invited ${names} to ${this.currentRoomName}!`);
+
+      this.closeModal();
+      populateMembers();
+
+    } catch (error) {
+      console.error('Error inviting members:', error);
+      alert('❌ Error inviting members. Please try again.');
+    } finally {
+      confirmBtn.innerHTML = originalText;
+      confirmBtn.disabled = false;
+    }
+  }
+}
+
+let inviteSystem;
 });
