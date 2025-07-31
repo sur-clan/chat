@@ -1029,71 +1029,127 @@ document.getElementById("send-message").addEventListener("click", async () => {
     }
   });
 
-document.getElementById("paste-message").addEventListener("click", () => {
-  // First try the modern clipboard API
-  if (navigator.clipboard && navigator.clipboard.readText) {
-    navigator.clipboard.readText()
-      .then(text => {
-        document.getElementById("message-input").value = text;
-        // Focus the input after pasting
-        document.getElementById("message-input").focus();
-      })
-      .catch(err => {
-        console.log("Clipboard API failed, using fallback:", err);
-        // Fallback for when clipboard API doesn't work
-        useTouchFriendlyPaste();
-      });
-  } else {
-    // Use fallback immediately if clipboard API is not available
-    useTouchFriendlyPaste();
-  }
-});
-
-function useTouchFriendlyPaste() {
+document.getElementById("paste-message").addEventListener("click", async () => {
   const messageInput = document.getElementById("message-input");
   
-  // Check if we're on a mobile device
-  const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  
-  if (isMobile) {
-    // On mobile, focus the input and let the user paste manually
-    messageInput.focus();
-    
-    // Show a helpful message
-    const originalPlaceholder = messageInput.placeholder;
-    messageInput.placeholder = "Tap and hold here, then select 'Paste'";
-    
-    // Restore original placeholder after a few seconds
-    setTimeout(() => {
-      messageInput.placeholder = originalPlaceholder;
-    }, 3000);
-    
-    // Also show an alert to guide the user
-    alert("💡 Tap and hold in the message box, then select 'Paste' from the menu");
-    
-  } else {
-    // Desktop fallback - try execCommand
-    try {
-      // Focus the message input directly
+  try {
+    // Method 1: Modern Clipboard API (works on most modern browsers including mobile)
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      const text = await navigator.clipboard.readText();
+      messageInput.value = text;
       messageInput.focus();
-      messageInput.select();
-      
-      const success = document.execCommand('paste');
-      if (!success) {
-        // If execCommand doesn't work, use prompt
-        const userText = prompt("Paste your text here:");
-        if (userText !== null) {
-          messageInput.value = userText;
-        }
-      }
-    } catch (err) {
-      console.error("execCommand paste failed:", err);
-      // Last resort: prompt the user
-      const userText = prompt("Paste your text here:");
-      if (userText !== null) {
-        messageInput.value = userText;
-      }
+      return;
     }
+  } catch (err) {
+    console.log("Clipboard API failed, trying fallback methods:", err);
+  }
+  
+  // Method 2: Create a contenteditable div for pasting (works better on mobile)
+  try {
+    const pasteDiv = document.createElement('div');
+    pasteDiv.contentEditable = true;
+    pasteDiv.style.position = 'fixed';
+    pasteDiv.style.top = '0px';
+    pasteDiv.style.left = '0px';
+    pasteDiv.style.width = '1px';
+    pasteDiv.style.height = '1px';
+    pasteDiv.style.opacity = '0';
+    pasteDiv.style.overflow = 'hidden';
+    pasteDiv.style.zIndex = '-1';
+    
+    document.body.appendChild(pasteDiv);
+    
+    // Focus and select the div
+    pasteDiv.focus();
+    
+    // For mobile devices, we need to handle the selection differently
+    if (window.getSelection && document.createRange) {
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(pasteDiv);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+    
+    // Try to paste
+    const success = document.execCommand('paste');
+    
+    // Small delay to ensure paste operation completes
+    setTimeout(() => {
+      const pastedText = pasteDiv.textContent || pasteDiv.innerText;
+      if (pastedText) {
+        messageInput.value = pastedText;
+        messageInput.focus();
+      } else if (!success) {
+        // Method 3: Try with a textarea fallback
+        tryTextAreaPaste();
+      }
+      
+      // Clean up
+      document.body.removeChild(pasteDiv);
+    }, 100);
+    
+    return;
+    
+  } catch (err) {
+    console.log("ContentEditable paste failed:", err);
+  }
+  
+  // Method 3: Textarea fallback
+  tryTextAreaPaste();
+});
+
+function tryTextAreaPaste() {
+  const messageInput = document.getElementById("message-input");
+  
+  // Create textarea that's more likely to work on mobile
+  const textarea = document.createElement('textarea');
+  textarea.style.position = 'fixed';
+  textarea.style.top = '50%';
+  textarea.style.left = '50%';
+  textarea.style.transform = 'translate(-50%, -50%)';
+  textarea.style.width = '1px';
+  textarea.style.height = '1px';
+  textarea.style.padding = '0';
+  textarea.style.border = 'none';
+  textarea.style.outline = 'none';
+  textarea.style.boxShadow = 'none';
+  textarea.style.background = 'transparent';
+  textarea.style.fontSize = '16px'; // Prevents zoom on iOS
+  textarea.style.zIndex = '9999';
+  
+  document.body.appendChild(textarea);
+  
+  // Focus and select
+  textarea.focus();
+  textarea.select();
+  
+  try {
+    // Try paste command
+    const success = document.execCommand('paste');
+    
+    setTimeout(() => {
+      if (textarea.value) {
+        messageInput.value = textarea.value;
+        messageInput.focus();
+      } else {
+        // Final fallback - temporarily focus the actual input and try paste there
+        messageInput.focus();
+        messageInput.select();
+        document.execCommand('paste');
+      }
+      
+      // Clean up
+      document.body.removeChild(textarea);
+    }, 100);
+    
+  } catch (err) {
+    console.error("All paste methods failed:", err);
+    document.body.removeChild(textarea);
+    
+    // Very last resort - focus the input and let user know to paste manually
+    messageInput.focus();
+    alert("Please paste manually using Ctrl+V (or Cmd+V on Mac)");
   }
 }
 
