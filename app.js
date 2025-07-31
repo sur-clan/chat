@@ -300,33 +300,14 @@ function setupRoomListener() {
 
   if (!currentUser.id) return;
 
-  // Listen to changes in all rooms where user is a member
+  // Simple approach: Listen to ALL rooms collection changes
+  // This will trigger when new rooms are created OR when membership changes
   const roomsRef = collection(db, "rooms");
   
-  unsubscribeRoomListener = onSnapshot(roomsRef, async (snapshot) => {
-    let shouldRefreshRooms = false;
-
-    // Check if user was added to or removed from any rooms
-    for (const change of snapshot.docChanges()) {
-      const roomId = change.doc.id;
-      
-      // Check if current user is a member of this room
-      try {
-        const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
-        const memberSnap = await getDoc(memberRef);
-        
-        if (memberSnap.exists()) {
-          // User is a member - should show this room
-          shouldRefreshRooms = true;
-          break;
-        }
-      } catch (error) {
-        console.error("Error checking room membership:", error);
-      }
-    }
-
-    if (shouldRefreshRooms) {
-      console.log("🔄 Room membership changed - refreshing room list");
+  unsubscribeRoomListener = onSnapshot(roomsRef, (snapshot) => {
+    // Only refresh if we're currently on the chat list page
+    if (document.getElementById("chat-list").classList.contains("active")) {
+      console.log("🔄 Rooms collection changed - refreshing room list");
       populateRooms();
     }
   });
