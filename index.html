@@ -154,20 +154,6 @@
 </div>
 
 
-<!-- FIND CHAT MODAL -->
-
-<div id="find-chat-modal" class="hidden">
-  <div class="modal-content">
-   <p> FIND CHAT </p> 
-      <div class="modal-body">
-      <ul class="rooms-list" style="list-style: none; padding: 0;"></ul>
-    </div>
-    <div class="modal-buttons">
-      <button id="find-chat-close">Close</button>
-    </div>
-  </div>
-</div>
-
 <!-- INVITE MEMBERS MODAL -->
 <div id="invite-modal" class="hidden">
   <div class="invite-modal-content">
@@ -189,7 +175,23 @@
   </div>
 </div>
 
-
+<!-- FIND CHAT MODAL -->
+<div id="find-chat-modal" class="hidden">
+  <div class="find-chat-modal-content">
+    <div class="find-chat-header">
+      <h3>Find Chat Room</h3>
+      <button id="find-chat-close-btn" class="find-chat-close-btn">✕</button>
+    </div>
+    
+    <div class="find-chat-search">
+      <input type="text" id="find-chat-input" placeholder="Enter room name...">
+    </div>
+    
+    <div class="find-chat-buttons">
+      <button id="find-chat-join-btn" class="find-chat-join-btn">Join Room</button>
+    </div>
+  </div>
+</div>
 
   
 <script src="app.js" type="module"></script>
