@@ -803,18 +803,9 @@ modal.classList.remove("hidden");
 
     const ts = msg.timestamp?.toDate ? msg.timestamp.toDate() : new Date();
     const formatted = `${ts.toLocaleDateString()} ${ts.toLocaleTimeString()} ${msg.senderName}:\n${msg.text}`;
-    
-    
-// Simple fallback that works on all devices
-const textArea = document.createElement("textarea");
-textArea.value = formatted;
-document.body.appendChild(textArea);
-textArea.select();
-document.execCommand('copy');
-document.body.removeChild(textArea);
-alert("✅ Message copied!");
-
-    
+    navigator.clipboard.writeText(formatted)
+      .then(() => alert("✅ Message copied!"))
+      .catch(err => alert("❌ Failed to copy: " + err));
     modal.classList.add("hidden");
   };
 
@@ -1029,47 +1020,25 @@ document.getElementById("send-message").addEventListener("click", async () => {
     }
   });
 
-document.getElementById("paste-message").addEventListener("click", async () => {
-  const messageInput = document.getElementById("message-input");
-  
-  try {
-    // First try the modern clipboard API
-    if (navigator.clipboard && navigator.clipboard.readText) {
-      const text = await navigator.clipboard.readText();
-      messageInput.value = text;
-      return;
-    }
-  } catch (err) {
-    // Modern API failed, try execCommand method
-  }
-  
-  // Fallback using execCommand (to match your copy function approach)
-  try {
-    // Create a temporary input element (similar to your copy method)
-    const tempInput = document.createElement("input");
-    tempInput.style.position = "fixed";
-    tempInput.style.top = "-1000px";
-    tempInput.style.left = "-1000px";
-    tempInput.style.opacity = "0";
-    document.body.appendChild(tempInput);
-    
-    // Focus and try to paste into the temp input
-    tempInput.focus();
-    tempInput.select();
-    
-    const success = document.execCommand('paste');
-    
-    if (success && tempInput.value) {
-      messageInput.value = tempInput.value;
-    }
-    
-    // Clean up
-    document.body.removeChild(tempInput);
-    
-  } catch (err) {
-    // Silent failure - no alerts or popups
-    console.log("Paste not available");
-  }
+  document.getElementById("paste-message").addEventListener("click", () => {
+    navigator.clipboard.readText().then(text => {
+      document.getElementById("message-input").value = text;
+    });
+  });
+
+  document.getElementById("leave-chat").addEventListener("click", () => {
+    if (!currentRoomName) return;
+    const idx = rooms.findIndex(r => r.name === currentRoomName);
+    if (idx !== -1) rooms.splice(idx, 1);
+    populateRooms();
+    showPage(chatListPage);
+  });
+
+// open contacts page & populate list
+document.getElementById("contacts").addEventListener("click", () => {
+  console.log("📣 CONTACTS CLICKED!");
+showPage(contactsPage);
+  populateContacts();
 });
 
 async function populateContacts() {
