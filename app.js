@@ -14,6 +14,22 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+
+
+// ✅ Track the current room (make sure you set this whenever you open a room)
+let currentRoomId = null;
+
+// ✅ Track invite mode
+let inviteMode = false;
+
+// ✅ Grab DOM elements for invite feature
+const inviteBtn = document.getElementById("invite-member");
+const contactsPage = document.getElementById("contacts-page");
+const membersListPage = document.getElementById("members-list");
+const contactsListEl = document.getElementById("contacts-list");
+
+
+
 const app = initializeApp(window.firebaseConfig);
 const db = getFirestore(app);
 
@@ -195,7 +211,8 @@ const sendMessage = async (text) => {
       <small>${room.lastMessage || ''}</small>`;
 
     li.addEventListener("click", async () => {
-      currentRoomName = roomDoc.id;
+currentRoomName = roomDoc.id;
+currentRoomId = roomDoc.id; // 👈 ADD THIS
       document.getElementById("room-name").textContent = currentRoomName;
 
  const msgsDiv = document.getElementById("messages");
@@ -934,6 +951,9 @@ async function populateContacts() {
         const m = doc.data();
         const li = document.createElement("li");
         li.textContent = m.name + (m.role === "Administrator" ? " (Admin)" : "");
+  li.dataset.id = doc.id;
+  li.dataset.name = m.name;
+        
         listEl.appendChild(li);
       });
     }
@@ -943,6 +963,37 @@ async function populateContacts() {
   }
 }
 
+// ✅ Listen for clicks on contacts list
+contactsListEl.addEventListener("click", async (e) => {
+  const li = e.target.closest("li");
+  if (!li) return;
+
+  // Only run if we're in invite mode
+  if (inviteMode) {
+    const contactId = li.dataset.id;
+    const contactName = li.dataset.name;
+
+    if (!contactId || !contactName) {
+      console.error("❌ Missing contactId or contactName on clicked contact.");
+      return;
+    }
+
+    try {
+      await addMemberToRoom(contactId, contactName);
+      console.log(`✅ Added ${contactName} to room: ${currentRoomId}`);
+
+      // Turn off invite mode & go back to members list
+      inviteMode = false;
+      contactsPage.classList.remove("active");
+      membersListPage.classList.add("active");
+    } catch (err) {
+      console.error("🔥 Failed to add member:", err);
+      alert("Could not add member. Check console for details.");
+    }
+  }
+});
+
+  
 
 document.getElementById("back-to-rooms-from-contacts").addEventListener("click", () => {
   showPage(chatListPage);
@@ -951,14 +1002,45 @@ document.getElementById("back-to-rooms-from-contacts").addEventListener("click",
 
 
   
-  document.getElementById("find-chat").addEventListener("click", () => alert("Show find chat modal."));
+document.getElementById("find-chat").addEventListener("click", () => alert("Show find chat modal."));
 
-  const modalCloseBtn = document.getElementById("modal-close");
-  const modal = document.getElementById("message-modal");
-  modalCloseBtn.onclick = () => modal.style.display = "none";
+// ✅ When you click the "+" button in members list
+inviteBtn.addEventListener("click", () => {
+  if (!currentRoomId) {
+    alert("⚠️ No active room selected.");
+    return;
+  }
 
+  // Switch to the Contacts page
+  membersListPage.classList.remove("active");
+  contactsPage.classList.add("active");
 
-  populateRooms();
-  showPage(chatListPage);
-
+  // Enter invite mode
+  inviteMode = true;
+  console.log("👉 Invite mode ON. Select a contact to add.");
 });
+
+// ✅ Add member to the current room in Firestore
+async function addMemberToRoom(contactId, contactName) {
+  if (!currentRoomId) {
+    throw new Error("No room selected.");
+  }
+
+  const memberRef = doc(db, "rooms", currentRoomId, "members", contactId);
+
+  await setDoc(memberRef, {
+    name: contactName,
+    role: "member",
+    addedAt: new Date()
+  }, { merge: true });
+
+  console.log(`🔥 Firestore: ${contactName} added to ${currentRoomId}`);
+}
+
+  
+const modalCloseBtn = document.getElementById("modal-close");
+const modal = document.getElementById("message-modal");
+modalCloseBtn.onclick = () => modal.style.display = "none";
+
+populateRooms();
+showPage(chatListPage);
