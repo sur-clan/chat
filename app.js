@@ -1075,8 +1075,109 @@ document.getElementById("back-to-rooms-from-contacts").addEventListener("click",
 
 
   
-  document.getElementById("find-chat").addEventListener("click", () => alert("Show find chat modal."));
+document.getElementById("find-chat").addEventListener("click", () => {
+  showFindChatModal();
+});
 
+function showFindChatModal() {
+  document.getElementById('find-chat-modal').classList.remove('hidden');
+  document.getElementById('find-chat-input').value = '';
+  document.getElementById('find-chat-input').focus();
+}
+
+function closeFindChatModal() {
+  document.getElementById('find-chat-modal').classList.add('hidden');
+}
+
+// Event listeners for the find chat modal
+document.getElementById('find-chat-close-btn').addEventListener('click', closeFindChatModal);
+
+document.getElementById('find-chat-join-btn').addEventListener('click', async () => {
+  const roomName = document.getElementById('find-chat-input').value.trim();
+  if (!roomName) {
+    alert("Please enter a room name");
+    return;
+  }
+  
+  await findAndJoinRoom(roomName);
+  closeFindChatModal();
+});
+
+// Allow Enter key to join
+document.getElementById('find-chat-input').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    document.getElementById('find-chat-join-btn').click();
+  }
+});
+
+// Close modal when clicking outside
+document.getElementById('find-chat-modal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('find-chat-modal')) {
+    closeFindChatModal();
+  }
+});
+
+async function findAndJoinRoom(searchName) {
+  try {
+    console.log("🔍 Searching for room:", searchName);
+    
+    // Get all rooms from Firebase
+    const allRoomsSnapshot = await getDocs(collection(db, "rooms"));
+    let foundRoom = null;
+    
+    // Search for room (case-insensitive)
+    allRoomsSnapshot.forEach((roomDoc) => {
+      const roomData = roomDoc.data();
+      const roomName = roomData.name || roomDoc.id;
+      
+      // Case-insensitive comparison
+      if (roomName.toLowerCase() === searchName.toLowerCase()) {
+        foundRoom = {
+          id: roomDoc.id,
+          data: roomData
+        };
+      }
+    });
+
+    if (!foundRoom) {
+      alert("❌ This chat does not exist");
+      return;
+    }
+
+    // Check if user is already a member
+    const memberRef = doc(db, "rooms", foundRoom.id, "members", currentUser.id);
+    const memberSnap = await getDoc(memberRef);
+    
+    if (memberSnap.exists()) {
+      alert("ℹ️ You are already a member of this room");
+      return;
+    }
+
+    // Add user to the room
+    const memberData = {
+      name: currentUser.name,
+      role: "Member", // New members always start as Member
+      joinedAt: serverTimestamp()
+    };
+    
+    if (currentUser.avatar) {
+      memberData.avatar = currentUser.avatar;
+    }
+    
+    await setDoc(memberRef, memberData);
+    
+    console.log(`✅ Successfully joined room: ${foundRoom.data.name}`);
+    alert(`✅ Successfully joined "${foundRoom.data.name}"!`);
+    
+    // Refresh room list to show the new room
+    populateRooms();
+    
+  } catch (error) {
+    console.error("🔥 Error finding/joining room:", error);
+    alert("❌ Error searching for room. Please try again.");
+  }
+}
+  
   const modalCloseBtn = document.getElementById("modal-close");
   const modal = document.getElementById("message-modal");
   modalCloseBtn.onclick = () => modal.style.display = "none";
