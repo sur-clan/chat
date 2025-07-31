@@ -1029,46 +1029,24 @@ document.getElementById("send-message").addEventListener("click", async () => {
     }
   });
 
-  document.getElementById("paste-message").addEventListener("click", async () => {
+document.getElementById("paste-message").addEventListener("click", async () => {
   try {
-    // Try modern clipboard API first
+    // Try modern clipboard API first (works in most desktop browsers)
     if (navigator.clipboard && window.isSecureContext) {
-      try {
-        const text = await navigator.clipboard.readText();
-        document.getElementById("message-input").value = text;
-        return;
-      } catch (err) {
-        console.log("Modern clipboard failed, trying fallback");
-      }
+      const text = await navigator.clipboard.readText();
+      document.getElementById("message-input").value = text;
+      return;
     }
-    
-    // Fallback method - create a temporary input field
-    const tempInput = document.createElement("input");
-    tempInput.style.position = "fixed";
-    tempInput.style.left = "-999999px";
-    tempInput.style.top = "-999999px";
-    document.body.appendChild(tempInput);
-    
-    // Focus the temporary input and trigger paste
-    tempInput.focus();
-    tempInput.select();
-    
-    // Execute paste command
-    const result = document.execCommand('paste');
-    
-    if (result && tempInput.value) {
-      document.getElementById("message-input").value = tempInput.value;
-      document.body.removeChild(tempInput);
-    } else {
-      document.body.removeChild(tempInput);
-      // Final fallback - show instructions
-      alert("📋 Please paste manually using Ctrl+V (or Cmd+V on Mac)");
-    }
-    
   } catch (err) {
-    console.error("Paste error:", err);
-    alert("📋 Please paste manually using Ctrl+V (or Cmd+V on Mac)");
+    // If modern API fails, show helpful instructions
+    console.log("Clipboard API not available or blocked");
   }
+  
+  // Fallback: Give clear instructions for manual paste
+  alert("📋 Please paste using Ctrl+V (or Cmd+V on Mac) in the text box");
+  
+  // Auto-focus the text input so they can paste immediately
+  document.getElementById("message-input").focus();
 });
 
   document.getElementById("leave-chat").addEventListener("click", () => {
