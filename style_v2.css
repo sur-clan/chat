@@ -883,12 +883,14 @@ textarea {
   background: #222;
   border: 2px solid #b3730d;
   border-radius: 15px;
-  width: 90%;
-  max-width: 400px;
+  width: 95%;
+  max-width: 350px;
+  min-width: 280px;
   display: flex;
   flex-direction: column;
   color: #e1bd47;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  margin: 1rem;
 }
 
 .find-chat-header {
@@ -987,3 +989,45 @@ textarea {
   box-shadow: none;
 }
 
+/* Mobile responsive adjustments */
+@media (max-width: 480px) {
+  .find-chat-modal-content {
+    width: 90%;
+    max-width: 320px;
+    margin: 0.5rem;
+  }
+  
+  .find-chat-header {
+    padding: 0.8rem;
+  }
+  
+  .find-chat-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .find-chat-search {
+    padding: 1rem;
+  }
+  
+  .find-chat-search input {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+  
+  .find-chat-buttons {
+    padding: 0 1rem 1rem;
+  }
+  
+  .find-chat-join-btn {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 320px) {
+  .find-chat-modal-content {
+    width: 95%;
+    max-width: 300px;
+  }
+}
