@@ -803,9 +803,18 @@ modal.classList.remove("hidden");
 
     const ts = msg.timestamp?.toDate ? msg.timestamp.toDate() : new Date();
     const formatted = `${ts.toLocaleDateString()} ${ts.toLocaleTimeString()} ${msg.senderName}:\n${msg.text}`;
-    navigator.clipboard.writeText(formatted)
-      .then(() => alert("✅ Message copied!"))
-      .catch(err => alert("❌ Failed to copy: " + err));
+    
+    
+// Simple fallback that works on all devices
+const textArea = document.createElement("textarea");
+textArea.value = formatted;
+document.body.appendChild(textArea);
+textArea.select();
+document.execCommand('copy');
+document.body.removeChild(textArea);
+alert("✅ Message copied!");
+
+    
     modal.classList.add("hidden");
   };
 
