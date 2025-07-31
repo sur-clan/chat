@@ -289,27 +289,40 @@ const sendMessage = async (text) => {
   }
 }
 
-  // Function to check if current user was removed from current room
+// Function to check if current user was removed from current room (one-time check)
+let hasBeenKicked = false;
+
 async function checkIfRemovedFromCurrentRoom() {
-  if (!currentRoomName || !currentUser.id) return;
+  if (!currentRoomName || !currentUser.id || hasBeenKicked) return;
   
   try {
     const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
     const memberSnap = await getDoc(memberRef);
     
     if (!memberSnap.exists()) {
-      // User was removed from current room - kick them out
+      // User was removed from current room
+      hasBeenKicked = true; // Prevent repeated checks
+      
+      // 1. First refresh the room list (removes the room from their list)
+      await populateRooms();
+      
+      // 2. Then show alert and kick them back to room list
       alert("⚠️ You have been removed from this room");
       showPage(chatListPage);
-      populateRooms(); // Refresh room list
+      
+      // 3. Reset flag after they're back in chat list
+      setTimeout(() => {
+        hasBeenKicked = false;
+        currentRoomName = null; // Clear current room
+      }, 1000);
     }
   } catch (error) {
     console.error("Error checking room membership:", error);
   }
 }
 
-// Call this periodically or when messages update
-setInterval(checkIfRemovedFromCurrentRoom, 5000); // Check every 5 seconds
+// Check every 3 seconds (faster detection)
+setInterval(checkIfRemovedFromCurrentRoom, 3000);
 
 let unsubscribeMessages = null;
 
