@@ -20,7 +20,7 @@ const app = initializeApp(window.firebaseConfig);
 const db = getFirestore(app);
 
 async function translateWithDetection(text, targetLang = "en") {
-  const apiKey = "APIKEY";  // 🔁 Replace this with your real key
+  const apiKey = "APIKEY";  // 🔑 Replace this with your real key
   const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
 
   try {
@@ -70,6 +70,28 @@ function languageNameFromCode(code) {
   return names[code] || code;
 }
 
+// Function to truncate room names with character limit
+function truncateRoomName(roomName, maxLength = 50) {
+  if (!roomName) return 'Room Name';
+  
+  // Remove extra whitespace and trim
+  const cleanName = roomName.trim().replace(/\s+/g, ' ');
+  
+  if (cleanName.length <= maxLength) {
+    return cleanName;
+  }
+  
+  // Find a good breaking point (prefer spaces)
+  let truncated = cleanName.substring(0, maxLength);
+  const lastSpace = truncated.lastIndexOf(' ');
+  
+  // If there's a space within the last 10 characters, break there
+  if (lastSpace > maxLength - 10 && lastSpace > 0) {
+    truncated = cleanName.substring(0, lastSpace);
+  }
+  
+  return truncated + '...';
+}
 
 // Function to format time ago
 function getTimeAgo(timestamp) {
@@ -318,7 +340,7 @@ const sendMessage = async (text) => {
           const existingMemberSnap = await getDoc(memberRef);
 
           if (existingMemberSnap.exists()) {
-            // ✅ Member already exists – don't overwrite role
+            // ✅ Member already exists — don't overwrite role
             const existingData = existingMemberSnap.data();
 
             // 🔄 Sync local role with Firestore role
@@ -333,7 +355,7 @@ const sendMessage = async (text) => {
             }, { merge: true });
 
           } else {
-            // 🚀 First time joining – set the role
+            // 🚀 First time joining — set the role
             const memberData = {
               name: currentUser.name,
               role: currentUser.role,
@@ -877,7 +899,9 @@ function showMemberMenu(targetElem, member) {
       
       // Switch to the private room
       currentRoomName = privateRoomId;
-      document.getElementById("room-name").textContent = targetUserName;
+      
+      // Update room name displays with proper truncation
+      await updateAllRoomNameDisplays();
       
       // Clear messages and load the private chat
       const msgsDiv = document.getElementById("messages");
@@ -1220,8 +1244,76 @@ function copyWithFallback(text) {
     };
 
  } else {
-    console.log("❌ User is NOT admin – no Hide/Unhide button");
+    console.log("❌ User is NOT admin — no Hide/Unhide button");
     
+  }
+}
+
+// Enhanced updateAllRoomNameDisplays function with truncation
+async function updateAllRoomNameDisplays() {
+  if (!currentRoomName) return;
+  
+  try {
+    const roomRef = doc(db, "rooms", currentRoomName);
+    const roomSnap = await getDoc(roomRef);
+    
+    if (roomSnap.exists()) {
+      const roomData = roomSnap.data();
+      let displayName;
+      
+      if (roomData.type === "private" && roomData.participants) {
+        const otherParticipant = roomData.participants.find(name => name !== currentUser.name);
+        displayName = truncateRoomName(otherParticipant || 'Private Chat', 40); // Shorter for private chats
+      } else {
+        displayName = truncateRoomName(roomData.name || currentRoomName, 50);
+      }
+      
+      // Update chat room header
+      const chatRoomName = document.getElementById("room-name");
+      if (chatRoomName) {
+        chatRoomName.textContent = displayName;
+        chatRoomName.title = roomData.name || currentRoomName; // Show full name on hover
+      }
+      
+      // Update members page header
+      const membersRoomName = document.querySelector('#members-list #room-name');
+      if (membersRoomName) {
+        membersRoomName.textContent = displayName;
+        membersRoomName.title = roomData.name || currentRoomName; // Show full name on hover
+      }
+      
+      // Refresh room list to show new name
+      populateRooms();
+      
+    }
+  } catch (error) {
+    console.error("Error updating room name displays:", error);
+  }
+}
+
+// Update the room joining logic to use truncated names
+function updateRoomNameOnJoin(roomId, roomData) {
+  let displayName;
+  
+  if (roomData.type === "private" && roomData.participants) {
+    const otherParticipant = roomData.participants.find(name => name !== currentUser.name);
+    displayName = truncateRoomName(otherParticipant || 'Private Chat', 40);
+  } else {
+    displayName = truncateRoomName(roomData.name || roomId, 50);
+  }
+  
+  // Update both room name displays
+  const chatRoomName = document.getElementById("room-name");
+  const membersRoomName = document.querySelector('#members-list #room-name');
+  
+  if (chatRoomName) {
+    chatRoomName.textContent = displayName;
+    chatRoomName.title = roomData.name || roomId;
+  }
+  
+  if (membersRoomName) {
+    membersRoomName.textContent = displayName;
+    membersRoomName.title = roomData.name || roomId;
   }
 }
 
@@ -1316,7 +1408,7 @@ document.getElementById("create-room").addEventListener("click", async () => {
     });
 
 // Add self to members subcollection with Administrator role
-console.log("📥 Creating admin member doc...");
+console.log("🔥 Creating admin member doc...");
 
 const adminData = {
   name: currentUser.name,
@@ -1370,32 +1462,8 @@ document.getElementById("back-to-rooms").addEventListener("click", () => {
 document.getElementById("view-members").addEventListener("click", async () => {
   showPage(membersListPage);
   
-  // Get fresh room name from Firebase for members page
-  const roomNameElem = document.querySelector('#members-list #room-name');
-  if (currentRoomName) {
-    try {
-      const roomRef = doc(db, "rooms", currentRoomName);
-      const roomSnap = await getDoc(roomRef);
-      
-      if (roomSnap.exists()) {
-        const roomData = roomSnap.data();
-        
-        if (roomData.type === "private" && roomData.participants) {
-          const otherParticipant = roomData.participants.find(name => name !== currentUser.name);
-          roomNameElem.textContent = otherParticipant || 'Private Chat';
-        } else {
-          roomNameElem.textContent = roomData.name || currentRoomName;
-        }
-      } else {
-        // Fallback to current display
-        roomNameElem.textContent = document.getElementById("room-name").textContent;
-      }
-    } catch (error) {
-      console.error("Error getting room name for members page:", error);
-      // Fallback to current display
-      roomNameElem.textContent = document.getElementById("room-name").textContent;
-    }
-  }
+  // Get fresh room name from Firebase for members page and update with truncation
+  await updateAllRoomNameDisplays();
   
   populateMembers();
 });
@@ -1452,46 +1520,6 @@ document.getElementById("room-name").addEventListener("click", async () => {
     alert("❌ Error accessing room data. Please try again.");
   }
 });
-
-// Function to update all room name displays
-async function updateAllRoomNameDisplays() {
-  if (!currentRoomName) return;
-  
-  try {
-    const roomRef = doc(db, "rooms", currentRoomName);
-    const roomSnap = await getDoc(roomRef);
-    
-    if (roomSnap.exists()) {
-      const roomData = roomSnap.data();
-      let displayName;
-      
-      if (roomData.type === "private" && roomData.participants) {
-        const otherParticipant = roomData.participants.find(name => name !== currentUser.name);
-        displayName = otherParticipant || 'Private Chat';
-      } else {
-        displayName = roomData.name || currentRoomName;
-      }
-      
-      // Update chat room header
-      const chatRoomName = document.getElementById("room-name");
-      if (chatRoomName) {
-        chatRoomName.textContent = displayName;
-      }
-      
-      // Update members page header
-      const membersRoomName = document.querySelector('#members-list #room-name');
-      if (membersRoomName) {
-        membersRoomName.textContent = displayName;
-      }
-      
-      // Refresh room list to show new name
-      populateRooms();
-      
-    }
-  } catch (error) {
-    console.error("Error updating room name displays:", error);
-  }
-}
 
 document.getElementById("back-to-chat").addEventListener("click", () => {
   showPage(chatRoomPage);
