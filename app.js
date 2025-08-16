@@ -1351,15 +1351,61 @@ console.log("✅ Admin member doc created.");
 });
 
 document.getElementById("back-btn").addEventListener("click", () => showPage(chatListPage));
-document.getElementById("back-to-rooms").addEventListener("click", () => showPage(chatListPage));
+document.getElementById("back-to-rooms").addEventListener("click", () => {
+  // Mark current room as read before leaving
+  if (currentRoomName && currentUser.id) {
+    try {
+      const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
+      updateDoc(memberRef, {
+        lastReadTimestamp: serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Error marking room as read:", error);
+    }
+  }
+  
+  showPage(chatListPage);
+  
+  // Refresh room list to update unread status
+  setTimeout(() => {
+    populateRooms();
+  }, 500);
+});
 
 document.getElementById("view-members").addEventListener("click", () => {
   showPage(membersListPage);
-  document.querySelector('#members-list #room-name').textContent = currentRoomName;
+  
+  // Set room name display for members page (remove "Private:" prefix)
+  const roomNameElem = document.querySelector('#members-list #room-name');
+  if (currentRoomName) {
+    // Check if it's a private room and get the other participant's name
+    const roomsUl = document.getElementById("rooms");
+    const currentRoomLi = Array.from(roomsUl.children).find(li => {
+      return li.textContent.includes(document.getElementById("room-name").textContent);
+    });
+    
+    // Just use the current display name from the chat room header
+    roomNameElem.textContent = document.getElementById("room-name").textContent;
+  }
+  
   populateMembers();
 });
 
-document.getElementById("back-to-chat").addEventListener("click", () => showPage(chatRoomPage));
+document.getElementById("back-to-chat").addEventListener("click", () => {
+  showPage(chatRoomPage);
+  
+  // Mark room as read when returning to chat
+  if (currentRoomName && currentUser.id) {
+    try {
+      const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
+      updateDoc(memberRef, {
+        lastReadTimestamp: serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Error marking room as read:", error);
+    }
+  }
+});
 
 document.getElementById("leave-chat").addEventListener("click", async () => {
   if (!currentRoomName) {
