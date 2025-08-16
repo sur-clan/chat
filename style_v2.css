@@ -993,3 +993,28 @@ textarea {
     font-size: 0.9rem !important;
   }
 }
+
+
+
+#back-btn,
+#back-to-rooms,
+#back-to-chat,
+#back-to-rooms-from-contacts,
+#create-room,
+#invite-member,
+#view-members {
+  font-size: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  line-height: 2.5rem;
+  padding: 0;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid #b3730d;
+  border-radius: 10px;
+  color: #e1bd47;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
