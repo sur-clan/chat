@@ -296,19 +296,19 @@ const sendMessage = async (text) => {
       
       const li = document.createElement("li");
       
-      // Display private rooms differently
-      if (room.type === "private" && room.participants) {
-        const otherParticipant = room.participants.find(name => name !== currentUser.name);
-        const timeAgo = getTimeAgo(room.lastMessageTimestamp);
-        li.innerHTML = `
-          <strong>🔒 ${otherParticipant || 'Private Chat'}</strong><br>
-          <small>${timeAgo}</small>`;
-      } else {
-        const timeAgo = getTimeAgo(room.lastMessageTimestamp);
-        li.innerHTML = `
-          <strong>${room.name || 'Unnamed Room'}</strong><br>
-          <small>${timeAgo}</small>`;
-      }
+   // Display private rooms differently
+if (room.type === "private" && room.participants) {
+  const otherParticipant = room.participants.find(name => name !== currentUser.name);
+  const timeAgo = getTimeAgo(room.lastMessageTimestamp);
+  li.innerHTML = `
+    <strong><span class="private-chat-icon">👤</span> ${otherParticipant || 'Private Chat'}</strong><br>
+    <small>${timeAgo}</small>`;
+} else {
+  const timeAgo = getTimeAgo(room.lastMessageTimestamp);
+  li.innerHTML = `
+    <strong>${room.name || 'Unnamed Room'}</strong><br>
+    <small>${timeAgo}</small>`;
+}
 
       li.addEventListener("click", async () => {
         currentRoomName = roomInfo.id;
