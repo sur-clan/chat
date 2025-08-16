@@ -228,7 +228,7 @@ const sendMessage = async (text) => {
         // Set room name display based on room type
         if (room.type === "private" && room.participants) {
           const otherParticipant = room.participants.find(name => name !== currentUser.name);
-          document.getElementById("room-name").textContent = `Private: ${otherParticipant || 'Private Chat'}`;
+          document.getElementById("room-name").textContent = otherParticipant || 'Private Chat';
         } else {
           document.getElementById("room-name").textContent = currentRoomName;
         }
@@ -808,7 +808,7 @@ function showMemberMenu(targetElem, member) {
       
       // Switch to the private room
       currentRoomName = privateRoomId;
-      document.getElementById("room-name").textContent = `Private: ${targetUserName}`;
+      document.getElementById("room-name").textContent = targetUserName;
       
       // Clear messages and load the private chat
       const msgsDiv = document.getElementById("messages");
