@@ -1025,7 +1025,7 @@ textarea {
   padding: 0.5rem;
 }
 
-/* Ensure the header title in chat list is properly centered */
+/* Ensure the header title in chat list is properly centered and doesn't wrap */
 #chat-list .header-title {
   flex: 1;
   text-align: center;
@@ -1034,4 +1034,12 @@ textarea {
   justify-content: center;
   margin: 0;
   padding: 0;
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide overflow if needed */
+}
+
+/* Make sure the title text doesn't break */
+#chat-list .header-title span {
+  white-space: nowrap;
+  font-size: 1.4rem;
 }
