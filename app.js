@@ -1287,6 +1287,109 @@ document.getElementById("view-members").addEventListener("click", () => {
 
 document.getElementById("back-to-chat").addEventListener("click", () => showPage(chatRoomPage));
 
+document.getElementById("leave-chat").addEventListener("click", async () => {
+  if (!currentRoomName) {
+    alert("❌ No room selected");
+    return;
+  }
+
+  // Check if user is the room creator/admin
+  let isRoomCreator = false;
+  let roomData = null;
+  
+  try {
+    const roomRef = doc(db, "rooms", currentRoomName);
+    const roomSnap = await getDoc(roomRef);
+    
+    if (roomSnap.exists()) {
+      roomData = roomSnap.data();
+      isRoomCreator = roomData.createdBy === currentUser.name;
+    }
+  } catch (error) {
+    console.error("Error checking room creator:", error);
+  }
+
+  // Different confirmation messages based on role
+  let confirmMessage;
+  if (isRoomCreator) {
+    confirmMessage = `⚠️ WARNING: You are the creator of "${currentRoomName}".\n\nLeaving will DELETE the entire room for all members!\n\nAre you sure you want to delete this room permanently?`;
+  } else {
+    // Prevent non-creators from leaving if this is their only room
+    try {
+      const allRoomsSnapshot = await getDocs(collection(db, "rooms"));
+      let userRoomCount = 0;
+      
+      for (const roomDoc of allRoomsSnapshot.docs) {
+        const memberRef = doc(db, "rooms", roomDoc.id, "members", currentUser.id);
+        const memberSnap = await getDoc(memberRef);
+        if (memberSnap.exists()) {
+          userRoomCount++;
+        }
+      }
+      
+      if (userRoomCount <= 1) {
+        alert("❌ You cannot leave your last remaining room");
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking room count:", error);
+    }
+    
+    confirmMessage = `Are you sure you want to leave "${currentRoomName}"?\n\nYou will no longer see messages from this room.`;
+  }
+
+  const confirmLeave = confirm(confirmMessage);
+  
+  if (confirmLeave) {
+    try {
+      if (isRoomCreator) {
+        // Creator leaving = DELETE ENTIRE ROOM
+        console.log(`🔥 Room creator leaving - deleting entire room: ${currentRoomName}`);
+        
+        // Delete all messages in the room
+        const messagesSnapshot = await getDocs(collection(db, "rooms", currentRoomName, "messages"));
+        const deleteMessagePromises = messagesSnapshot.docs.map(messageDoc => 
+          deleteDoc(doc(db, "rooms", currentRoomName, "messages", messageDoc.id))
+        );
+        await Promise.all(deleteMessagePromises);
+        
+        // Delete all members in the room
+        const membersSnapshot = await getDocs(collection(db, "rooms", currentRoomName, "members"));
+        const deleteMemberPromises = membersSnapshot.docs.map(memberDoc => 
+          deleteDoc(doc(db, "rooms", currentRoomName, "members", memberDoc.id))
+        );
+        await Promise.all(deleteMemberPromises);
+        
+        // Delete the room itself
+        const roomRef = doc(db, "rooms", currentRoomName);
+        await deleteDoc(roomRef);
+        
+        alert(`💥 Room "${currentRoomName}" has been deleted for all members`);
+        
+      } else {
+        // Regular member leaving = just remove them
+        const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
+        await deleteDoc(memberRef);
+        
+        alert(`✅ You have left "${currentRoomName}"`);
+      }
+      
+      console.log(`✅ Successfully processed leave request for: ${currentRoomName}`);
+      
+      // Go back to chat list and refresh rooms
+      showPage(chatListPage);
+      populateRooms();
+      
+      // Clear current room
+      currentRoomName = null;
+      
+    } catch (error) {
+      console.error("🔥 Error leaving/deleting room:", error);
+      alert("❌ Error processing request. Please try again.");
+    }
+  }
+});
+
 document.getElementById("send-message").addEventListener("click", async () => {
     const text = document.getElementById("message-input").value.trim();
     if (!text) return;
