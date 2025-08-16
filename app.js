@@ -702,6 +702,9 @@ async function muteMember(memberName) {
 
       alert(`✅ ${memberName} has been muted in this room`);
       console.log(`✅ Muted ${memberName} in ${currentRoomName}`);
+      
+      // Immediately refresh messages to hide muted user's messages
+      populateMessages();
     } else {
       alert(`❌ Could not find ${memberName} to mute`);
     }
@@ -738,6 +741,9 @@ async function unmuteMember(memberName) {
 
       alert(`✅ ${memberName} has been unmuted`);
       console.log(`✅ Unmuted ${memberName} in ${currentRoomName}`);
+      
+      // Immediately refresh messages to show unmuted user's messages
+      populateMessages();
     } else {
       alert(`❌ Could not find ${memberName} to unmute`);
     }
