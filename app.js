@@ -1391,6 +1391,68 @@ document.getElementById("view-members").addEventListener("click", () => {
   populateMembers();
 });
 
+// Add room name editing functionality for admins
+document.getElementById("room-name").addEventListener("click", async () => {
+  // Only allow admins to edit room names
+  if (currentUser.role !== "Administrator") {
+    return; // Do nothing for non-admins
+  }
+  
+  if (!currentRoomName) {
+    alert("❌ No room selected");
+    return;
+  }
+  
+  // Check if it's a private room (can't rename private rooms)
+  try {
+    const roomRef = doc(db, "rooms", currentRoomName);
+    const roomSnap = await getDoc(roomRef);
+    
+    if (roomSnap.exists()) {
+      const roomData = roomSnap.data();
+      
+      if (roomData.type === "private") {
+        alert("❌ Private chat names cannot be changed");
+        return;
+      }
+      
+      const currentName = roomData.name || currentRoomName;
+      const newName = prompt(`Enter new name for "${currentName}":`, currentName);
+      
+      if (newName && newName.trim() !== "" && newName !== currentName) {
+        try {
+          // Update room name in Firebase
+          await updateDoc(roomRef, {
+            name: newName.trim()
+          });
+          
+          // Update the display immediately
+          document.getElementById("room-name").textContent = newName.trim();
+          
+          // Also update members page if currently viewing it
+          const membersRoomName = document.querySelector('#members-list #room-name');
+          if (membersRoomName) {
+            membersRoomName.textContent = newName.trim();
+          }
+          
+          // Refresh room list to show new name
+          populateRooms();
+          
+          alert(`✅ Room renamed to "${newName.trim()}"`);
+          console.log(`✅ Room ${currentRoomName} renamed to: ${newName.trim()}`);
+          
+        } catch (error) {
+          console.error("🔥 Error renaming room:", error);
+          alert("❌ Error renaming room. Please try again.");
+        }
+      }
+    }
+  } catch (error) {
+    console.error("🔥 Error checking room data:", error);
+    alert("❌ Error accessing room data. Please try again.");
+  }
+});
+
 document.getElementById("back-to-chat").addEventListener("click", () => {
   showPage(chatRoomPage);
   
