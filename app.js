@@ -211,8 +211,8 @@ const sendMessage = async (text) => {
       const li = document.createElement("li");
       
       // Display private rooms differently
-      if (room.type === "private") {
-        const otherParticipant = room.participants?.find(name => name !== currentUser.name);
+      if (room.type === "private" && room.participants) {
+        const otherParticipant = room.participants.find(name => name !== currentUser.name);
         li.innerHTML = `
           <strong>🔒 ${otherParticipant || 'Private Chat'}</strong><br>
           <small>${room.lastMessage || ''}</small>`;
@@ -226,8 +226,8 @@ const sendMessage = async (text) => {
         currentRoomName = roomInfo.id;
         
         // Set room name display based on room type
-        if (room.type === "private") {
-          const otherParticipant = room.participants?.find(name => name !== currentUser.name);
+        if (room.type === "private" && room.participants) {
+          const otherParticipant = room.participants.find(name => name !== currentUser.name);
           document.getElementById("room-name").textContent = `Private: ${otherParticipant || 'Private Chat'}`;
         } else {
           document.getElementById("room-name").textContent = currentRoomName;
