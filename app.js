@@ -559,11 +559,15 @@ function showMemberMenu(targetElem, member) {
   const isMuted = member.muted === true;
   const muteText = isMuted ? "🔊 Unmute" : "🔇 Mute";
 
+  // Only show mute button to admins
+  const muteButtonHtml = currentUser.role === "Administrator" ? 
+    `<button id="menu-mute">${muteText}</button>` : '';
+
   menu.innerHTML = `
     <button id="menu-info">📄 Profile</button>
     <button id="menu-message">📩 Message</button>
     <button id="menu-block">🚫 Block</button>
-    <button id="menu-mute">${muteText}</button>
+    ${muteButtonHtml}
   `;
 
   document.body.appendChild(menu);
@@ -609,10 +613,7 @@ function showMemberMenu(targetElem, member) {
   };
 
   const muteBtn = menu.querySelector("#menu-mute");
-  if (currentUser.role !== "Administrator") {
-    muteBtn.disabled = true;
-    muteBtn.title = "Only admins can mute";
-  } else {
+  if (currentUser.role === "Administrator" && muteBtn) {
     muteBtn.onclick = () => {
       if (isMuted) {
         unmuteMember(member.name);
