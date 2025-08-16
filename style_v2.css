@@ -1066,12 +1066,6 @@ textarea {
   padding: 0 0.5rem;
 }
 
-/* Ensure header has enough height for wrapped text */
-#chat-room h2, 
-#members-list h2 {
-  min-height: 4rem;
-  display: flex;
-  align-items: center;
-}
+
 
 
