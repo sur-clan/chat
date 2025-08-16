@@ -1006,40 +1006,7 @@ textarea {
 }
 
 
-/* Add this to your CSS to fix the chat list header alignment */
-
-/* Reset the h2 margin specifically for chat list */
-#chat-list h2 {
-  font-size: 1.4rem;
-  margin: 0; /* Remove any margin */
-  padding: 0; /* Remove any padding */
-  line-height: 1.2; /* Keep consistent line height */
-}
-
-/* Force the chat list header to use the same alignment as other pages */
-#chat-list .header-with-buttons {
-  align-items: center;
-  min-height: 3.5rem;
-  display: flex;
-  justify-content: space-between;
-  padding: 0.5rem;
-}
-
-/* Ensure the header title in chat list is properly centered and doesn't wrap */
-#chat-list .header-title {
-  flex: 1;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: 0;
-  white-space: nowrap; /* Prevent text wrapping */
-  overflow: hidden; /* Hide overflow if needed */
-}
-
-/* Make sure the title text doesn't break */
-#chat-list .header-title span {
-  white-space: nowrap;
-  font-size: 1.4rem;
+/* Simple fix - just adjust the back button position on chat list page */
+#chat-list #back-btn {
+  transform: translateY(-2px); /* Move the back button up slightly */
 }
