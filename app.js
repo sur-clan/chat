@@ -703,8 +703,17 @@ async function muteMember(memberName) {
       alert(`✅ ${memberName} has been muted in this room`);
       console.log(`✅ Muted ${memberName} in ${currentRoomName}`);
       
-      // Immediately refresh messages to hide muted user's messages
-      populateMessages();
+      // Force refresh messages regardless of current page
+      if (unsubscribeMessages) {
+        unsubscribeMessages();
+        unsubscribeMessages = null;
+      }
+      // Re-setup the message listener to immediately reflect mute changes
+      setTimeout(() => {
+        if (currentRoomName && currentUser.role) {
+          populateMessages();
+        }
+      }, 500);
     } else {
       alert(`❌ Could not find ${memberName} to mute`);
     }
@@ -742,8 +751,17 @@ async function unmuteMember(memberName) {
       alert(`✅ ${memberName} has been unmuted`);
       console.log(`✅ Unmuted ${memberName} in ${currentRoomName}`);
       
-      // Immediately refresh messages to show unmuted user's messages
-      populateMessages();
+      // Force refresh messages regardless of current page
+      if (unsubscribeMessages) {
+        unsubscribeMessages();
+        unsubscribeMessages = null;
+      }
+      // Re-setup the message listener to immediately reflect unmute changes
+      setTimeout(() => {
+        if (currentRoomName && currentUser.role) {
+          populateMessages();
+        }
+      }, 500);
     } else {
       alert(`❌ Could not find ${memberName} to unmute`);
     }
