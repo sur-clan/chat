@@ -1012,7 +1012,7 @@ textarea {
 
 /* Add this CSS to your style_v2.css file for room name wrapping */
 
-/* Room name header styling - allow wrapping */
+/* Room name header styling - allow wrapping on mobile */
 #room-name, 
 #members-list #room-name {
   font-family: 'Cinzel Decorative', serif;
@@ -1023,24 +1023,26 @@ textarea {
   line-height: 1.2;
   text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6), 0 0 0px rgba(255, 215, 0, 1);
   
-  /* Allow text wrapping */
-  white-space: normal;
+  /* Allow text wrapping for long room names */
+  white-space: normal !important;
   word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
   
-  /* Set max width to encourage wrapping on long names */
-  max-width: 280px;
+  /* Set max width to encourage wrapping on mobile */
+  max-width: 250px;
   margin: 0 auto;
+  padding: 0 0.5rem;
 }
 
-/* Room list item styling - allow wrapping */
-#rooms li strong {
-  white-space: normal;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  line-height: 1.3;
-  display: block;
+/* Mobile specific adjustments */
+@media (max-width: 480px) {
+  #room-name, 
+  #members-list #room-name {
+    max-width: 200px;
+    font-size: 1rem;
+    line-height: 1.1;
+  }
 }
 
 /* Adjust header container to accommodate wrapped text */
@@ -1061,4 +1063,34 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0 0.5rem;
+}
+
+/* Ensure header has enough height for wrapped text */
+#chat-room h2, 
+#members-list h2 {
+  min-height: 4rem;
+  display: flex;
+  align-items: center;
+}
+
+/* Room list items - keep original tight spacing */
+#rooms li strong {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.1;
+  display: block;
+  margin-bottom: 2px;
+}
+
+#rooms li {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #b3730d;
+  border-radius: 10px;
+  margin: 0.3rem 0;
+  padding: 0.5rem;
+  position: relative;
+  text-align: left;
+  line-height: 1.2;
 }
