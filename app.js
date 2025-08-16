@@ -209,13 +209,29 @@ const sendMessage = async (text) => {
       const room = roomInfo.data;
       
       const li = document.createElement("li");
-      li.innerHTML = `
-        <strong>${room.name || 'Unnamed Room'}</strong><br>
-        <small>${room.lastMessage || ''}</small>`;
+      
+      // Display private rooms differently
+      if (room.type === "private") {
+        const otherParticipant = room.participants?.find(name => name !== currentUser.name);
+        li.innerHTML = `
+          <strong>🔒 ${otherParticipant || 'Private Chat'}</strong><br>
+          <small>${room.lastMessage || ''}</small>`;
+      } else {
+        li.innerHTML = `
+          <strong>${room.name || 'Unnamed Room'}</strong><br>
+          <small>${room.lastMessage || ''}</small>`;
+      }
 
       li.addEventListener("click", async () => {
         currentRoomName = roomInfo.id;
-        document.getElementById("room-name").textContent = currentRoomName;
+        
+        // Set room name display based on room type
+        if (room.type === "private") {
+          const otherParticipant = room.participants?.find(name => name !== currentUser.name);
+          document.getElementById("room-name").textContent = `Private: ${otherParticipant || 'Private Chat'}`;
+        } else {
+          document.getElementById("room-name").textContent = currentRoomName;
+        }
 
         const msgsDiv = document.getElementById("messages");
         // 🚀 Clear immediately and show loading
@@ -577,6 +593,9 @@ async function populateMembers() {
     if (m.muted === true) {
       displayName += " 🔇"; // Add mute icon
     }
+    if (blockedMembers.has(m.name)) {
+      displayName += " 🚫"; // Add blocked icon
+    }
     nameSpan.textContent = displayName;
     nameSpan.style.cursor = "pointer";
 
@@ -632,6 +651,10 @@ function showMemberMenu(targetElem, member) {
   // Check if member is muted
   const isMuted = member.muted === true;
   const muteText = isMuted ? "🔊 Unmute" : "🔇 Mute";
+  
+  // Check if member is blocked (by current user)
+  const isBlocked = blockedMembers.has(member.name);
+  const blockText = isBlocked ? "✅ Unblock" : "🚫 Block";
 
   // Only show mute button to admins
   const muteButtonHtml = currentUser.role === "Administrator" ? 
@@ -640,7 +663,7 @@ function showMemberMenu(targetElem, member) {
   menu.innerHTML = `
     <button id="menu-info">📄 Profile</button>
     <button id="menu-message">📩 Message</button>
-    <button id="menu-block">🚫 Block</button>
+    <button id="menu-block">${blockText}</button>
     ${muteButtonHtml}
   `;
 
@@ -681,7 +704,11 @@ function showMemberMenu(targetElem, member) {
   };
 
   menu.querySelector("#menu-block").onclick = () => {
-    blockMember(member.name);
+    if (isBlocked) {
+      unblockMember(member.name);
+    } else {
+      blockMember(member.name);
+    }
     menu.remove();
     document.removeEventListener("click", closeMemberMenu);
   };
@@ -705,8 +732,108 @@ function showMemberMenu(targetElem, member) {
   }
 }
 
-  function startPrivateChat(name) {
-    alert(`Starting private chat with ${name}`);
+  function startPrivateChat(targetUserName) {
+    if (targetUserName === currentUser.name) {
+      alert("❌ You cannot message yourself");
+      return;
+    }
+    
+    if (blockedMembers.has(targetUserName)) {
+      alert("❌ You have blocked this user");
+      return;
+    }
+    
+    createPrivateRoom(targetUserName);
+  }
+
+  async function createPrivateRoom(targetUserName) {
+    try {
+      // Create a consistent room ID for both users (alphabetical order)
+      const users = [currentUser.name, targetUserName].sort();
+      const privateRoomId = `private_${users[0]}_${users[1]}`.replace(/\s+/g, "_").toLowerCase();
+      
+      console.log("Creating/joining private room:", privateRoomId);
+      
+      // Check if private room already exists
+      const roomRef = doc(db, "rooms", privateRoomId);
+      const roomSnap = await getDoc(roomRef);
+      
+      if (!roomSnap.exists()) {
+        // Create the private room
+        await setDoc(roomRef, {
+          name: `${currentUser.name} & ${targetUserName}`,
+          type: "private",
+          participants: [currentUser.name, targetUserName],
+          createdBy: currentUser.name,
+          createdAt: new Date().toISOString(),
+          lastMessage: "Private chat created",
+          unread: false
+        });
+        
+        console.log("✅ Created new private room");
+      }
+      
+      // Add both users as members
+      const currentUserMemberRef = doc(db, "rooms", privateRoomId, "members", currentUser.id);
+      await setDoc(currentUserMemberRef, {
+        name: currentUser.name,
+        role: "Member",
+        avatar: currentUser.avatar || null
+      }, { merge: true });
+      
+      // Add target user (we need to find their ID first)
+      const usersSnapshot = await getDocs(collection(db, "users"));
+      let targetUserId = null;
+      
+      usersSnapshot.forEach(doc => {
+        const userData = doc.data();
+        if (userData.name === targetUserName) {
+          targetUserId = doc.id;
+        }
+      });
+      
+      if (targetUserId) {
+        const targetUserMemberRef = doc(db, "rooms", privateRoomId, "members", targetUserId);
+        await setDoc(targetUserMemberRef, {
+          name: targetUserName,
+          role: "Member"
+        }, { merge: true });
+        
+        console.log("✅ Added both users to private room");
+      }
+      
+      // Switch to the private room
+      currentRoomName = privateRoomId;
+      document.getElementById("room-name").textContent = `Private: ${targetUserName}`;
+      
+      // Clear messages and load the private chat
+      const msgsDiv = document.getElementById("messages");
+      msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading private chat…</div>`;
+      
+      showPage(chatRoomPage);
+      
+      // Update current user's role for this room
+      const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
+      const existingMemberSnap = await getDoc(memberRef);
+      if (existingMemberSnap.exists()) {
+        const existingData = existingMemberSnap.data();
+        if (existingData.role) {
+          currentUser.role = existingData.role;
+        }
+      }
+      
+      // Load messages
+      safePopulateMessages();
+      
+      // Refresh room list to show the new private chat
+      populateRooms();
+      
+      alert(`✅ Started private chat with ${targetUserName}`);
+      
+    } catch (error) {
+      console.error("🔥 Error creating private room:", error);
+      alert("❌ Error starting private chat. Please try again.");
+    }
   }
 
   function showProfileModal(name) {
@@ -738,8 +865,34 @@ function showMemberMenu(targetElem, member) {
 }
   
   function blockMember(name) {
+    if (name === currentUser.name) {
+      alert("❌ You cannot block yourself");
+      return;
+    }
+    
     blockedMembers.add(name);
-    alert(`${name} is now blocked (you won't see their future messages)`);
+    alert(`✅ ${name} is now blocked (you won't see their messages)`);
+    
+    // Immediately refresh messages to hide blocked user's messages
+    populateMessages();
+    
+    // Also refresh members list to show block status
+    if (document.getElementById("members-list").classList.contains("active")) {
+      populateMembers();
+    }
+  }
+
+  function unblockMember(name) {
+    blockedMembers.delete(name);
+    alert(`✅ ${name} has been unblocked`);
+    
+    // Immediately refresh messages to show unblocked user's messages
+    populateMessages();
+    
+    // Also refresh members list to update block status
+    if (document.getElementById("members-list").classList.contains("active")) {
+      populateMembers();
+    }
   }
 
 async function muteMember(memberName) {
