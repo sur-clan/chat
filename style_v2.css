@@ -130,6 +130,8 @@ h2 {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem;
+  min-height: 3.5rem; /* Ensure consistent header height */
+  box-sizing: border-box;
 }
 
 .header-title {
@@ -160,8 +162,11 @@ h2 {
   align-items: center !important;
   justify-content: center !important;
   font-family: 'Cinzel', serif !important;
-  margin: 0.2rem !important;
+  margin: 0 !important;
   box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  top: 0 !important;
 }
 
 .header-btn:hover,
@@ -191,7 +196,10 @@ h2 {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  margin: 0.2rem !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  top: 0 !important;
 }
 
 #view-members:hover {
