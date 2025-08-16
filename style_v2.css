@@ -127,7 +127,7 @@ h2 {
 
 .header-with-buttons {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem;
@@ -302,7 +302,7 @@ align-items: center;        /* center vertically */
 }
 
 textarea::placeholder {
-  color: #b3730d; 		/* Type your messageâ€¦ */
+  color: #b3730d; 		/* Type your message… */
   font-style: italic;
 
 }
@@ -518,13 +518,13 @@ textarea {
   border: none;
   box-shadow: none;
 
-  border-radius: 50%; /* â† makes it a circle */
+  border-radius: 50%; /* → makes it a circle */
   cursor: pointer;
   color: #fff;
   text-align: center;
- display: flex;             /* â† ensures centering */
-  justify-content: center;   /* â† center horizontally */
-  align-items: center;       /* â† center vertically */
+ display: flex;             /* → ensures centering */
+  justify-content: center;   /* → center horizontally */
+  align-items: center;       /* → center vertically */
   text-align: center;
   padding: 0;
   box-sizing: border-box;
@@ -1011,15 +1011,16 @@ textarea {
 }
 
 
-/* Room name container styles for chat room and members pages */
+/* Room name container styles for chat room and members pages - FIXED */
 #chat-room #room-name-container,
 #members-list #room-name-container {
   flex: 1;
   text-align: center;
   display: flex;
-  flex-direction: column;
+  flex-direction: row !important;  /* FIXED: Changed from column to row */
   justify-content: center;
   align-items: center;
+  gap: 0.3rem !important;  /* Add gap between elements */
   max-width: calc(100% - 5rem); /* Account for buttons on sides */
   padding: 0 0.5rem;
   box-sizing: border-box;
@@ -1028,26 +1029,18 @@ textarea {
 #chat-room #room-name,
 #members-list #room-name {
   font-family: 'Cormorant Garamond', serif !important;
-  font-size: 1.1rem !important;
+  font-size: 1.2rem !important;
   font-weight: 400 !important;
   color: #efca51 !important;
   text-align: center !important;
   margin: 0 !important;
   line-height: 1.2 !important;
   text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6), 0 0 0px rgba(255, 215, 0, 1) !important;
-
-/* Add this to your style_v2.css file */
-
-#room-name-container {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 0.3rem !important;
-  flex: 1 !important;
-  text-align: center !important;
+  white-space: nowrap !important;
+  display: inline !important;
 }
 
+/* Make sure the small dots display inline and have proper size */
 #room-name-container .small {
   display: inline !important;
   font-size: 60% !important;
