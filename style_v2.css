@@ -1025,10 +1025,9 @@ textarea {
   box-sizing: border-box;
 }
 
-/* Room name styling with 2-line limit */
 #chat-room #room-name,
 #members-list #room-name {
-  font-family: 'Cinzel Decorative', serif !important;
+  font-family: 'Cormorant Garamond', serif !important;
   font-size: 1.1rem !important;
   font-weight: 400 !important;
   color: #efca51 !important;
@@ -1036,57 +1035,3 @@ textarea {
   margin: 0 !important;
   line-height: 1.2 !important;
   text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6), 0 0 0px rgba(255, 215, 0, 1) !important;
-  
-  /* Multi-line text handling */
-  display: -webkit-box !important;
-  -webkit-line-clamp: 2 !important;
-  -webkit-box-orient: vertical !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  word-wrap: break-word !important;
-  word-break: break-word !important;
-  hyphens: auto !important;
-  
-  /* Set max width and height */
-  max-width: 100% !important;
-  max-height: 2.4em !important; /* 2 lines at 1.2 line-height */
-}
-
-/* Decorative spans styling */
-#chat-room #room-name-container .small,
-#members-list #room-name-container .small {
-  font-size: 0.6em !important;
-  line-height: 1 !important;
-  margin: 0 0.2rem !important;
-  flex-shrink: 0 !important;
-}
-
-/* Mobile responsive adjustments */
-@media (max-width: 640px) {
-  #chat-room #room-name-container,
-  #members-list #room-name-container {
-    max-width: calc(100% - 4rem); /* Smaller buttons on mobile */
-    padding: 0 0.25rem;
-  }
-  
-  #chat-room #room-name,
-  #members-list #room-name {
-    font-size: 1rem !important;
-    max-height: 2.2em !important;
-  }
-  
-  #chat-room #room-name-container .small,
-  #members-list #room-name-container .small {
-    font-size: 0.5em !important;
-    margin: 0 0.1rem !important;
-  }
-}
-
-/* Extra small screens */
-@media (max-width: 480px) {
-  #chat-room #room-name,
-  #members-list #room-name {
-    font-size: 0.9rem !important;
-    max-height: 2.0em !important;
-  }
-}
