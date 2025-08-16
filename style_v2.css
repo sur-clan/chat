@@ -1006,7 +1006,4 @@ textarea {
 }
 
 
-/* Simple fix - just adjust the back button position on chat list page */
-#chat-list #back-btn {
-  transform: translateY(-2px); /* Move the back button up slightly */
-}
+
