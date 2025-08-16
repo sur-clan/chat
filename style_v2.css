@@ -996,6 +996,8 @@ textarea {
 
 
 
+/* Replace the existing back button styles in your CSS with this: */
+
 #back-btn,
 #back-to-rooms,
 #back-to-chat,
@@ -1017,4 +1019,28 @@ textarea {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+/* Fix header alignment for all pages */
+.header-with-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  min-height: 3.5rem; /* Ensure consistent height */
+}
+
+/* Ensure the chat list header matches other pages */
+#chat-list .header-with-buttons {
+  align-items: center; /* Force center alignment */
+}
+
+/* Make sure all header titles are properly centered */
+.header-title {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
