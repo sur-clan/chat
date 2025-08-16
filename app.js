@@ -146,6 +146,19 @@ currentRoomName = roomId;
 });
 
 const sendMessage = async (text) => {
+  // Check if user is muted before sending
+  try {
+    const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
+    const memberSnap = await getDoc(memberRef);
+    
+    if (memberSnap.exists() && memberSnap.data().muted === true) {
+      alert("🔇 You are muted in this room. Your message was not sent.");
+      return;
+    }
+  } catch (error) {
+    console.error("Error checking mute status before sending:", error);
+  }
+
   const messagesRef = collection(db, "rooms", currentRoomName, "messages");
 
   await addDoc(messagesRef, {
@@ -356,6 +369,9 @@ function populateMessages() {
   // clear messages & show placeholder immediately
   msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading messages…</div>`;
 
+  // Check mute status and show notification if needed
+  await checkMuteStatus();
+
   const messagesRef = collection(db, "rooms", currentRoomName, "messages");
   const q = query(messagesRef, orderBy("timestamp"));
 
@@ -461,6 +477,9 @@ function populateMessages() {
     msgsDiv.innerHTML = "";
     msgsDiv.appendChild(frag);
 
+    // Re-check and show mute notification after messages load
+    await checkMuteStatus();
+
     msgsDiv.scrollTop = msgsDiv.scrollHeight;
   });
 }
@@ -475,7 +494,62 @@ async function safePopulateMessages(retries = 10) {
      await new Promise(resolve => setTimeout(resolve, 300)); 
      return safePopulateMessages(retries - 1);
    }
+   
+   // Check if current user is muted and show notification
+   await checkMuteStatus();
    populateMessages();
+}
+
+// Add function to check if current user is muted
+async function checkMuteStatus() {
+  if (!currentRoomName || !currentUser.id) return;
+  
+  try {
+    const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
+    const memberSnap = await getDoc(memberRef);
+    
+    if (memberSnap.exists()) {
+      const memberData = memberSnap.data();
+      if (memberData.muted === true) {
+        // Show mute notification at top of messages
+        const msgsDiv = document.getElementById("messages");
+        const existingNotification = document.getElementById("mute-notification");
+        
+        if (!existingNotification) {
+          const notification = document.createElement("div");
+          notification.id = "mute-notification";
+          notification.style.cssText = `
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid #ff6b6b;
+            border-radius: 8px;
+            color: #ff6b6b;
+            padding: 0.8rem;
+            margin: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+          `;
+          notification.innerHTML = `
+            🔇 You have been muted in this room by an administrator.<br>
+            <small style="opacity: 0.8;">Your messages are not visible to other members.</small>
+          `;
+          
+          // Insert at the top of messages div
+          msgsDiv.insertBefore(notification, msgsDiv.firstChild);
+        }
+      } else {
+        // Remove mute notification if user is not muted
+        const existingNotification = document.getElementById("mute-notification");
+        if (existingNotification) {
+          existingNotification.remove();
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error checking mute status:", error);
+  }
 }
 
 async function populateMembers() {
