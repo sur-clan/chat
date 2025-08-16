@@ -527,7 +527,7 @@ async function checkMuteStatus() {
     if (memberSnap.exists()) {
       const memberData = memberSnap.data();
       if (memberData.muted === true) {
-        // Show mute notification at top of messages
+        // Check if current user is muted and show notification
         const msgsDiv = document.getElementById("messages");
         const existingNotification = document.getElementById("mute-notification");
         
@@ -552,8 +552,12 @@ async function checkMuteStatus() {
             <small style="opacity: 0.8;">Your messages are not visible to other members.</small>
           `;
           
-          // Insert at the top of messages div
-          msgsDiv.insertBefore(notification, msgsDiv.firstChild);
+          // Insert right after any existing content
+          if (msgsDiv.firstChild) {
+            msgsDiv.insertBefore(notification, msgsDiv.firstChild);
+          } else {
+            msgsDiv.appendChild(notification);
+          }
         }
       } else {
         // Remove mute notification if user is not muted
