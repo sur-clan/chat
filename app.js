@@ -104,7 +104,40 @@ function getTimeAgo(timestamp) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+// Wait for both DOM and Firebase to be ready
+function waitForDOMAndFirebase() {
+  return new Promise((resolve) => {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', resolve);
+    } else {
+      resolve();
+    }
+  });
+}
+
+// Initialize everything only when ready
+(async function initializeChat() {
+  try {
+    await waitForDOMAndFirebase();
+    console.log("✅ DOM is ready, initializing chat...");
+    
+    // Wait a bit more for Wix to fully load
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    if (typeof document === 'undefined') {
+      console.error("❌ Document still not available");
+      return;
+    }
+    
+    console.log("✅ Starting chat initialization...");
+    initializeChatApp();
+    
+  } catch (error) {
+    console.error("🔥 Error initializing chat:", error);
+  }
+})();
+
+function initializeChatApp() {
 
 let currentUser = {};
 
@@ -2093,4 +2126,4 @@ populateRooms();
 }
 
 let inviteSystem;
-});
+}); // End of initializeChatApp function
