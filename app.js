@@ -71,6 +71,39 @@ function languageNameFromCode(code) {
 }
 
 
+// Function to format time ago
+function getTimeAgo(timestamp) {
+  if (!timestamp) return '';
+  
+  const now = new Date();
+  const messageTime = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  const diffMs = now - messageTime;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffWeeks = Math.floor(diffDays / 7);
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  if (diffDays === 0) {
+    return 'Today';
+  } else if (diffDays === 1) {
+    return 'Yesterday';
+  } else if (diffDays < 7) {
+    return `${diffDays} days ago`;
+  } else if (diffWeeks === 1) {
+    return '1 week ago';
+  } else if (diffWeeks < 4) {
+    return `${diffWeeks} weeks ago`;
+  } else if (diffMonths === 1) {
+    return '1 month ago';
+  } else if (diffMonths < 12) {
+    return `${diffMonths} months ago`;
+  } else if (diffYears === 1) {
+    return '1 year ago';
+  } else {
+    return `${diffYears} years ago`;
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 
 let currentUser = {};
@@ -167,6 +200,17 @@ const sendMessage = async (text) => {
     text: text,
     timestamp: serverTimestamp()
   });
+
+  // Update room's last message info
+  try {
+    const roomRef = doc(db, "rooms", currentRoomName);
+    await updateDoc(roomRef, {
+      lastMessage: text.length > 50 ? text.substring(0, 50) + "..." : text,
+      lastMessageTimestamp: serverTimestamp()
+    });
+  } catch (error) {
+    console.error("Error updating room last message:", error);
+  }
 };
 
   function showPage(page) {
@@ -213,13 +257,15 @@ const sendMessage = async (text) => {
       // Display private rooms differently
       if (room.type === "private" && room.participants) {
         const otherParticipant = room.participants.find(name => name !== currentUser.name);
+        const timeAgo = getTimeAgo(room.lastMessageTimestamp);
         li.innerHTML = `
           <strong>🔒 ${otherParticipant || 'Private Chat'}</strong><br>
-          <small>${room.lastMessage || ''}</small>`;
+          <small>${timeAgo}</small>`;
       } else {
+        const timeAgo = getTimeAgo(room.lastMessageTimestamp);
         li.innerHTML = `
           <strong>${room.name || 'Unnamed Room'}</strong><br>
-          <small>${room.lastMessage || ''}</small>`;
+          <small>${timeAgo}</small>`;
       }
 
       li.addEventListener("click", async () => {
@@ -771,6 +817,7 @@ function showMemberMenu(targetElem, member) {
           createdBy: currentUser.name,
           createdAt: new Date().toISOString(),
           lastMessage: "Private chat created",
+          lastMessageTimestamp: serverTimestamp(),
           unread: false
         });
         
