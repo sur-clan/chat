@@ -1074,23 +1074,4 @@ textarea {
   align-items: center;
 }
 
-/* Room list items - keep original tight spacing */
-#rooms li strong {
-  white-space: normal;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  line-height: 1.1;
-  display: block;
-  margin-bottom: 2px;
-}
 
-#rooms li {
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid #b3730d;
-  border-radius: 10px;
-  margin: 0.3rem 0;
-  padding: 0.5rem;
-  position: relative;
-  text-align: left;
-  line-height: 1.2;
-}
