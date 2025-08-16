@@ -87,7 +87,7 @@ let currentUser = {};
   const blockedMembers = new Set();
   const mutedMembers = new Set();
 
-// 🪄 Wait for Wix to send the member info
+// Wait for Wix to send the member info
 window.addEventListener("message", async (event) => {
 if (!event.origin.endsWith("sur-clan.com")) return;
 
@@ -119,7 +119,7 @@ if (!event.origin.endsWith("sur-clan.com")) return;
   await setDoc(userRef, userPayload, { merge: true });
 
   // and add to default room
-  const roomId = "general"; // 👈 default room
+  const roomId = "general"; // default room
 
   try {
     const memberPayload = {
@@ -136,8 +136,8 @@ if (!event.origin.endsWith("sur-clan.com")) return;
     console.log("✅ Added user to default room:", roomId);
 
 currentRoomName = roomId;
-  populateRooms(); // ✅ Load the list of rooms
-  setupRoomListener(); // ← Add this line
+  populateRooms(); // Load the list of rooms
+  setupRoomListener(); // Add this line
   showPage(chatListPage);
 
   } catch (err) {
@@ -177,9 +177,9 @@ const sendMessage = async (text) => {
     async function populateRooms() {
   const roomsUl = document.getElementById("rooms");
 
-  // ✅ Only show "Loading rooms…" if nothing is already there
+  // Only show "Loading rooms…" if nothing is already there
   if (!roomsUl.hasChildNodes() || roomsUl.innerHTML.trim() === "") {
-      roomsUl.innerHTML = `<li style="text-align:center; color:gold;">Loading rooms…</li>`;
+      roomsUl.innerHTML = '<li style="text-align:center; color:gold;">Loading rooms…</li>';
   }
 
   try {
