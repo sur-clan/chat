@@ -234,8 +234,8 @@ const sendMessage = async (text) => {
         }
 
         const msgsDiv = document.getElementById("messages");
-        // 🚀 Clear immediately and show loading
-        msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading messages…</div>`;
+        // Clear immediately and show loading
+        msgsDiv.innerHTML = '<div style="text-align:center; color:gold;">Loading messages…</div>';
         
         showPage(chatRoomPage);
 
@@ -376,17 +376,17 @@ function populateMessages() {
 
   const msgsDiv = document.getElementById("messages");
 
-  // 🧹 Stop the old listener *first*
+  // Stop the old listener first
   if (unsubscribeMessages) {
     unsubscribeMessages();
     unsubscribeMessages = null;
   }
 
   // clear messages & show placeholder immediately
-  msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading messages…</div>`;
+  msgsDiv.innerHTML = '<div style="text-align:center; color:gold;">Loading messages…</div>';
 
   // Check mute status and show notification if needed
-  await checkMuteStatus();
+  checkMuteStatus();
 
   const messagesRef = collection(db, "rooms", currentRoomName, "messages");
   const q = query(messagesRef, orderBy("timestamp"));
@@ -395,7 +395,7 @@ function populateMessages() {
     const frag = document.createDocumentFragment();  
 
     if (snapshot.empty) {
-      msgsDiv.innerHTML = `<div style="text-align:center; color:gray;">No messages yet…</div>`;
+      msgsDiv.innerHTML = '<div style="text-align:center; color:gray;">No messages yet…</div>';
       return;
     }
 
@@ -494,7 +494,7 @@ function populateMessages() {
     msgsDiv.appendChild(frag);
 
     // Re-check and show mute notification after messages load
-    await checkMuteStatus();
+    checkMuteStatus();
 
     msgsDiv.scrollTop = msgsDiv.scrollHeight;
   });
@@ -516,7 +516,6 @@ async function safePopulateMessages(retries = 10) {
    populateMessages();
 }
 
-// Add function to check if current user is muted
 async function checkMuteStatus() {
   if (!currentRoomName || !currentUser.id) return;
   
@@ -527,48 +526,49 @@ async function checkMuteStatus() {
     if (memberSnap.exists()) {
       const memberData = memberSnap.data();
       if (memberData.muted === true) {
-        // Check if current user is muted and show notification
-        const msgsDiv = document.getElementById("messages");
-        const existingNotification = document.getElementById("mute-notification");
-        
-        if (!existingNotification) {
-          const notification = document.createElement("div");
-          notification.id = "mute-notification";
-          notification.style.cssText = `
-            background: rgba(255, 107, 107, 0.2);
-            border: 1px solid #ff6b6b;
-            border-radius: 8px;
-            color: #ff6b6b;
-            padding: 0.8rem;
-            margin: 0.5rem;
-            text-align: center;
-            font-weight: bold;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-          `;
-          notification.innerHTML = `
-            🔇 You have been muted in this room by an administrator.<br>
-            <small style="opacity: 0.8;">Your messages are not visible to other members.</small>
-          `;
-          
-          // Insert right after any existing content
-          if (msgsDiv.firstChild) {
-            msgsDiv.insertBefore(notification, msgsDiv.firstChild);
-          } else {
-            msgsDiv.appendChild(notification);
-          }
-        }
+        showMuteNotification();
       } else {
-        // Remove mute notification if user is not muted
-        const existingNotification = document.getElementById("mute-notification");
-        if (existingNotification) {
-          existingNotification.remove();
-        }
+        removeMuteNotification();
       }
     }
   } catch (error) {
     console.error("Error checking mute status:", error);
+  }
+}
+
+function showMuteNotification() {
+  const msgsDiv = document.getElementById("messages");
+  const existingNotification = document.getElementById("mute-notification");
+  
+  if (!existingNotification) {
+    const notification = document.createElement("div");
+    notification.id = "mute-notification";
+    notification.style.backgroundColor = "rgba(255, 107, 107, 0.2)";
+    notification.style.border = "1px solid #ff6b6b";
+    notification.style.borderRadius = "8px";
+    notification.style.color = "#ff6b6b";
+    notification.style.padding = "0.8rem";
+    notification.style.margin = "0.5rem";
+    notification.style.textAlign = "center";
+    notification.style.fontWeight = "bold";
+    notification.style.position = "sticky";
+    notification.style.top = "0";
+    notification.style.zIndex = "100";
+    
+    notification.innerHTML = "🔇 You have been muted in this room by an administrator.<br><small style=\"opacity: 0.8;\">Your messages are not visible to other members.</small>";
+    
+    if (msgsDiv.firstChild) {
+      msgsDiv.insertBefore(notification, msgsDiv.firstChild);
+    } else {
+      msgsDiv.appendChild(notification);
+    }
+  }
+}
+
+function removeMuteNotification() {
+  const existingNotification = document.getElementById("mute-notification");
+  if (existingNotification) {
+    existingNotification.remove();
   }
 }
 
