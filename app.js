@@ -104,40 +104,7 @@ function getTimeAgo(timestamp) {
   }
 }
 
-// Wait for both DOM and Firebase to be ready
-function waitForDOMAndFirebase() {
-  return new Promise((resolve) => {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', resolve);
-    } else {
-      resolve();
-    }
-  });
-}
-
-// Initialize everything only when ready
-(async function initializeChat() {
-  try {
-    await waitForDOMAndFirebase();
-    console.log("✅ DOM is ready, initializing chat...");
-    
-    // Wait a bit more for Wix to fully load
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    if (typeof document === 'undefined') {
-      console.error("❌ Document still not available");
-      return;
-    }
-    
-    console.log("✅ Starting chat initialization...");
-    initializeChatApp();
-    
-  } catch (error) {
-    console.error("🔥 Error initializing chat:", error);
-  }
-})();
-
-function initializeChatApp() {
+document.addEventListener("DOMContentLoaded", () => {
 
 let currentUser = {};
 
@@ -1403,8 +1370,32 @@ document.getElementById("back-to-rooms").addEventListener("click", () => {
 document.getElementById("view-members").addEventListener("click", async () => {
   showPage(membersListPage);
   
-  // Update room name displays when going to members page
-  await updateAllRoomNameDisplays();
+  // Get fresh room name from Firebase for members page
+  const roomNameElem = document.querySelector('#members-list #room-name');
+  if (currentRoomName) {
+    try {
+      const roomRef = doc(db, "rooms", currentRoomName);
+      const roomSnap = await getDoc(roomRef);
+      
+      if (roomSnap.exists()) {
+        const roomData = roomSnap.data();
+        
+        if (roomData.type === "private" && roomData.participants) {
+          const otherParticipant = roomData.participants.find(name => name !== currentUser.name);
+          roomNameElem.textContent = otherParticipant || 'Private Chat';
+        } else {
+          roomNameElem.textContent = roomData.name || currentRoomName;
+        }
+      } else {
+        // Fallback to current display
+        roomNameElem.textContent = document.getElementById("room-name").textContent;
+      }
+    } catch (error) {
+      console.error("Error getting room name for members page:", error);
+      // Fallback to current display
+      roomNameElem.textContent = document.getElementById("room-name").textContent;
+    }
+  }
   
   populateMembers();
 });
@@ -1435,43 +1426,17 @@ document.getElementById("room-name").addEventListener("click", async () => {
       }
       
       const currentName = roomData.name || currentRoomName;
-      const newName = prompt(`Enter new name for "${currentName}" (max 30 characters):`, currentName);
+      const newName = prompt(`Enter new name for "${currentName}":`, currentName);
       
       if (newName && newName.trim() !== "" && newName !== currentName) {
-        const trimmedName = newName.trim();
-        
-        // Validate new name
-        if (trimmedName.length > 30) {
-          alert("❌ Room name cannot exceed 30 characters");
-          return;
-        }
-        
-        // Check if new name would create duplicate room ID
-        const newRoomId = trimmedName.replace(/\s+/g, "_").toLowerCase();
-        if (newRoomId !== currentRoomName) {
-          try {
-            const existingRoomRef = doc(db, "rooms", newRoomId);
-            const existingRoomSnap = await getDoc(existingRoomRef);
-            
-            if (existingRoomSnap.exists()) {
-              alert("❌ This room name already exists");
-              return;
-            }
-          } catch (error) {
-            console.error("Error checking existing room:", error);
-            alert("❌ Error checking room availability. Please try again.");
-            return;
-          }
-        }
-        
         try {
           // Update room name in Firebase
           await updateDoc(roomRef, {
-            name: trimmedName
+            name: newName.trim()
           });
           
-          console.log(`✅ Room ${currentRoomName} renamed to: ${trimmedName}`);
-          alert(`✅ Room renamed to "${trimmedName}"`);
+          console.log(`✅ Room ${currentRoomName} renamed to: ${newName.trim()}`);
+          alert(`✅ Room renamed to "${newName.trim()}"`);
           
           // Force refresh everything with new name
           await updateAllRoomNameDisplays();
@@ -2126,4 +2091,4 @@ populateRooms();
 }
 
 let inviteSystem;
-}); // End of initializeChatApp function
+});
