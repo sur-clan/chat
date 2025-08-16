@@ -993,22 +993,3 @@ textarea {
     font-size: 0.9rem !important;
   }
 }
-
-
-/* Add these fixes to the END of your original CSS */
-
-/* Fix 1: Make contacts page back button same size as others */
-#back-to-rooms-from-contacts {
-  font-size: 2rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  line-height: 2.5rem;
-  padding: 0;
-  text-align: center;
-}
-
-/* Fix 2: Slightly adjust chat list back button alignment without affecting title */
-#chat-list #back-btn {
-  position: relative;
-  top: -2px;
-}
