@@ -12,7 +12,8 @@ import {
   serverTimestamp,
   query,
   orderBy,
-  onSnapshot
+  onSnapshot,
+  where
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app = initializeApp(window.firebaseConfig);
@@ -72,9 +73,6 @@ function languageNameFromCode(code) {
 
 document.addEventListener("DOMContentLoaded", () => {
 
-
-
-
 let currentUser = {};
 
   const chatListPage = document.getElementById("chat-list");
@@ -86,11 +84,8 @@ let currentUser = {};
   
   let currentRoomName = null;
 
-
   const blockedMembers = new Set();
   const mutedMembers = new Set();
-
-
 
 // 🪄 Wait for Wix to send the member info
 window.addEventListener("message", async (event) => {
@@ -150,8 +145,6 @@ currentRoomName = roomId;
   }
 });
 
-
-
 const sendMessage = async (text) => {
   const messagesRef = collection(db, "rooms", currentRoomName, "messages");
 
@@ -162,10 +155,6 @@ const sendMessage = async (text) => {
     timestamp: serverTimestamp()
   });
 };
-
-
-
-
 
   function showPage(page) {
     pages.forEach(p => p.classList.remove("active"));
@@ -289,7 +278,6 @@ const sendMessage = async (text) => {
   }
 }
 
-
 let roomListRefreshInterval = null;
 
 function setupRoomListener() {
@@ -309,8 +297,6 @@ function setupRoomListener() {
   }, 3000); // Check every 3 seconds
 }
 
-
-  
 // Function to check if current user was removed from current room (one-time check)
 let hasBeenKicked = false;
 
@@ -353,119 +339,120 @@ function populateMessages() {
     console.error("❌ currentRoomName is not set yet");
     return;
   }
- if (!currentUser.role) {
-    console.warn("⚠️ populateMessages() called before role was set – stopping");
+  
+  if (!currentUser.role) {
+    console.warn("⚠️ populateMessages() called before role was set — stopping");
     return;
   }
 
-
-
-
-
-
-
-  
   const msgsDiv = document.getElementById("messages");
 
-
-
- // 🧹 Stop the old listener *first*
+  // 🧹 Stop the old listener *first*
   if (unsubscribeMessages) {
     unsubscribeMessages();
     unsubscribeMessages = null;
   }
 
   // clear messages & show placeholder immediately
-msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading messages…</div>`;
+  msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading messages…</div>`;
 
   const messagesRef = collection(db, "rooms", currentRoomName, "messages");
   const q = query(messagesRef, orderBy("timestamp"));
 
-    unsubscribeMessages = onSnapshot(q, (snapshot) => {
+  unsubscribeMessages = onSnapshot(q, async (snapshot) => {
     const frag = document.createDocumentFragment();  
 
-  if (snapshot.empty) {
-    msgsDiv.innerHTML = `<div style="text-align:center; color:gray;">No messages yet…</div>`;
-    return;
-  }
+    if (snapshot.empty) {
+      msgsDiv.innerHTML = `<div style="text-align:center; color:gray;">No messages yet…</div>`;
+      return;
+    }
+
+    // Get muted members list from Firebase
+    const mutedMembers = new Set();
+    try {
+      const membersSnapshot = await getDocs(collection(db, "rooms", currentRoomName, "members"));
+      membersSnapshot.forEach(doc => {
+        const memberData = doc.data();
+        if (memberData.muted === true) {
+          mutedMembers.add(memberData.name);
+        }
+      });
+    } catch (error) {
+      console.error("Error getting muted members:", error);
+    }
 
     snapshot.forEach((doc) => {
       const msg = doc.data();
 
-
-    if (blockedMembers.has(msg.senderName)) return;
-    if (mutedMembers.has(msg.senderName) && currentUser.role === "Administrator") return;
-
+      // Skip blocked members (local block)
+      if (blockedMembers.has(msg.senderName)) return;
       
-    const wrapper = document.createElement("div");
-    wrapper.className = "message-scroll";
-    wrapper.dataset.messageId = doc.id;  // ✅ so we know which Firestore doc to update
-    wrapper.classList.add(msg.senderName === currentUser.name ? "my-message" : "other-message");
+      // Skip muted members (global mute from Firebase)
+      if (mutedMembers.has(msg.senderName)) return;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "message-scroll";
+      wrapper.dataset.messageId = doc.id;
+      wrapper.classList.add(msg.senderName === currentUser.name ? "my-message" : "other-message");
 
       const content = document.createElement("div");
       content.className = "message-content";
     
-     if (msg.hidden) {
-  content.innerHTML = `
-    <div class="message-header">${msg.senderName}</div>
-    <div class="message-body" style="font-style: italic; color: gray;">
-      This message has been hidden by admin.
-    </div>
-    <div class="message-time">${msg.timestamp?.toDate().toLocaleTimeString() || ''}</div>
-  `;
-} else {
-  content.innerHTML = `
-    <div class="message-header">${msg.senderName}</div>
-    <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
-    <div class="message-time">${msg.timestamp?.toDate().toLocaleTimeString() || ''}</div>
-  `;
-}
+      if (msg.hidden) {
+        content.innerHTML = `
+          <div class="message-header">${msg.senderName}</div>
+          <div class="message-body" style="font-style: italic; color: gray;">
+            This message has been hidden by admin.
+          </div>
+          <div class="message-time">${msg.timestamp?.toDate().toLocaleTimeString() || ''}</div>
+        `;
+      } else {
+        content.innerHTML = `
+          <div class="message-header">${msg.senderName}</div>
+          <div class="message-body">${msg.text.replace(/\n/g, "<br>")}</div>
+          <div class="message-time">${msg.timestamp?.toDate().toLocaleTimeString() || ''}</div>
+        `;
+      }
 
-
-
-    
-content.addEventListener("click", async () => {
-  await showModal(msg, wrapper);
-});
+      content.addEventListener("click", async () => {
+        await showModal(msg, wrapper);
+      });
 
       wrapper.appendChild(content);
 
+      if (msg.senderName !== currentUser.name) {
+        const actions = document.createElement("div");
+        actions.className = "message-actions";
 
-    if (msg.senderName !== currentUser.name) {
-      const actions = document.createElement("div");
-      actions.className = "message-actions";
+        const translateBtn = document.createElement("button");
+        translateBtn.textContent = "🌐";
+        
+        translateBtn.addEventListener("click", async () => {
+          const messageBody = wrapper.querySelector(".message-body");
 
-      const translateBtn = document.createElement("button");
-      translateBtn.textContent = "🌐";
-      
-   translateBtn.addEventListener("click", async () => {
-  const messageBody = wrapper.querySelector(".message-body");
+          // Toggle: if already translated, revert to original
+          if (messageBody.dataset.originalText) {
+            messageBody.innerHTML = messageBody.dataset.originalText;
+            delete messageBody.dataset.originalText;
+            return;
+          }
 
-  // Toggle: if already translated, revert to original
-  if (messageBody.dataset.originalText) {
-    messageBody.innerHTML = messageBody.dataset.originalText;
-    delete messageBody.dataset.originalText;
-    return;
-  }
+          // Save original HTML before translation
+          messageBody.dataset.originalText = messageBody.innerHTML;
 
-  // Save original HTML before translation
-  messageBody.dataset.originalText = messageBody.innerHTML;
+          const result = await translateWithDetection(msg.text, "en");
 
-  const result = await translateWithDetection(msg.text, "en"); // translate to English
+          messageBody.innerHTML = `
+            ${result.translated}
+            <div style="color: #bbb; font-size: 0.8rem; font-style: italic; margin-top: 4px;">
+              original: ${languageNameFromCode(result.detectedSourceLanguage)}
+            </div>
+          `;
+        });
 
-  messageBody.innerHTML = `
-    ${result.translated}
-    <div style="color: #bbb; font-size: 0.8rem; font-style: italic; margin-top: 4px;">
-      original: ${languageNameFromCode(result.detectedSourceLanguage)}
-    </div>
-  `;
-});
-
-
-      actions.appendChild(translateBtn);
-      wrapper.appendChild(actions);
-    }
-
+        actions.appendChild(translateBtn);
+        wrapper.appendChild(actions);
+      }
    
       frag.appendChild(wrapper);
     });
@@ -475,10 +462,8 @@ content.addEventListener("click", async () => {
     msgsDiv.appendChild(frag);
 
     msgsDiv.scrollTop = msgsDiv.scrollHeight;
-
-    });
-  }
-
+  });
+}
 
 async function safePopulateMessages(retries = 10) {
    if (!currentUser.role) {
@@ -493,22 +478,18 @@ async function safePopulateMessages(retries = 10) {
    populateMessages();
 }
 
-
-
-
-
-  
-
- async function populateMembers() {
+async function populateMembers() {
   const membersUl = document.getElementById("members");
   membersUl.innerHTML = "";
 
-     if (!currentRoomName) return;
+  if (!currentRoomName) return;
 
-const querySnapshot = await getDocs(collection(db, "rooms", currentRoomName, "members"));
+  const querySnapshot = await getDocs(collection(db, "rooms", currentRoomName, "members"));
   const members = [];
   querySnapshot.forEach((doc) => {
-    members.push(doc.data());
+    const memberData = doc.data();
+    memberData.id = doc.id; // Add the document ID
+    members.push(memberData);
   });
 
   members.forEach(m => {
@@ -518,7 +499,11 @@ const querySnapshot = await getDocs(collection(db, "rooms", currentRoomName, "me
     li.style.alignItems = "center";
 
     const nameSpan = document.createElement("span");
-    nameSpan.textContent = `${m.name} ${m.role === "Administrator" ? "(Admin)" : ""}`;
+    let displayName = `${m.name} ${m.role === "Administrator" ? "(Admin)" : ""}`;
+    if (m.muted === true) {
+      displayName += " 🔇"; // Add mute icon
+    }
+    nameSpan.textContent = displayName;
     nameSpan.style.cursor = "pointer";
 
     nameSpan.addEventListener("click", (e) => {
@@ -527,44 +512,29 @@ const querySnapshot = await getDocs(collection(db, "rooms", currentRoomName, "me
 
     li.appendChild(nameSpan);
 
-if (currentUser.role === "Administrator" && m.name !== currentUser.name) {
-  const btn = document.createElement("button");
-  btn.textContent = "❌";
-  btn.addEventListener("click", async () => {
-    if (confirm(`Remove ${m.name} from this room?`)) {
-      try {
-        // Find the member's ID from Firebase
-        const membersSnapshot = await getDocs(collection(db, "rooms", currentRoomName, "members"));
-        let memberToRemoveId = null;
-        
-        membersSnapshot.forEach(doc => {
-          const memberData = doc.data();
-          if (memberData.name === m.name) {
-            memberToRemoveId = doc.id;
+    if (currentUser.role === "Administrator" && m.name !== currentUser.name) {
+      const btn = document.createElement("button");
+      btn.textContent = "❌";
+      btn.addEventListener("click", async () => {
+        if (confirm(`Remove ${m.name} from this room?`)) {
+          try {
+            // Remove from Firebase using the stored ID
+            const memberRef = doc(db, "rooms", currentRoomName, "members", m.id);
+            await deleteDoc(memberRef);
+            
+            console.log(`✅ Removed ${m.name} from ${currentRoomName}`);
+            alert(`✅ ${m.name} has been removed from the room`);
+            
+            // Refresh the members list
+            populateMembers();
+          } catch (error) {
+            console.error("🔥 Error removing member:", error);
+            alert("❌ Error removing member. Please try again.");
           }
-        });
-
-        if (memberToRemoveId) {
-          // Remove from Firebase
-          const memberRef = doc(db, "rooms", currentRoomName, "members", memberToRemoveId);
-          await deleteDoc(memberRef);
-          
-          console.log(`✅ Removed ${m.name} from ${currentRoomName}`);
-          alert(`✅ ${m.name} has been removed from the room`);
-          
-          // Refresh the members list
-          populateMembers();
-        } else {
-          alert(`❌ Could not find ${m.name} to remove`);
         }
-      } catch (error) {
-        console.error("🔥 Error removing member:", error);
-        alert("❌ Error removing member. Please try again.");
-      }
+      });
+      li.appendChild(btn);
     }
-  });
-  li.appendChild(btn);
-}
 
     membersUl.appendChild(li);
   });
@@ -572,113 +542,97 @@ if (currentUser.role === "Administrator" && m.name !== currentUser.name) {
   updateMemberCount(members.length);
 }
 
-
-
-
 function updateMemberCount(count) {
   document.getElementById("member-count").innerHTML =
     `<i class="fa-solid fa-users" style="color: gold;"></i> ${count} Members`;
 }
 
+function showMemberMenu(targetElem, member) {
+  const existingMenu = document.getElementById("member-menu");
+  if (existingMenu) existingMenu.remove();
 
+  const menu = document.createElement("div");
+  menu.id = "member-menu";
+  menu.className = "member-menu";
 
+  // Check if member is muted
+  const isMuted = member.muted === true;
+  const muteText = isMuted ? "🔊 Unmute" : "🔇 Mute";
 
+  menu.innerHTML = `
+    <button id="menu-info">📄 Profile</button>
+    <button id="menu-message">📩 Message</button>
+    <button id="menu-block">🚫 Block</button>
+    <button id="menu-mute">${muteText}</button>
+  `;
 
-  function showMemberMenu(targetElem, member) {
-    const existingMenu = document.getElementById("member-menu");
-    if (existingMenu) existingMenu.remove();
-
-    const menu = document.createElement("div");
-    menu.id = "member-menu";
-    menu.className = "member-menu";
-
-    menu.innerHTML = `
-      <button id="menu-info">📄 Profile</button>
-      <button id="menu-message">📩 Message</button>
-      <button id="menu-block">🚫 Block</button>
-      <button id="menu-mute">🔇 Mute</button>
-    `;
-
-
-
-    document.body.appendChild(menu);
+  document.body.appendChild(menu);
 
   const rect = targetElem.getBoundingClientRect();
-    menu.style.top = `${rect.bottom + window.scrollY}px`;
-    menu.style.left = `${rect.left + window.scrollX}px`;
+  menu.style.top = `${rect.bottom + window.scrollY}px`;
+  menu.style.left = `${rect.left + window.scrollX}px`;
 
-
-
-
-// Attach click-outside-to-close listener immediately
+  // Attach click-outside-to-close listener immediately
   function closeMemberMenu(e) {
     const menuEl = document.getElementById("member-menu");
     if (!menuEl) return;
 
-
-
-  // If click was inside the menu → do nothing
+    // If click was inside the menu → do nothing
     if (menuEl.contains(e.target)) return;
 
-   // If click was on the same name → do nothing
+    // If click was on the same name → do nothing
     if (e.target === targetElem) return;
 
-
-
     // Otherwise → close
-  menuEl.remove();
-  document.removeEventListener("click", closeMemberMenu);
-}
-
-
-  
-
+    menuEl.remove();
+    document.removeEventListener("click", closeMemberMenu);
+  }
 
   document.addEventListener("click", closeMemberMenu);
 
-    menu.querySelector("#menu-info").onclick = () => {
-      showProfileModal(member.name);
-      menu.remove();
+  menu.querySelector("#menu-info").onclick = () => {
+    showProfileModal(member.name);
+    menu.remove();
     document.removeEventListener("click", closeMemberMenu);
-    };
+  };
 
-    menu.querySelector("#menu-message").onclick = () => {
-      startPrivateChat(member.name);
-      menu.remove();
+  menu.querySelector("#menu-message").onclick = () => {
+    startPrivateChat(member.name);
+    menu.remove();
     document.removeEventListener("click", closeMemberMenu);
+  };
 
-    };
-
-    menu.querySelector("#menu-block").onclick = () => {
-      blockMember(member.name);
-      menu.remove();
+  menu.querySelector("#menu-block").onclick = () => {
+    blockMember(member.name);
+    menu.remove();
     document.removeEventListener("click", closeMemberMenu);
-    };
+  };
 
-    const muteBtn = menu.querySelector("#menu-mute");
-    if (currentUser.role !== "Administrator") {
-      muteBtn.disabled = true;
-      muteBtn.title = "Only admins can mute";
-    } else {
-      muteBtn.onclick = () => {
+  const muteBtn = menu.querySelector("#menu-mute");
+  if (currentUser.role !== "Administrator") {
+    muteBtn.disabled = true;
+    muteBtn.title = "Only admins can mute";
+  } else {
+    muteBtn.onclick = () => {
+      if (isMuted) {
+        unmuteMember(member.name);
+      } else {
         muteMember(member.name);
-        menu.remove();
+      }
+      menu.remove();
       document.removeEventListener("click", closeMemberMenu);
-
-      };
-    }
+      
+      // Refresh member list to show updated status
+      setTimeout(() => {
+        populateMembers();
+      }, 1000);
+    };
   }
-
-
-
-
+}
 
   function startPrivateChat(name) {
     alert(`Starting private chat with ${name}`);
   }
-
-
-
 
   function showProfileModal(name) {
     const modal = document.getElementById("message-modal");
@@ -708,25 +662,89 @@ function updateMemberCount(count) {
   };
 }
   
-
   function blockMember(name) {
     blockedMembers.add(name);
-    alert(`${name} is now blocked (you won’t see their future messages)`);
+    alert(`${name} is now blocked (you won't see their future messages)`);
   }
 
-  function muteMember(name) {
-    mutedMembers.add(name);
-    alert(`${name} is now muted (hidden for everyone)`);
+async function muteMember(memberName) {
+  if (currentUser.role !== "Administrator") {
+    alert("❌ Only administrators can mute members");
+    return;
   }
 
+  if (memberName === currentUser.name) {
+    alert("❌ You cannot mute yourself");
+    return;
+  }
 
+  try {
+    // Find the member's ID
+    const membersSnapshot = await getDocs(collection(db, "rooms", currentRoomName, "members"));
+    let memberToMuteId = null;
+    
+    membersSnapshot.forEach(doc => {
+      const memberData = doc.data();
+      if (memberData.name === memberName) {
+        memberToMuteId = doc.id;
+      }
+    });
 
+    if (memberToMuteId) {
+      // Add muted status to the member document
+      const memberRef = doc(db, "rooms", currentRoomName, "members", memberToMuteId);
+      await updateDoc(memberRef, {
+        muted: true,
+        mutedBy: currentUser.name,
+        mutedAt: serverTimestamp()
+      });
 
+      alert(`✅ ${memberName} has been muted in this room`);
+      console.log(`✅ Muted ${memberName} in ${currentRoomName}`);
+    } else {
+      alert(`❌ Could not find ${memberName} to mute`);
+    }
+  } catch (error) {
+    console.error("🔥 Error muting member:", error);
+    alert("❌ Error muting member. Please try again.");
+  }
+}
 
+async function unmuteMember(memberName) {
+  if (currentUser.role !== "Administrator") {
+    alert("❌ Only administrators can unmute members");
+    return;
+  }
 
+  try {
+    // Find the member's ID
+    const membersSnapshot = await getDocs(collection(db, "rooms", currentRoomName, "members"));
+    let memberToUnmuteId = null;
+    
+    membersSnapshot.forEach(doc => {
+      const memberData = doc.data();
+      if (memberData.name === memberName) {
+        memberToUnmuteId = doc.id;
+      }
+    });
 
+    if (memberToUnmuteId) {
+      // Remove muted status from the member document
+      const memberRef = doc(db, "rooms", currentRoomName, "members", memberToUnmuteId);
+      await updateDoc(memberRef, {
+        muted: false
+      });
 
-
+      alert(`✅ ${memberName} has been unmuted`);
+      console.log(`✅ Unmuted ${memberName} in ${currentRoomName}`);
+    } else {
+      alert(`❌ Could not find ${memberName} to unmute`);
+    }
+  } catch (error) {
+    console.error("🔥 Error unmuting member:", error);
+    alert("❌ Error unmuting member. Please try again.");
+  }
+}
 
 async function showModal(msg, wrapper) {
   // ✅ STEP 1: Confirm the user's role from Firestore first
@@ -744,7 +762,7 @@ if (data.role) {
     }
   } catch (err) {
     console.error("⚠️ Could not refresh role before showing modal:", err);
-    // ⚠️ We won’t stop the modal from opening if the role check fails
+    // ⚠️ We won't stop the modal from opening if the role check fails
   }
 
     console.log("👑 Role check:", freshRole); // 🔍 DEBUGGING LINE
@@ -781,7 +799,6 @@ modal.classList.remove("hidden");
     `;
   }
 
-
   // ✅ 5. Show reply/copy/close buttons
   replyBtn.style.display = "inline-block";
   copyBtn.style.display = "inline-block";
@@ -794,7 +811,6 @@ modal.classList.remove("hidden");
   };
 
   // ✅ Copy the message (blocked if hidden)
-// Replace the copyBtn.onclick in your showModal function with this:
 copyBtn.onclick = () => {
   if (msg.hidden) {
     alert("⚠️ This message is hidden and cannot be copied.");
@@ -884,19 +900,8 @@ function copyWithFallback(text) {
   }
 }
 
-
-
-
-   
-
- 
-  
-
-
-
 // contacts search bar
-
-    document.getElementById("contacts-search").addEventListener("input", (e) => {
+document.getElementById("contacts-search").addEventListener("input", (e) => {
   const term = e.target.value.trim().toLowerCase();
   const contactsUl = document.getElementById("contacts-list");
   const lis = contactsUl.querySelectorAll("li");
@@ -907,24 +912,22 @@ function copyWithFallback(text) {
   });
 });
 
+// member search bar
+document.getElementById("member-search").addEventListener("input", (e) => {
+  const term = e.target.value.trim().toLowerCase();
+  const membersUl = document.getElementById("members");
+  const lis = membersUl.querySelectorAll("li");
 
-  
-  // member search bar
-  document.getElementById("member-search").addEventListener("input", (e) => {
-    const term = e.target.value.trim().toLowerCase();
-    const membersUl = document.getElementById("members");
-    const lis = membersUl.querySelectorAll("li");
-
-    lis.forEach(li => {
-      const name = li.querySelector("span").textContent.toLowerCase();
-      li.style.display = name.startsWith(term) ? "flex" : "none";
-    });
-
-    // keep full count correct
-    updateMemberCount();
+  lis.forEach(li => {
+    const name = li.querySelector("span").textContent.toLowerCase();
+    li.style.display = name.startsWith(term) ? "flex" : "none";
   });
 
-  document.getElementById("invite-member").addEventListener("click", async () => {
+  // keep full count correct
+  updateMemberCount();
+});
+
+document.getElementById("invite-member").addEventListener("click", async () => {
   if (!currentRoomName) {
     alert("❌ No room selected");
     return;
@@ -963,7 +966,6 @@ document.getElementById("create-room").addEventListener("click", async () => {
     return;
   }
 
-  
   const roomName = prompt("Enter a name for the new room:");
   if (!roomName) return;
 
@@ -988,7 +990,6 @@ document.getElementById("create-room").addEventListener("click", async () => {
       unread: false
     });
 
-   
 // Add self to members subcollection with Administrator role
 console.log("📥 Creating admin member doc...");
 
@@ -1012,7 +1013,6 @@ console.log("✅ Admin member doc created.");
 
     console.log(`✅ Room '${roomName}' created and ${currentUser.name} added as Administrator`);
 
- 
   populateRooms();
   } catch (err) {
     console.error("🔥 Error creating room or adding admin member:", err);
@@ -1020,31 +1020,22 @@ console.log("✅ Admin member doc created.");
   }
 });
 
+document.getElementById("back-btn").addEventListener("click", () => showPage(chatListPage));
+document.getElementById("back-to-rooms").addEventListener("click", () => showPage(chatListPage));
 
-
-  
-  document.getElementById("back-btn").addEventListener("click", () => showPage(chatListPage));
-  document.getElementById("back-to-rooms").addEventListener("click", () => showPage(chatListPage));
-
-
-
- document.getElementById("view-members").addEventListener("click", () => {
+document.getElementById("view-members").addEventListener("click", () => {
   showPage(membersListPage);
   document.querySelector('#members-list #room-name').textContent = currentRoomName;
   populateMembers();
 });
 
-
-
-
-  document.getElementById("back-to-chat").addEventListener("click", () => showPage(chatRoomPage));
+document.getElementById("back-to-chat").addEventListener("click", () => showPage(chatRoomPage));
 
 document.getElementById("send-message").addEventListener("click", async () => {
     const text = document.getElementById("message-input").value.trim();
     if (!text) return;
 
      await sendMessage(text);
-
 
     document.getElementById("message-input").value = "";
   });
@@ -1143,14 +1134,6 @@ document.getElementById("paste-message").addEventListener("click", async () => {
   }
 });
 
-
-
-
-
-
-  
-
-  
 // open contacts page & populate list
 document.getElementById("contacts").addEventListener("click", () => {
   console.log("📣 CONTACTS CLICKED!");
@@ -1184,14 +1167,10 @@ async function populateContacts() {
   }
 }
 
-
 document.getElementById("back-to-rooms-from-contacts").addEventListener("click", () => {
   showPage(chatListPage);
 });
 
-
-
-  
 document.getElementById("find-chat").addEventListener("click", () => {
   showFindChatModal();
 });
@@ -1298,7 +1277,6 @@ async function findAndJoinRoom(searchName) {
   const modalCloseBtn = document.getElementById("modal-close");
   const modal = document.getElementById("message-modal");
   modalCloseBtn.onclick = () => modal.style.display = "none";
-
 
   populateRooms();
   showPage(chatListPage);
@@ -1471,14 +1449,12 @@ class InviteSystem {
         await setDoc(memberRef, memberData, { merge: true });
    }      
       
-      // Add this:
-// Trigger immediate refresh for all users on chat list page
+      // Trigger immediate refresh for all users on chat list page
 setTimeout(() => {
   if (document.getElementById("chat-list").classList.contains("active")) {
     populateRooms();
   }
 }, 500);
-     
 
       const names = selectedContactDetails.map(c => c.name).join(', ');
       alert(`✅ Successfully invited ${names} to ${this.currentRoomName}!`);
