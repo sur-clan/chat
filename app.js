@@ -297,13 +297,8 @@ const sendMessage = async (text) => {
       li.addEventListener("click", async () => {
         currentRoomName = roomInfo.id;
         
-        // Set room name display based on room type
-        if (room.type === "private" && room.participants) {
-          const otherParticipant = room.participants.find(name => name !== currentUser.name);
-          document.getElementById("room-name").textContent = otherParticipant || 'Private Chat';
-        } else {
-          document.getElementById("room-name").textContent = currentRoomName;
-        }
+        // Always update room name displays when entering a room
+        await updateAllRoomNameDisplays();
 
         const msgsDiv = document.getElementById("messages");
         // Clear immediately and show loading
@@ -1372,20 +1367,34 @@ document.getElementById("back-to-rooms").addEventListener("click", () => {
   }, 500);
 });
 
-document.getElementById("view-members").addEventListener("click", () => {
+document.getElementById("view-members").addEventListener("click", async () => {
   showPage(membersListPage);
   
-  // Set room name display for members page (remove "Private:" prefix)
+  // Get fresh room name from Firebase for members page
   const roomNameElem = document.querySelector('#members-list #room-name');
   if (currentRoomName) {
-    // Check if it's a private room and get the other participant's name
-    const roomsUl = document.getElementById("rooms");
-    const currentRoomLi = Array.from(roomsUl.children).find(li => {
-      return li.textContent.includes(document.getElementById("room-name").textContent);
-    });
-    
-    // Just use the current display name from the chat room header
-    roomNameElem.textContent = document.getElementById("room-name").textContent;
+    try {
+      const roomRef = doc(db, "rooms", currentRoomName);
+      const roomSnap = await getDoc(roomRef);
+      
+      if (roomSnap.exists()) {
+        const roomData = roomSnap.data();
+        
+        if (roomData.type === "private" && roomData.participants) {
+          const otherParticipant = roomData.participants.find(name => name !== currentUser.name);
+          roomNameElem.textContent = otherParticipant || 'Private Chat';
+        } else {
+          roomNameElem.textContent = roomData.name || currentRoomName;
+        }
+      } else {
+        // Fallback to current display
+        roomNameElem.textContent = document.getElementById("room-name").textContent;
+      }
+    } catch (error) {
+      console.error("Error getting room name for members page:", error);
+      // Fallback to current display
+      roomNameElem.textContent = document.getElementById("room-name").textContent;
+    }
   }
   
   populateMembers();
@@ -1426,20 +1435,11 @@ document.getElementById("room-name").addEventListener("click", async () => {
             name: newName.trim()
           });
           
-          // Update the display immediately
-          document.getElementById("room-name").textContent = newName.trim();
-          
-          // Also update members page if currently viewing it
-          const membersRoomName = document.querySelector('#members-list #room-name');
-          if (membersRoomName) {
-            membersRoomName.textContent = newName.trim();
-          }
-          
-          // Refresh room list to show new name
-          populateRooms();
-          
-          alert(`✅ Room renamed to "${newName.trim()}"`);
           console.log(`✅ Room ${currentRoomName} renamed to: ${newName.trim()}`);
+          alert(`✅ Room renamed to "${newName.trim()}"`);
+          
+          // Force refresh everything with new name
+          await updateAllRoomNameDisplays();
           
         } catch (error) {
           console.error("🔥 Error renaming room:", error);
@@ -1452,6 +1452,46 @@ document.getElementById("room-name").addEventListener("click", async () => {
     alert("❌ Error accessing room data. Please try again.");
   }
 });
+
+// Function to update all room name displays
+async function updateAllRoomNameDisplays() {
+  if (!currentRoomName) return;
+  
+  try {
+    const roomRef = doc(db, "rooms", currentRoomName);
+    const roomSnap = await getDoc(roomRef);
+    
+    if (roomSnap.exists()) {
+      const roomData = roomSnap.data();
+      let displayName;
+      
+      if (roomData.type === "private" && roomData.participants) {
+        const otherParticipant = roomData.participants.find(name => name !== currentUser.name);
+        displayName = otherParticipant || 'Private Chat';
+      } else {
+        displayName = roomData.name || currentRoomName;
+      }
+      
+      // Update chat room header
+      const chatRoomName = document.getElementById("room-name");
+      if (chatRoomName) {
+        chatRoomName.textContent = displayName;
+      }
+      
+      // Update members page header
+      const membersRoomName = document.querySelector('#members-list #room-name');
+      if (membersRoomName) {
+        membersRoomName.textContent = displayName;
+      }
+      
+      // Refresh room list to show new name
+      populateRooms();
+      
+    }
+  } catch (error) {
+    console.error("Error updating room name displays:", error);
+  }
+}
 
 document.getElementById("back-to-chat").addEventListener("click", () => {
   showPage(chatRoomPage);
@@ -1475,6 +1515,25 @@ document.getElementById("leave-chat").addEventListener("click", async () => {
     return;
   }
 
+  // Get fresh room name for confirmation dialog
+  let roomDisplayName = currentRoomName;
+  try {
+    const roomRef = doc(db, "rooms", currentRoomName);
+    const roomSnap = await getDoc(roomRef);
+    
+    if (roomSnap.exists()) {
+      const roomData = roomSnap.data();
+      if (roomData.type === "private" && roomData.participants) {
+        const otherParticipant = roomData.participants.find(name => name !== currentUser.name);
+        roomDisplayName = otherParticipant || 'Private Chat';
+      } else {
+        roomDisplayName = roomData.name || currentRoomName;
+      }
+    }
+  } catch (error) {
+    console.error("Error getting room name for confirmation:", error);
+  }
+
   // Check if user is the room creator/admin
   let isRoomCreator = false;
   let roomData = null;
@@ -1494,7 +1553,7 @@ document.getElementById("leave-chat").addEventListener("click", async () => {
   // Different confirmation messages based on role
   let confirmMessage;
   if (isRoomCreator) {
-    confirmMessage = `⚠️ WARNING: You are the creator of "${currentRoomName}".\n\nLeaving will DELETE the entire room for all members!\n\nAre you sure you want to delete this room permanently?`;
+    confirmMessage = `⚠️ WARNING: You are the creator of "${roomDisplayName}".\n\nLeaving will DELETE the entire room for all members!\n\nAre you sure you want to delete this room permanently?`;
   } else {
     // Prevent non-creators from leaving if this is their only room
     try {
@@ -1517,7 +1576,7 @@ document.getElementById("leave-chat").addEventListener("click", async () => {
       console.error("Error checking room count:", error);
     }
     
-    confirmMessage = `Are you sure you want to leave "${currentRoomName}"?\n\nYou will no longer see messages from this room.`;
+    confirmMessage = `Are you sure you want to leave "${roomDisplayName}"?\n\nYou will no longer see messages from this room.`;
   }
 
   const confirmLeave = confirm(confirmMessage);
@@ -1546,14 +1605,14 @@ document.getElementById("leave-chat").addEventListener("click", async () => {
         const roomRef = doc(db, "rooms", currentRoomName);
         await deleteDoc(roomRef);
         
-        alert(`💥 Room "${currentRoomName}" has been deleted for all members`);
+        alert(`💥 Room "${roomDisplayName}" has been deleted for all members`);
         
       } else {
         // Regular member leaving = just remove them
         const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
         await deleteDoc(memberRef);
         
-        alert(`✅ You have left "${currentRoomName}"`);
+        alert(`✅ You have left "${roomDisplayName}"`);
       }
       
       console.log(`✅ Successfully processed leave request for: ${currentRoomName}`);
