@@ -119,7 +119,8 @@ h2 {
 }
 
 
-#chat-list h2 {
+#chat-list h2,
+#contacts-page h2 {
   font-size: 1.4rem;
 }
 
