@@ -130,15 +130,11 @@ h2 {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem;
-  min-height: 3.5rem; /* Ensure consistent height */
 }
 
 .header-title {
   flex: 1;
   text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 button {
@@ -517,29 +513,22 @@ textarea {
 }
 
 
-/* Unified back button and navigation button styles */
+
 #back-btn,
+#create-room,
 #back-to-rooms,
 #back-to-chat,
-#back-to-rooms-from-contacts,
-#create-room,
 #invite-member {
   font-size: 2rem;
   width: 2.5rem;
   height: 2.5rem;
-  line-height: 1;
+  line-height: 2.5rem;
   padding: 0;
-  margin: 0.2rem;
   text-align: center;
-  background: rgba(0, 0, 0, 0.1);
-  border: 1px solid #b3730d;
-  border-radius: 10px;
-  color: #e1bd47;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
+
+
+
 
 
 #member-count {
@@ -1004,6 +993,3 @@ textarea {
     font-size: 0.9rem !important;
   }
 }
-
-
-
