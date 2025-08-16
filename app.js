@@ -201,13 +201,22 @@ const sendMessage = async (text) => {
     timestamp: serverTimestamp()
   });
 
-  // Update room's last message info
+  // Update room's last message info and mark as unread for others
   try {
     const roomRef = doc(db, "rooms", currentRoomName);
     await updateDoc(roomRef, {
       lastMessage: text.length > 50 ? text.substring(0, 50) + "..." : text,
-      lastMessageTimestamp: serverTimestamp()
+      lastMessageTimestamp: serverTimestamp(),
+      lastMessageBy: currentUser.id,
+      unread: true
     });
+
+    // Mark as read for the sender
+    const currentUserMemberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
+    await updateDoc(currentUserMemberRef, {
+      lastReadTimestamp: serverTimestamp()
+    });
+
   } catch (error) {
     console.error("Error updating room last message:", error);
   }
@@ -239,9 +248,26 @@ const sendMessage = async (text) => {
       const memberSnap = await getDoc(memberRef);
       
       if (memberSnap.exists()) {
+        const memberData = memberSnap.data();
+        
+        // Check if room has unread messages for this user
+        let hasUnread = false;
+        if (roomData.lastMessageTimestamp && roomData.lastMessageBy !== currentUser.id) {
+          // Room has messages from someone else
+          if (!memberData.lastReadTimestamp) {
+            // User has never read messages in this room
+            hasUnread = true;
+          } else {
+            // Compare timestamps
+            const lastMessage = roomData.lastMessageTimestamp.toDate ? roomData.lastMessageTimestamp.toDate() : new Date(roomData.lastMessageTimestamp);
+            const lastRead = memberData.lastReadTimestamp.toDate ? memberData.lastReadTimestamp.toDate() : new Date(memberData.lastReadTimestamp);
+            hasUnread = lastMessage > lastRead;
+          }
+        }
+        
         userRooms.push({
           id: roomDoc.id,
-          data: roomData
+          data: { ...roomData, unread: hasUnread }
         });
       }
     }
@@ -818,6 +844,7 @@ function showMemberMenu(targetElem, member) {
           createdAt: new Date().toISOString(),
           lastMessage: "Private chat created",
           lastMessageTimestamp: serverTimestamp(),
+          lastMessageBy: currentUser.id,
           unread: false
         });
         
