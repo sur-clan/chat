@@ -1411,9 +1411,23 @@ async function populateContacts() {
       listEl.innerHTML = "<li>No members found.</li>";
     } else {
       snapshot.forEach(doc => {
-        const m = doc.data();
+        const userData = doc.data();
+        const memberData = {
+          name: userData.name,
+          role: userData.role || "Member",
+          id: doc.id,
+          avatar: userData.avatar
+        };
+        
         const li = document.createElement("li");
-        li.textContent = m.name + (m.role === "Administrator" ? " (Admin)" : "");
+        li.textContent = userData.name + (userData.role === "Administrator" ? " (Admin)" : "");
+        li.style.cursor = "pointer";
+        
+        // Add click listener to show member menu
+        li.addEventListener("click", (e) => {
+          showMemberMenu(e.target, memberData);
+        });
+        
         listEl.appendChild(li);
       });
     }
