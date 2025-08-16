@@ -137,6 +137,68 @@ h2 {
   text-align: center;
 }
 
+/* UNIFIED HEADER BUTTON STYLES - FIXED */
+.header-btn,
+#back-btn,
+#create-room,
+#back-to-rooms,
+#back-to-chat,
+#invite-member,
+#back-to-rooms-from-contacts {
+  font-size: 2rem !important;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  line-height: 2.5rem !important;
+  padding: 0 !important;
+  text-align: center !important;
+  background: rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid #b3730d !important;
+  border-radius: 10px !important;
+  color: #e1bd47 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: 'Cinzel', serif !important;
+  margin: 0.2rem !important;
+  box-sizing: border-box !important;
+}
+
+.header-btn:hover,
+#back-btn:hover,
+#create-room:hover,
+#back-to-rooms:hover,
+#back-to-chat:hover,
+#invite-member:hover,
+#back-to-rooms-from-contacts:hover {
+  background: transparent !important;
+  box-shadow: 0 0 5px gold !important;
+}
+
+/* Special case for view-members button to maintain icon styling */
+#view-members {
+  font-size: 1.2rem !important; /* Smaller for the icon */
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  line-height: 2.5rem !important;
+  padding: 0 !important;
+  text-align: center !important;
+  background: rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid gold !important;
+  border-radius: 10px !important;
+  color: gold !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0.2rem !important;
+}
+
+#view-members:hover {
+  background: transparent !important;
+  box-shadow: 0 0 5px gold !important;
+}
+
 button {
   margin: 0.2rem;
   padding: 0.3rem 0.7rem;
@@ -231,7 +293,7 @@ align-items: center;        /* center vertically */
 }
 
 textarea::placeholder {
-  color: #b3730d; 		/* Type your message… */
+  color: #b3730d; 		/* Type your messageâ€¦ */
   font-style: italic;
 
 }
@@ -274,25 +336,6 @@ textarea::placeholder {
 
 /* Misc */
 
-.header-button {
-  background: transparent;
-  color: gold;
-  border: 1px solid gold;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 2rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  text-align: center;
-  line-height: 2.5rem;
-  padding: 0;
-}
-
-.header-button:hover {
-  box-shadow: 0 0 5px gold;
-}
-
-
 #contacts-list {
   flex: 1;
   overflow-y: auto;
@@ -332,24 +375,6 @@ display: flex;
   line-height: 2.5rem;
   text-align: center;
 }
-
-#view-members {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  font-size: 1.2rem; /* or whatever looks good */
-  border: 1px solid gold;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.1);
-  color: gold;
-  cursor: pointer;
-  text-align: center;
-  padding: 0;
-}
-
-
 
 
 #messages {
@@ -484,13 +509,13 @@ textarea {
   border: none;
   box-shadow: none;
 
-  border-radius: 50%; /* ← makes it a circle */
+  border-radius: 50%; /* â† makes it a circle */
   cursor: pointer;
   color: #fff;
   text-align: center;
- display: flex;             /* ← ensures centering */
-  justify-content: center;   /* ← center horizontally */
-  align-items: center;       /* ← center vertically */
+ display: flex;             /* â† ensures centering */
+  justify-content: center;   /* â† center horizontally */
+  align-items: center;       /* â† center vertically */
   text-align: center;
   padding: 0;
   box-sizing: border-box;
@@ -511,24 +536,6 @@ textarea {
     margin: 40px;
   }
 }
-
-
-
-#back-btn,
-#create-room,
-#back-to-rooms,
-#back-to-chat,
-#invite-member {
-  font-size: 2rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  line-height: 2.5rem;
-  padding: 0;
-  text-align: center;
-}
-
-
-
 
 
 #member-count {
