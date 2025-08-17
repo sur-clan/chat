@@ -288,6 +288,29 @@ const sendMessage = async (text) => {
       }
     }
 
+
+
+// Sort rooms by most recent message timestamp (newest first)
+userRooms.sort((a, b) => {
+  const timeA = a.data.lastMessageTimestamp;
+  const timeB = b.data.lastMessageTimestamp;
+  
+  // Handle cases where timestamp might be null/undefined
+  if (!timeA && !timeB) return 0;
+  if (!timeA) return 1; // Rooms without messages go to bottom
+  if (!timeB) return -1; // Rooms without messages go to bottom
+  
+  // Convert Firestore timestamps to comparable values
+  const dateA = timeA.toDate ? timeA.toDate() : new Date(timeA);
+  const dateB = timeB.toDate ? timeB.toDate() : new Date(timeB);
+  
+  // Sort newest first (descending order)
+  return dateB.getTime() - dateA.getTime();
+});
+
+
+
+    
     // ✅ Build the list off-DOM first
     const frag = document.createDocumentFragment();
       
