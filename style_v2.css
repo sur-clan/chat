@@ -511,6 +511,7 @@ textarea {
   box-sizing: border-box;
 }
 
+
 .chat-container h2 {
   margin: 0;
   padding: 0;
@@ -1055,4 +1056,40 @@ textarea {
     min-height: 100vh !important;
     height: auto !important;
   }
+}
+
+/* Add this to your style_v2.css file */
+
+.translate-btn {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  line-height: 48px !important;
+  font-size: 1.2rem !important; /* Slightly smaller for Font Awesome */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  color: gold !important; /* Gold color */
+  text-align: center !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  text-shadow: 0 0 3px rgba(255, 215, 0, 0.5) !important; /* Gold glow */
+  transition: all 0.3s ease !important;
+}
+
+.translate-btn:hover {
+  color: #efca51 !important;
+  text-shadow: 0 0 5px rgba(239, 202, 81, 0.8) !important;
+  transform: scale(1.1) !important; /* Slight scale on hover */
+}
+
+.translate-btn i {
+  color: gold !important;
+  text-shadow: 0 0 3px rgba(255, 215, 0, 0.5) !important;
 }
