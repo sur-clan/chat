@@ -318,7 +318,7 @@ userRooms.sort((a, b) => {
     // ✅ Build the list off-DOM first
     const frag = document.createDocumentFragment();
       
-  userRooms.forEach((roomInfo) => {
+userRooms.forEach((roomInfo) => {
   const room = roomInfo.data;
   
   const li = document.createElement("li");
@@ -333,10 +333,10 @@ userRooms.sort((a, b) => {
   } else {
     const timeAgo = getTimeAgo(room.lastMessageTimestamp);
     
-    // Add star for general room
+    // Add star for general room - MOVED TO THE LEFT
     if (roomInfo.id === "general") {
       li.innerHTML = `
-        <strong>${room.name || 'Unnamed Room'} <i class="fa-solid fa-star general-star"></i></strong><br>
+        <strong><i class="fa-solid fa-star general-star"></i>${room.name || 'Unnamed Room'}</strong><br>
         <small>${timeAgo}</small>`;
     } else {
       li.innerHTML = `
@@ -400,15 +400,15 @@ userRooms.sort((a, b) => {
         safePopulateMessages();
       });
 
-      if (room.unread) {
-        const icon = document.createElement("span");
-        icon.className = "unread-envelope";
-        icon.innerHTML = "✉";
-        li.appendChild(icon);
-      }
-    
-      frag.appendChild(li);
-    });
+    if (room.unread) {
+    const icon = document.createElement("span");
+    icon.className = "unread-envelope";
+    icon.innerHTML = "✉";
+    li.appendChild(icon);
+  }
+
+  frag.appendChild(li);
+});
 
     // ✅ Replace the "Loading…" with final list ONCE
     roomsUl.innerHTML = "";
