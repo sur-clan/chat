@@ -1160,3 +1160,8 @@ div[style*="text-align:center"][style*="color:gold"] {
   font-size: 0.8rem !important; /* This stays the same or adjust as needed */
   color: #b6842a !important;
 }
+
+/* Keep the gear icon at a good size (same as view-members currently) */
+#view-members i {
+  font-size: 1.2rem !important;
+}
