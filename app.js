@@ -540,7 +540,7 @@ function populateMessages() {
         actions.className = "message-actions";
 
       const translateBtn = document.createElement("button");
-translateBtn.innerHTML = '<i class="fas fa-globe-americas"></i>';  // Font Awesome language icon
+translateBtn.innerHTML = '<i class="fa-solid fa-language"></i>';  // Font Awesome language icon
 translateBtn.className = "translate-btn";  // Add class for styling
 
         
