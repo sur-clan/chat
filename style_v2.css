@@ -352,13 +352,29 @@ textarea::placeholder {
 
 #send-message,
 #paste-message {
-  font-size: 1rem;
+  flex: 0 0 2.5rem !important;
+  height: 2.5rem !important;
+  font-size: 1rem !important; /* Adjusted for Font Awesome icon */
   border: 1px solid #b3730d;
-  min-height: 2.5rem;
-  line-height: 2.5rem;
-  text-align: center;
+  border-radius: 10px !important;
+  color: gold !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
 }
 
+#paste-message:hover {
+  background: transparent !important;
+  box-shadow: 0 0 5px gold !important;
+}
+
+#paste-message i {
+  color: gold !important;
+  font-size: 1rem !important;
+}
 #messages {
   flex: 1;
   overflow-y: scroll;
