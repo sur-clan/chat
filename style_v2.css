@@ -1057,7 +1057,6 @@ textarea {
 
 .private-chat-icon {
   color: gold !important;
-  filter: sepia(1) saturate(3) hue-rotate(35deg) brightness(1.2) !important;
+  margin-right: 0.3rem !important;
   text-shadow: 0 0 3px rgba(255, 215, 0, 0.5) !important;
-  font-weight: normal !important;
 }
