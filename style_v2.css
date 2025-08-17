@@ -1021,6 +1021,7 @@ textarea {
   white-space: nowrap !important;
 }
 
+/* Make the private chat icon consistent with the star positioning */
 .private-chat-icon {
   color: gold !important;
   margin-right: 0.3rem !important;
@@ -1109,11 +1110,11 @@ textarea {
 }
 
 
-/* Add this to your style_v2.css file for the General room star */
 
+/* Add this to your style_v2.css file for the General room star */
 .general-star {
   color: #b6842a !important; /* Same color as timestamp text */
   font-size: 0.8rem !important; /* Slightly smaller than room name */
-  margin-left: 0.3rem !important;
+  margin-right: 0.3rem !important; /* Space between star and room name */
   text-shadow: none !important; /* No glow effect */
 }
