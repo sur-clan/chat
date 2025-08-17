@@ -539,8 +539,10 @@ function populateMessages() {
         const actions = document.createElement("div");
         actions.className = "message-actions";
 
-        const translateBtn = document.createElement("button");
-        translateBtn.textContent = "🌍";
+      const translateBtn = document.createElement("button");
+translateBtn.innerHTML = '<i class="fas fa-language"></i>';  // Font Awesome language icon
+translateBtn.className = "translate-btn";  // Add class for styling
+
         
         translateBtn.addEventListener("click", async () => {
           const messageBody = wrapper.querySelector(".message-body");
