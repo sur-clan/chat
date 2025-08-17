@@ -83,7 +83,9 @@ main {
   display: flex;
   justify-content: center;
   flex-wrap: nowrap; /* stay in one line */
-  gap: 1rem;
+  gap: 0.5rem;
+  padding: 0.5rem;
+
 }
 
 .center-buttons button {
@@ -256,6 +258,8 @@ ul {
   width: 100%;
   box-sizing: border-box;
   justify-content: center;
+  margin-bottom: 8px;
+
 }
 
 .input-area textarea {
@@ -340,6 +344,8 @@ textarea::placeholder {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  padding: 0.5rem;
+
 }
 
 .member-buttons button {
