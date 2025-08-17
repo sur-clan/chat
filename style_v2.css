@@ -1118,3 +1118,45 @@ textarea {
   margin-right: 0.3rem !important; /* Space between star and room name */
   text-shadow: none !important; /* No glow effect */
 }
+
+
+/* Add these CSS rules to your style_v2.css file */
+
+/* A - Make room names in the room list smaller */
+#rooms li strong {
+  font-size: 0.9rem !important; /* Reduced from default ~1rem */
+  line-height: 1.2 !important;
+}
+
+/* Alternative more specific targeting if the above doesn't work */
+#rooms li {
+  font-size: 0.9rem !important;
+}
+
+#rooms li strong {
+  font-size: inherit !important;
+}
+
+/* B - Make loading text smaller */
+/* For "Loading rooms..." text */
+#rooms li[style*="text-align:center"] {
+  font-size: 0.8rem !important;
+  color: gold !important;
+}
+
+/* For "Loading messages..." text in chat */
+#messages div[style*="text-align:center"] {
+  font-size: 0.8rem !important;
+  color: gold !important;
+}
+
+/* More specific targeting for loading states */
+div[style*="text-align:center"][style*="color:gold"] {
+  font-size: 0.8rem !important;
+}
+
+/* Keep the timestamp text size unchanged */
+#rooms li small {
+  font-size: 0.8rem !important; /* This stays the same or adjust as needed */
+  color: #b6842a !important;
+}
