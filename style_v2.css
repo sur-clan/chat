@@ -253,14 +253,31 @@ ul {
 }
 
 .unread-envelope {
-  font-size: 1.5rem;
-  color: #e1bd47;
-  position: absolute;
-  top: 4px;
-  right: 8px;
+  font-size: 1.5rem !important;
+  color: #e1bd47 !important; /* Force gold color */
+  position: absolute !important;
+  top: 4px !important;
+  right: 8px !important;
+  text-shadow: 0 0 3px rgba(225, 189, 71, 0.5) !important; /* Add gold glow */
+  font-weight: normal !important;
+  z-index: 10 !important;
 }
 
+/* Additional mobile-specific fix */
+@media (max-width: 768px) {
+  .unread-envelope {
+    color: gold !important;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.7) !important;
+    font-size: 1.3rem !important;
+    filter: none !important; /* Remove any filters that might affect color */
+  }
+}
 
+/* Ensure it stays gold on all devices */
+li .unread-envelope {
+  color: #efca51 !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8), 0 0 4px rgba(239, 202, 81, 0.6) !important;
+}
 
 
 /* Input area */
