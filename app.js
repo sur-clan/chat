@@ -290,8 +290,12 @@ const sendMessage = async (text) => {
 
 
 
-// Sort rooms by most recent message timestamp (newest first)
+// Sort rooms by most recent message timestamp (newest first) BUT keep General at top
 userRooms.sort((a, b) => {
+  // Always put "general" room at the top
+  if (a.id === "general") return -1;
+  if (b.id === "general") return 1;
+  
   const timeA = a.data.lastMessageTimestamp;
   const timeB = b.data.lastMessageTimestamp;
   
@@ -314,25 +318,32 @@ userRooms.sort((a, b) => {
     // ✅ Build the list off-DOM first
     const frag = document.createDocumentFragment();
       
-    userRooms.forEach((roomInfo) => {
-      const room = roomInfo.data;
-      
-      const li = document.createElement("li");
-      
-   // Display private rooms differently
-if (room.type === "private" && room.participants) {
-  const otherParticipant = room.participants.find(name => name !== currentUser.name);
-  const timeAgo = getTimeAgo(room.lastMessageTimestamp);
-  li.innerHTML = `
-    <strong><i class="fa-solid fa-user private-chat-icon"></i>${otherParticipant || 'Private Chat'}</strong><br>
-    <small>${timeAgo}</small>`;
-} else {
-  const timeAgo = getTimeAgo(room.lastMessageTimestamp);
-  li.innerHTML = `
-    <strong>${room.name || 'Unnamed Room'}</strong><br>
-    <small>${timeAgo}</small>`;
-}
-
+  userRooms.forEach((roomInfo) => {
+  const room = roomInfo.data;
+  
+  const li = document.createElement("li");
+  
+  // Display private rooms differently
+  if (room.type === "private" && room.participants) {
+    const otherParticipant = room.participants.find(name => name !== currentUser.name);
+    const timeAgo = getTimeAgo(room.lastMessageTimestamp);
+    li.innerHTML = `
+      <strong><i class="fa-solid fa-user private-chat-icon"></i>${otherParticipant || 'Private Chat'}</strong><br>
+      <small>${timeAgo}</small>`;
+  } else {
+    const timeAgo = getTimeAgo(room.lastMessageTimestamp);
+    
+    // Add star for general room
+    if (roomInfo.id === "general") {
+      li.innerHTML = `
+        <strong>${room.name || 'Unnamed Room'} <i class="fa-solid fa-star general-star"></i></strong><br>
+        <small>${timeAgo}</small>`;
+    } else {
+      li.innerHTML = `
+        <strong>${room.name || 'Unnamed Room'}</strong><br>
+        <small>${timeAgo}</small>`;
+    }
+  }
       li.addEventListener("click", async () => {
         currentRoomName = roomInfo.id;
         
