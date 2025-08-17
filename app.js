@@ -301,13 +301,12 @@ if (room.type === "private" && room.participants) {
   const otherParticipant = room.participants.find(name => name !== currentUser.name);
   const timeAgo = getTimeAgo(room.lastMessageTimestamp);
   li.innerHTML = `
-    <strong>${otherParticipant || 'Private Chat'}</strong><br>
+    <strong><i class="fa-solid fa-user private-chat-icon"></i>${otherParticipant || 'Private Chat'}</strong><br>
     <small>${timeAgo}</small>`;
 } else {
-  // Public rooms get the users icon
   const timeAgo = getTimeAgo(room.lastMessageTimestamp);
   li.innerHTML = `
-    <strong><i class="fa-solid fa-users" style="color: gold; margin-right: 0.3rem;"></i>${room.name || 'Unnamed Room'}</strong><br>
+    <strong>${room.name || 'Unnamed Room'}</strong><br>
     <small>${timeAgo}</small>`;
 }
 
