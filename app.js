@@ -301,7 +301,7 @@ if (room.type === "private" && room.participants) {
   const otherParticipant = room.participants.find(name => name !== currentUser.name);
   const timeAgo = getTimeAgo(room.lastMessageTimestamp);
   li.innerHTML = `
-    <strong><span class="private-chat-icon">👤</span> ${otherParticipant || 'Private Chat'}</strong><br>
+    <strong><i class="fas fa-user private-chat-icon"></i> ${otherParticipant || 'Private Chat'}</strong><br>
     <small>${timeAgo}</small>`;
 } else {
   const timeAgo = getTimeAgo(room.lastMessageTimestamp);
