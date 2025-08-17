@@ -1097,3 +1097,13 @@ textarea {
   color: gold !important;
   text-shadow: 0 0 3px rgba(255, 215, 0, 0.5) !important;
 }
+
+/* Make plus and arrow icons smaller and more balanced */
+#back-btn i,
+#create-room i,
+#back-to-rooms i,
+#back-to-chat i,
+#invite-member i,
+#back-to-rooms-from-contacts i {
+  font-size: 1.2rem !important; /* Smaller than the default 2rem */
+}
