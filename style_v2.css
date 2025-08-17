@@ -62,7 +62,7 @@ main {
   flex-direction: column;
   min-height: 0;
   overflow-y: auto;
-  padding: 0 1rem 1rem;
+  padding: 0.2rem 1rem 1rem; /* Reduced top padding from 0 to 0.2rem */
   box-sizing: border-box;
 }
 
@@ -118,9 +118,10 @@ h2 {
   flex-wrap: nowrap;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem;
-  min-height: 3.5rem; /* Ensure consistent header height */
+  padding: 0.2rem 0.5rem; /* Reduced from 0.5rem to 0.2rem for top/bottom */
+  min-height: 3rem; /* Reduced from 3.5rem to 3rem */
   box-sizing: border-box;
+  margin-top: 0; /* Ensure no top margin */
 }
 
 .header-title {
