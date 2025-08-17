@@ -84,7 +84,7 @@ main {
   justify-content: center;
   flex-wrap: nowrap; /* stay in one line */
   gap: 0.5rem;
-  padding: 0.5rem;
+  padding: 0.8rem;
 
 }
 
@@ -258,7 +258,7 @@ ul {
   width: 100%;
   box-sizing: border-box;
   justify-content: center;
-  margin-bottom: 8px;
+  margin-bottom: 13px;
 
 }
 
@@ -344,7 +344,7 @@ textarea::placeholder {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 0.5rem;
+  padding: 0.8rem;
 
 }
 
