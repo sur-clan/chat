@@ -13,14 +13,16 @@ import {
   query,
   orderBy,
   onSnapshot,
-  where
+  where,
+  collectionGroup,
+  limitToLast
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app = initializeApp(window.firebaseConfig);
 const db = getFirestore(app);
 
 async function translateWithDetection(text, targetLang = "en") {
-  const apiKey = "APIKEY";  // 🔑 Replace this with your real key
+  const apiKey = "APIKEY";  // Replace this with your real key
   const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
 
   try {
@@ -43,7 +45,7 @@ async function translateWithDetection(text, targetLang = "en") {
       detectedSourceLanguage: translation.detectedSourceLanguage
     };
   } catch (err) {
-    console.error("❌ Translate error:", err);
+    console.error("Translate error:", err);
     return {
       translated: "[Translation failed]",
       detectedSourceLanguage: "unknown"
@@ -75,12 +77,12 @@ function validateRoomName(name) {
   const trimmed = name.trim();
   
   if (!trimmed) {
-    alert("⚠️ Room name cannot be empty");
+    alert("Room name cannot be empty");
     return null;
   }
   
   if (trimmed.length > 14) {
-    alert("⚠️ Room name must be 14 characters or less");
+    alert("Room name must be 14 characters or less");
     return null;
   }
   
@@ -120,6 +122,19 @@ function getTimeAgo(timestamp) {
   }
 }
 
+// Debounce function
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 
 let currentUser = {};
@@ -136,6 +151,20 @@ let currentUser = {};
   const blockedMembers = new Set();
   const mutedMembers = new Set();
 
+// Cache variables
+let roomsCache = null;
+let lastRoomsCacheTime = 0;
+const CACHE_DURATION = 15000; // 15 seconds cache
+
+// Real-time listeners
+let roomsListener = null;
+let userMembershipsListener = null;
+let unsubscribeMessages = null;
+
+// Muted members cache
+let mutedMembersCache = new Map();
+let mutedMembersCacheTime = new Map();
+
 // Wait for Wix to send the member info
 window.addEventListener("message", async (event) => {
 if (!event.origin.endsWith("sur-clan.com")) return;
@@ -143,7 +172,7 @@ if (!event.origin.endsWith("sur-clan.com")) return;
   const userData = event.data;
   if (!userData || !userData.id) return;
   
-  console.log("✅ Got userData from Wix:", userData);
+  console.log("Got userData from Wix:", userData);
 
   currentUser = {
     name: userData.name,
@@ -152,7 +181,7 @@ if (!event.origin.endsWith("sur-clan.com")) return;
     avatar: userData.avatar
   };
 
-  console.log("✅ Got userData from Wix:", currentUser);
+  console.log("Got userData from Wix:", currentUser);
 
   // prepare user data without undefined
   const userPayload = {
@@ -182,15 +211,15 @@ if (!event.origin.endsWith("sur-clan.com")) return;
     const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
     await setDoc(memberRef, memberPayload, { merge: true });
 
-    console.log("✅ Added user to default room:", roomId);
+    console.log("Added user to default room:", roomId);
 
 currentRoomName = roomId;
   populateRooms(); // Load the list of rooms
-  setupRoomListener(); // Add this line
+  setupRoomListener(); // Setup real-time listeners
   showPage(chatListPage);
 
   } catch (err) {
-    console.error("🔥 Failed to add user to default room:", err);
+    console.error("Failed to add user to default room:", err);
   }
 });
 
@@ -201,7 +230,7 @@ const sendMessage = async (text) => {
     const memberSnap = await getDoc(memberRef);
     
     if (memberSnap.exists() && memberSnap.data().muted === true) {
-      alert("🔇 You are muted in this room. Your message was not sent.");
+      alert("You are muted in this room. Your message was not sent.");
       return;
     }
   } catch (error) {
@@ -243,205 +272,316 @@ const sendMessage = async (text) => {
     page.classList.add("active");
   }
 
-    async function populateRooms() {
+// OPTIMIZED: Real-time room listener instead of polling
+function setupRoomListener() {
+  console.log("Setting up real-time room listener");
+  
+  // Stop any existing listeners
+  if (roomsListener) {
+    roomsListener();
+    roomsListener = null;
+  }
+  
+  if (userMembershipsListener) {
+    userMembershipsListener();
+    userMembershipsListener = null;
+  }
+
+  if (!currentUser.id) return;
+
+  // Listen to ALL rooms changes in real-time
+  const roomsRef = collection(db, "rooms");
+  roomsListener = onSnapshot(roomsRef, async (snapshot) => {
+    console.log("Rooms changed - updating list");
+    
+    // Only update if we're on the chat list page
+    if (!document.getElementById("chat-list").classList.contains("active")) {
+      return;
+    }
+    
+    await updateRoomsFromSnapshot(snapshot);
+  });
+
+  // ALSO listen to user's membership changes across all rooms
+  const membershipQuery = query(
+    collectionGroup(db, "members"),
+    where("name", "==", currentUser.name)
+  );
+  
+  userMembershipsListener = onSnapshot(membershipQuery, async (snapshot) => {
+    console.log("User memberships changed - updating rooms");
+    
+    // Only update if we're on the chat list page
+    if (document.getElementById("chat-list").classList.contains("active")) {
+      populateRooms(); // Refresh the room list
+    }
+  });
+}
+
+// Process room snapshot efficiently 
+async function updateRoomsFromSnapshot(snapshot) {
   const roomsUl = document.getElementById("rooms");
+  
+  if (snapshot.empty) {
+    roomsUl.innerHTML = `<li style="text-align:center; color:gray; font-size: 0.8rem;">No rooms available</li>`;
+    return;
+  }
+
+  const userRooms = [];
+  const membershipPromises = [];
+
+  // Build batch membership checks
+  snapshot.forEach((roomDoc) => {
+    const roomData = roomDoc.data();
+    
+    membershipPromises.push(
+      getDoc(doc(db, "rooms", roomDoc.id, "members", currentUser.id))
+        .then(memberSnap => ({
+          roomId: roomDoc.id,
+          roomData,
+          memberData: memberSnap.exists() ? memberSnap.data() : null
+        }))
+    );
+  });
+
+  // Execute all membership checks in parallel
+  const membershipResults = await Promise.all(membershipPromises);
+  
+  for (const result of membershipResults) {
+    if (result.memberData) {
+      // Check unread status
+      let hasUnread = false;
+      if (result.roomData.lastMessageTimestamp && result.roomData.lastMessageBy !== currentUser.id) {
+        if (!result.memberData.lastReadTimestamp) {
+          hasUnread = true;
+        } else {
+          const lastMessage = result.roomData.lastMessageTimestamp.toDate ? 
+            result.roomData.lastMessageTimestamp.toDate() : 
+            new Date(result.roomData.lastMessageTimestamp);
+          const lastRead = result.memberData.lastReadTimestamp.toDate ? 
+            result.memberData.lastReadTimestamp.toDate() : 
+            new Date(result.memberData.lastReadTimestamp);
+          hasUnread = lastMessage > lastRead;
+        }
+      }
+      
+      userRooms.push({
+        id: result.roomId,
+        data: { ...result.roomData, unread: hasUnread }
+      });
+    }
+  }
+
+  renderRoomsUI(userRooms);
+}
+
+// OPTIMIZED: Cached room population
+async function populateRooms() {
+  const roomsUl = document.getElementById("rooms");
+
+  // Check cache first
+  const now = Date.now();
+  if (roomsCache && (now - lastRoomsCacheTime) < CACHE_DURATION) {
+    console.log("Using cached rooms data");
+    renderRoomsUI(roomsCache);
+    return;
+  }
 
   // Only show "Loading rooms…" if nothing is already there
   if (!roomsUl.hasChildNodes() || roomsUl.innerHTML.trim() === "") {
-      roomsUl.innerHTML = '<li style="text-align:center; color:gold;">Loading rooms…</li>';
+    roomsUl.innerHTML = '<li style="text-align:center; color:gold; font-size: 0.8rem;">Loading rooms…</li>';
   }
 
   try {
     const allRoomsSnapshot = await getDocs(collection(db, "rooms"));
     const userRooms = [];
 
-    // Check each room to see if current user is a member
+    // OPTIMIZATION: Batch the membership checks
+    const membershipPromises = [];
+    
     for (const roomDoc of allRoomsSnapshot.docs) {
       const roomData = roomDoc.data();
       
-      // Check if current user is a member of this room
-      const memberRef = doc(db, "rooms", roomDoc.id, "members", currentUser.id);
-      const memberSnap = await getDoc(memberRef);
-      
-      if (memberSnap.exists()) {
-        const memberData = memberSnap.data();
-        
+      // Add to batch check
+      membershipPromises.push(
+        getDoc(doc(db, "rooms", roomDoc.id, "members", currentUser.id))
+          .then(memberSnap => ({
+            roomId: roomDoc.id,
+            roomData,
+            memberData: memberSnap.exists() ? memberSnap.data() : null
+          }))
+      );
+    }
+
+    // Execute all membership checks in parallel (MUCH faster!)
+    const membershipResults = await Promise.all(membershipPromises);
+    
+    for (const result of membershipResults) {
+      if (result.memberData) {
         // Check if room has unread messages for this user
         let hasUnread = false;
-        if (roomData.lastMessageTimestamp && roomData.lastMessageBy !== currentUser.id) {
-          // Room has messages from someone else
-          if (!memberData.lastReadTimestamp) {
-            // User has never read messages in this room
+        if (result.roomData.lastMessageTimestamp && result.roomData.lastMessageBy !== currentUser.id) {
+          if (!result.memberData.lastReadTimestamp) {
             hasUnread = true;
           } else {
-            // Compare timestamps
-            const lastMessage = roomData.lastMessageTimestamp.toDate ? roomData.lastMessageTimestamp.toDate() : new Date(roomData.lastMessageTimestamp);
-            const lastRead = memberData.lastReadTimestamp.toDate ? memberData.lastReadTimestamp.toDate() : new Date(memberData.lastReadTimestamp);
+            const lastMessage = result.roomData.lastMessageTimestamp.toDate ? 
+              result.roomData.lastMessageTimestamp.toDate() : 
+              new Date(result.roomData.lastMessageTimestamp);
+            const lastRead = result.memberData.lastReadTimestamp.toDate ? 
+              result.memberData.lastReadTimestamp.toDate() : 
+              new Date(result.memberData.lastReadTimestamp);
             hasUnread = lastMessage > lastRead;
           }
         }
         
         userRooms.push({
-          id: roomDoc.id,
-          data: { ...roomData, unread: hasUnread }
+          id: result.roomId,
+          data: { ...result.roomData, unread: hasUnread }
         });
       }
     }
 
+    // Cache the results
+    roomsCache = userRooms;
+    lastRoomsCacheTime = now;
 
-
-// Sort rooms by most recent message timestamp (newest first) BUT keep General at top
-userRooms.sort((a, b) => {
-  // Always put "general" room at the top
-  if (a.id === "general") return -1;
-  if (b.id === "general") return 1;
-  
-  const timeA = a.data.lastMessageTimestamp;
-  const timeB = b.data.lastMessageTimestamp;
-  
-  // Handle cases where timestamp might be null/undefined
-  if (!timeA && !timeB) return 0;
-  if (!timeA) return 1; // Rooms without messages go to bottom
-  if (!timeB) return -1; // Rooms without messages go to bottom
-  
-  // Convert Firestore timestamps to comparable values
-  const dateA = timeA.toDate ? timeA.toDate() : new Date(timeA);
-  const dateB = timeB.toDate ? timeB.toDate() : new Date(timeB);
-  
-  // Sort newest first (descending order)
-  return dateB.getTime() - dateA.getTime();
-});
-
-
-
-    
-    // ✅ Build the list off-DOM first
-    const frag = document.createDocumentFragment();
-      
-userRooms.forEach((roomInfo) => {
-  const room = roomInfo.data;
-  
-  const li = document.createElement("li");
-  
-  // Display private rooms differently
-  if (room.type === "private" && room.participants) {
-    const otherParticipant = room.participants.find(name => name !== currentUser.name);
-    const timeAgo = getTimeAgo(room.lastMessageTimestamp);
-    li.innerHTML = `
-      <strong><i class="fa-solid fa-user private-chat-icon"></i>${otherParticipant || 'Private Chat'}</strong><br>
-      <small>${timeAgo}</small>`;
-  } else {
-    const timeAgo = getTimeAgo(room.lastMessageTimestamp);
-    
-    // Add star for general room - MOVED TO THE LEFT
-    if (roomInfo.id === "general") {
-      li.innerHTML = `
-        <strong><i class="fa-solid fa-star general-star"></i>${room.name || 'Unnamed Room'}</strong><br>
-        <small>${timeAgo}</small>`;
-    } else {
-      li.innerHTML = `
-        <strong>${room.name || 'Unnamed Room'}</strong><br>
-        <small>${timeAgo}</small>`;
-    }
-  }
-      li.addEventListener("click", async () => {
-        currentRoomName = roomInfo.id;
-        
-        // Always update room name displays when entering a room
-        await updateAllRoomNameDisplays();
-
-        const msgsDiv = document.getElementById("messages");
-        // Clear immediately and show loading
-        msgsDiv.innerHTML = '<div style="text-align:center; color:gold;">Loading messages…</div>';
-        
-        showPage(chatRoomPage);
-
-        console.log("Joining room:", currentRoomName, "as user:", currentUser);
-
-        if (!currentUser.id) {
-          console.error("❌ currentUser.id is undefined!");
-          return;
-        }
-
-        try {
-          const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
-          const existingMemberSnap = await getDoc(memberRef);
-
-          if (existingMemberSnap.exists()) {
-            // ✅ Member already exists – don't overwrite role
-            const existingData = existingMemberSnap.data();
-
-            // 🔄 Sync local role with Firestore role
-            if (existingData.role) {
-              currentUser.role = existingData.role;
-            }
-
-            // ✅ Only update name/avatar (never touch role again)
-            await setDoc(memberRef, {
-              name: currentUser.name,
-              avatar: currentUser.avatar || null
-            }, { merge: true });
-
-          } else {
-            // 🚀 First time joining – set the role
-            const memberData = {
-              name: currentUser.name,
-              role: currentUser.role,
-              avatar: currentUser.avatar || null
-            };
-            await setDoc(memberRef, memberData);
-          }
-
-          console.log("✅ Member added to:", currentRoomName);
-        } catch (err) {
-          console.error("🔥 Failed to add member:", err);
-        }
-
-        safePopulateMessages();
-      });
-
-    if (room.unread) {
-    const icon = document.createElement("span");
-    icon.className = "unread-envelope";
-    icon.innerHTML = "✉";
-    li.appendChild(icon);
-  }
-
-  frag.appendChild(li);
-});
-
-    // ✅ Replace the "Loading…" with final list ONCE
-    roomsUl.innerHTML = "";
-    if (userRooms.length === 0) {
-      roomsUl.innerHTML = `<li style="text-align:center; color:gray;">No rooms available</li>`;
-    } else {
-      roomsUl.appendChild(frag);
-    }
+    renderRoomsUI(userRooms);
 
   } catch (err) {
-    console.error("🔥 Failed to load rooms:", err);
-    roomsUl.innerHTML = `<li style="color:red;">Error loading rooms</li>`;
+    console.error("Failed to load rooms:", err);
+    roomsUl.innerHTML = `<li style="color:red; font-size: 0.8rem;">Error loading rooms</li>`;
   }
 }
 
-let roomListRefreshInterval = null;
+// Render rooms UI efficiently
+function renderRoomsUI(userRooms) {
+  const roomsUl = document.getElementById("rooms");
+  
+  // Sort rooms by most recent message timestamp BUT keep General at top
+  userRooms.sort((a, b) => {
+    if (a.id === "general") return -1;
+    if (b.id === "general") return 1;
+    
+    const timeA = a.data.lastMessageTimestamp;
+    const timeB = b.data.lastMessageTimestamp;
+    
+    if (!timeA && !timeB) return 0;
+    if (!timeA) return 1;
+    if (!timeB) return -1;
+    
+    const dateA = timeA.toDate ? timeA.toDate() : new Date(timeA);
+    const dateB = timeB.toDate ? timeB.toDate() : new Date(timeB);
+    
+    return dateB.getTime() - dateA.getTime();
+  });
 
-function setupRoomListener() {
-  // Stop any existing interval
-  if (roomListRefreshInterval) {
-    clearInterval(roomListRefreshInterval);
-  }
-
-  if (!currentUser.id) return;
-
-  // Check for room changes every 3 seconds, but only when on chat list page
-  roomListRefreshInterval = setInterval(() => {
-    if (document.getElementById("chat-list").classList.contains("active")) {
-      console.log("🔄 Periodic room list refresh");
-      populateRooms();
+  // Build the list off-DOM first
+  const frag = document.createDocumentFragment();
+    
+  userRooms.forEach((roomInfo) => {
+    const room = roomInfo.data;
+    const li = document.createElement("li");
+    
+    // Add class and data attribute for event delegation
+    li.classList.add('room-item');
+    li.dataset.roomId = roomInfo.id;
+    
+    // Display private rooms differently
+    if (room.type === "private" && room.participants) {
+      const otherParticipant = room.participants.find(name => name !== currentUser.name);
+      const timeAgo = getTimeAgo(room.lastMessageTimestamp);
+      li.innerHTML = `
+        <strong><i class="fa-solid fa-user private-chat-icon"></i>${otherParticipant || 'Private Chat'}</strong><br>
+        <small>${timeAgo}</small>`;
+    } else {
+      const timeAgo = getTimeAgo(room.lastMessageTimestamp);
+      
+      if (roomInfo.id === "general") {
+        li.innerHTML = `
+          <strong><i class="fa-solid fa-star general-star"></i>${room.name || 'Unnamed Room'}</strong><br>
+          <small>${timeAgo}</small>`;
+      } else {
+        li.innerHTML = `
+          <strong>${room.name || 'Unnamed Room'}</strong><br>
+          <small>${timeAgo}</small>`;
+      }
     }
-  }, 3000); // Check every 3 seconds
+
+    if (room.unread) {
+      const icon = document.createElement("span");
+      icon.className = "unread-envelope";
+      icon.innerHTML = "✉";
+      li.appendChild(icon);
+    }
+  
+    frag.appendChild(li);
+  });
+
+  // Replace content once
+  roomsUl.innerHTML = "";
+  if (userRooms.length === 0) {
+    roomsUl.innerHTML = `<li style="text-align:center; color:gray; font-size: 0.8rem;">No rooms available</li>`;
+  } else {
+    roomsUl.appendChild(frag);
+  }
 }
+
+// OPTIMIZED: Event delegation for room clicks
+document.getElementById("rooms").addEventListener("click", async (e) => {
+  const roomItem = e.target.closest('.room-item');
+  if (!roomItem) return;
+  
+  const roomId = roomItem.dataset.roomId;
+  if (!roomId) return;
+  
+  currentRoomName = roomId;
+  
+  // Clear cache when entering a room
+  roomsCache = null;
+  
+  await updateAllRoomNameDisplays();
+  
+  const msgsDiv = document.getElementById("messages");
+  msgsDiv.innerHTML = '<div style="text-align:center; color:gold; font-size: 0.8rem;">Loading messages…</div>';
+  
+  showPage(chatRoomPage);
+  
+  console.log("Joining room:", currentRoomName, "as user:", currentUser);
+
+  if (!currentUser.id) {
+    console.error("currentUser.id is undefined!");
+    return;
+  }
+
+  try {
+    const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
+    const existingMemberSnap = await getDoc(memberRef);
+
+    if (existingMemberSnap.exists()) {
+      const existingData = existingMemberSnap.data();
+      if (existingData.role) {
+        currentUser.role = existingData.role;
+      }
+      await setDoc(memberRef, {
+        name: currentUser.name,
+        avatar: currentUser.avatar || null
+      }, { merge: true });
+    } else {
+      const memberData = {
+        name: currentUser.name,
+        role: currentUser.role,
+        avatar: currentUser.avatar || null
+      };
+      await setDoc(memberRef, memberData);
+    }
+
+    console.log("Member added to:", currentRoomName);
+  } catch (err) {
+    console.error("Failed to add member:", err);
+  }
+
+  safePopulateMessages();
+});
 
 // Function to check if current user was removed from current room (one-time check)
 let hasBeenKicked = false;
@@ -461,7 +601,7 @@ async function checkIfRemovedFromCurrentRoom() {
       await populateRooms();
       
       // 2. Then show alert and kick them back to room list
-      alert("⚠️ You have been removed from this room");
+      alert("You have been removed from this room");
       showPage(chatListPage);
       
       // 3. Reset flag after they're back in chat list
@@ -478,16 +618,48 @@ async function checkIfRemovedFromCurrentRoom() {
 // Check every 3 seconds (faster detection)
 setInterval(checkIfRemovedFromCurrentRoom, 3000);
 
-let unsubscribeMessages = null;
+// Cache muted members to avoid repeated queries
+async function getCachedMutedMembers() {
+  const cacheKey = currentRoomName;
+  const now = Date.now();
+  
+  // Check if we have recent cached data (30 seconds)
+  if (mutedMembersCache.has(cacheKey) && 
+      (now - mutedMembersCacheTime.get(cacheKey)) < 30000) {
+    return mutedMembersCache.get(cacheKey);
+  }
+  
+  // Fetch fresh data
+  const mutedMembers = new Set();
+  try {
+    const membersSnapshot = await getDocs(collection(db, "rooms", currentRoomName, "members"));
+    membersSnapshot.forEach(doc => {
+      const memberData = doc.data();
+      if (memberData.muted === true) {
+        mutedMembers.add(memberData.name);
+      }
+    });
+    
+    // Cache the results
+    mutedMembersCache.set(cacheKey, mutedMembers);
+    mutedMembersCacheTime.set(cacheKey, now);
+    
+  } catch (error) {
+    console.error("Error getting muted members:", error);
+  }
+  
+  return mutedMembers;
+}
 
+// OPTIMIZED: Load only recent messages with pagination
 function populateMessages() {
   if (!currentRoomName) {
-    console.error("❌ currentRoomName is not set yet");
+    console.error("currentRoomName is not set yet");
     return;
   }
   
   if (!currentUser.role) {
-    console.warn("⚠️ populateMessages() called before role was set – stopping");
+    console.warn("populateMessages() called before role was set – stopping");
     return;
   }
 
@@ -499,45 +671,34 @@ function populateMessages() {
     unsubscribeMessages = null;
   }
 
-  // clear messages & show placeholder immediately
-  msgsDiv.innerHTML = '<div style="text-align:center; color:gold;">Loading messages…</div>';
-
-  // Check mute status and show notification if needed
+  msgsDiv.innerHTML = '<div style="text-align:center; color:gold; font-size: 0.8rem;">Loading messages…</div>';
   checkMuteStatus();
 
   const messagesRef = collection(db, "rooms", currentRoomName, "messages");
-  const q = query(messagesRef, orderBy("timestamp"));
+  
+  // CRITICAL: Only load last 50 messages instead of ALL messages!
+  const q = query(
+    messagesRef, 
+    orderBy("timestamp"), 
+    limitToLast(50) // This prevents loading thousands of old messages!
+  );
 
   unsubscribeMessages = onSnapshot(q, async (snapshot) => {
     const frag = document.createDocumentFragment();  
 
     if (snapshot.empty) {
-      msgsDiv.innerHTML = '<div style="text-align:center; color:gray;">No messages yet…</div>';
+      msgsDiv.innerHTML = '<div style="text-align:center; color:gray; font-size: 0.8rem;">No messages yet…</div>';
       return;
     }
 
-    // Get muted members list from Firebase
-    const mutedMembers = new Set();
-    try {
-      const membersSnapshot = await getDocs(collection(db, "rooms", currentRoomName, "members"));
-      membersSnapshot.forEach(doc => {
-        const memberData = doc.data();
-        if (memberData.muted === true) {
-          mutedMembers.add(memberData.name);
-        }
-      });
-    } catch (error) {
-      console.error("Error getting muted members:", error);
-    }
+    // Get muted members list from Firebase (cache this too!)
+    const mutedMembers = await getCachedMutedMembers();
 
     snapshot.forEach((doc) => {
       const msg = doc.data();
 
-      // Skip blocked members (local block)
-      if (blockedMembers.has(msg.senderName)) return;
-      
-      // Skip muted members (global mute from Firebase)
-      if (mutedMembers.has(msg.senderName)) return;
+      // Skip blocked/muted members
+      if (blockedMembers.has(msg.senderName) || mutedMembers.has(msg.senderName)) return;
 
       const wrapper = document.createElement("div");
       wrapper.className = "message-scroll";
@@ -573,24 +734,20 @@ function populateMessages() {
         const actions = document.createElement("div");
         actions.className = "message-actions";
 
-      const translateBtn = document.createElement("button");
-translateBtn.innerHTML = '<i class="fa-solid fa-globe"></i>';  // Font Awesome language icon
-translateBtn.className = "translate-btn";  // Add class for styling
-
+        const translateBtn = document.createElement("button");
+        translateBtn.innerHTML = '<i class="fa-solid fa-globe"></i>';
+        translateBtn.className = "translate-btn";
         
         translateBtn.addEventListener("click", async () => {
           const messageBody = wrapper.querySelector(".message-body");
 
-          // Toggle: if already translated, revert to original
           if (messageBody.dataset.originalText) {
             messageBody.innerHTML = messageBody.dataset.originalText;
             delete messageBody.dataset.originalText;
             return;
           }
 
-          // Save original HTML before translation
           messageBody.dataset.originalText = messageBody.innerHTML;
-
           const result = await translateWithDetection(msg.text, "en");
 
           messageBody.innerHTML = `
@@ -608,13 +765,9 @@ translateBtn.className = "translate-btn";  // Add class for styling
       frag.appendChild(wrapper);
     });
 
-    // Clear & append everything at once to prevent flicker
     msgsDiv.innerHTML = "";
     msgsDiv.appendChild(frag);
-
-    // Re-check and show mute notification after messages load
     checkMuteStatus();
-
     msgsDiv.scrollTop = msgsDiv.scrollHeight;
   });
 }
@@ -622,10 +775,10 @@ translateBtn.className = "translate-btn";  // Add class for styling
 async function safePopulateMessages(retries = 10) {
    if (!currentUser.role) {
      if (retries <= 0) {
-       console.error("❌ Role not loaded after multiple attempts.");
+       console.error("Role not loaded after multiple attempts.");
        return;
      }
-     console.log("⏳ Waiting for role to load...");
+     console.log("Waiting for role to load...");
      await new Promise(resolve => setTimeout(resolve, 300)); 
      return safePopulateMessages(retries - 1);
    }
@@ -674,7 +827,7 @@ function showMuteNotification() {
     notification.style.top = "0";
     notification.style.zIndex = "100";
     
-    notification.innerHTML = "🔇 You have been muted in this room by an administrator.<br><small style=\"opacity: 0.8;\">Your messages are not visible to other members.</small>";
+    notification.innerHTML = "You have been muted in this room by an administrator.<br><small style=\"opacity: 0.8;\">Your messages are not visible to other members.</small>";
     
     if (msgsDiv.firstChild) {
       msgsDiv.insertBefore(notification, msgsDiv.firstChild);
@@ -738,14 +891,14 @@ async function populateMembers() {
             const memberRef = doc(db, "rooms", currentRoomName, "members", m.id);
             await deleteDoc(memberRef);
             
-            console.log(`✅ Removed ${m.name} from ${currentRoomName}`);
-            alert(`✅ ${m.name} has been removed from the room`);
+            console.log(`Removed ${m.name} from ${currentRoomName}`);
+            alert(`${m.name} has been removed from the room`);
             
             // Refresh the members list
             populateMembers();
           } catch (error) {
-            console.error("🔥 Error removing member:", error);
-            alert("❌ Error removing member. Please try again.");
+            console.error("Error removing member:", error);
+            alert("Error removing member. Please try again.");
           }
         }
       });
@@ -857,12 +1010,12 @@ function showMemberMenu(targetElem, member) {
 
   function startPrivateChat(targetUserName) {
     if (targetUserName === currentUser.name) {
-      alert("❌ You cannot message yourself");
+      alert("You cannot message yourself");
       return;
     }
     
     if (blockedMembers.has(targetUserName)) {
-      alert("❌ You have blocked this user");
+      alert("You have blocked this user");
       return;
     }
     
@@ -895,7 +1048,7 @@ function showMemberMenu(targetElem, member) {
           unread: false
         });
         
-        console.log("✅ Created new private room");
+        console.log("Created new private room");
       }
       
       // Add both users as members
@@ -924,7 +1077,7 @@ function showMemberMenu(targetElem, member) {
           role: "Member"
         }, { merge: true });
         
-        console.log("✅ Added both users to private room");
+        console.log("Added both users to private room");
       }
       
       // Switch to the private room
@@ -953,11 +1106,11 @@ function showMemberMenu(targetElem, member) {
       // Refresh room list to show the new private chat
       populateRooms();
       
-      alert(`✅ Started private chat with ${targetUserName}`);
+      alert(`Started private chat with ${targetUserName}`);
       
     } catch (error) {
-      console.error("🔥 Error creating private room:", error);
-      alert("❌ Error starting private chat. Please try again.");
+      console.error("Error creating private room:", error);
+      alert("Error starting private chat. Please try again.");
     }
   }
 
@@ -991,12 +1144,12 @@ function showMemberMenu(targetElem, member) {
   
   function blockMember(name) {
     if (name === currentUser.name) {
-      alert("❌ You cannot block yourself");
+      alert("You cannot block yourself");
       return;
     }
     
     blockedMembers.add(name);
-    alert(`✅ ${name} is now blocked (you won't see their messages)`);
+    alert(`${name} is now blocked (you won't see their messages)`);
     
     // Immediately refresh messages to hide blocked user's messages
     populateMessages();
@@ -1009,7 +1162,7 @@ function showMemberMenu(targetElem, member) {
 
   function unblockMember(name) {
     blockedMembers.delete(name);
-    alert(`✅ ${name} has been unblocked`);
+    alert(`${name} has been unblocked`);
     
     // Immediately refresh messages to show unblocked user's messages
     populateMessages();
@@ -1022,12 +1175,12 @@ function showMemberMenu(targetElem, member) {
 
 async function muteMember(memberName) {
   if (currentUser.role !== "Administrator") {
-    alert("❌ Only administrators can mute members");
+    alert("Only administrators can mute members");
     return;
   }
 
   if (memberName === currentUser.name) {
-    alert("❌ You cannot mute yourself");
+    alert("You cannot mute yourself");
     return;
   }
 
@@ -1052,8 +1205,8 @@ async function muteMember(memberName) {
         mutedAt: serverTimestamp()
       });
 
-      alert(`✅ ${memberName} has been muted in this room`);
-      console.log(`✅ Muted ${memberName} in ${currentRoomName}`);
+      alert(`${memberName} has been muted in this room`);
+      console.log(`Muted ${memberName} in ${currentRoomName}`);
       
       // Force refresh messages regardless of current page
       if (unsubscribeMessages) {
@@ -1067,17 +1220,17 @@ async function muteMember(memberName) {
         }
       }, 500);
     } else {
-      alert(`❌ Could not find ${memberName} to mute`);
+      alert(`Could not find ${memberName} to mute`);
     }
   } catch (error) {
-    console.error("🔥 Error muting member:", error);
-    alert("❌ Error muting member. Please try again.");
+    console.error("Error muting member:", error);
+    alert("Error muting member. Please try again.");
   }
 }
 
 async function unmuteMember(memberName) {
   if (currentUser.role !== "Administrator") {
-    alert("❌ Only administrators can unmute members");
+    alert("Only administrators can unmute members");
     return;
   }
 
@@ -1100,8 +1253,8 @@ async function unmuteMember(memberName) {
         muted: false
       });
 
-      alert(`✅ ${memberName} has been unmuted`);
-      console.log(`✅ Unmuted ${memberName} in ${currentRoomName}`);
+      alert(`${memberName} has been unmuted`);
+      console.log(`Unmuted ${memberName} in ${currentRoomName}`);
       
       // Force refresh messages regardless of current page
       if (unsubscribeMessages) {
@@ -1115,16 +1268,16 @@ async function unmuteMember(memberName) {
         }
       }, 500);
     } else {
-      alert(`❌ Could not find ${memberName} to unmute`);
+      alert(`Could not find ${memberName} to unmute`);
     }
   } catch (error) {
-    console.error("🔥 Error unmuting member:", error);
-    alert("❌ Error unmuting member. Please try again.");
+    console.error("Error unmuting member:", error);
+    alert("Error unmuting member. Please try again.");
   }
 }
 
 async function showModal(msg, wrapper) {
-  // ✅ STEP 1: Confirm the user's role from Firestore first
+  // STEP 1: Confirm the user's role from Firestore first
   let freshRole = currentUser.role;
 
   try {
@@ -1134,17 +1287,17 @@ async function showModal(msg, wrapper) {
       const data = memberSnap.data();
 if (data.role) {
         freshRole = data.role;
-        currentUser.role = data.role;  // 🔄 update locally too
+        currentUser.role = data.role;  // update locally too
       }
     }
   } catch (err) {
-    console.error("⚠️ Could not refresh role before showing modal:", err);
-    // ⚠️ We won't stop the modal from opening if the role check fails
+    console.error("Could not refresh role before showing modal:", err);
+    // We won't stop the modal from opening if the role check fails
   }
 
-    console.log("👑 Role check:", freshRole); // 🔍 DEBUGGING LINE
+    console.log("Role check:", freshRole); // DEBUGGING LINE
 
-  // ✅ STEP 2: Build modal only after role is confirmed
+  // STEP 2: Build modal only after role is confirmed
 const modal = document.getElementById("message-modal");
 modal.classList.remove("hidden");
   
@@ -1153,7 +1306,7 @@ modal.classList.remove("hidden");
   const copyBtn = document.getElementById("modal-copy");
   const closeBtn = document.getElementById("modal-close");
 
-  // ✅ 3. Build modal content
+  // 3. Build modal content
   if (msg.hidden) {
     textElem.innerHTML = `
       <div class="message-scroll ${msg.senderName === currentUser.name ? "my-message" : "other-message"}">
@@ -1176,21 +1329,21 @@ modal.classList.remove("hidden");
     `;
   }
 
-  // ✅ 5. Show reply/copy/close buttons
+  // 5. Show reply/copy/close buttons
   replyBtn.style.display = "inline-block";
   copyBtn.style.display = "inline-block";
   closeBtn.style.display = "inline-block";
 
-  // ✅ Reply to the sender (always replies to the name, even if hidden)
+  // Reply to the sender (always replies to the name, even if hidden)
   replyBtn.onclick = () => {
     document.getElementById("message-input").value = `${msg.senderName}, `;
     modal.classList.add("hidden");
   };
 
-  // ✅ Copy the message (blocked if hidden)
+  // Copy the message (blocked if hidden)
 copyBtn.onclick = () => {
   if (msg.hidden) {
-    alert("⚠️ This message is hidden and cannot be copied.");
+    alert("This message is hidden and cannot be copied.");
     modal.classList.add("hidden");
     return;
   }
@@ -1202,7 +1355,7 @@ copyBtn.onclick = () => {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(formatted)
       .then(() => {
-        alert("✅ Message copied!");
+        alert("Message copied!");
         modal.classList.add("hidden");
       })
       .catch(err => {
@@ -1230,35 +1383,35 @@ function copyWithFallback(text) {
   
   try {
     document.execCommand('copy');
-    alert("✅ Message copied!");
+    alert("Message copied!");
   } catch (err) {
-    alert("❌ Failed to copy message");
+    alert("Failed to copy message");
   }
   
   document.body.removeChild(textArea);
 }
 
-  // ✅ Close modal
+  // Close modal
   closeBtn.onclick = () => {
     modal.classList.add("hidden");
   };
 
-  // ✅ 6. Remove any previous Hide/Unhide button
+  // 6. Remove any previous Hide/Unhide button
   const oldHideBtn = document.getElementById("modal-hide");
   if (oldHideBtn) oldHideBtn.remove();
 
- // ✅ STEP 3: Only add Hide/Unhide button if freshRole is admin
+ // STEP 3: Only add Hide/Unhide button if freshRole is admin
   if (freshRole === "Administrator") {
-        console.log("✅ Adding Hide/Unhide button for admin");
+        console.log("Adding Hide/Unhide button for admin");
 
     const hideBtn = document.createElement("button");
     hideBtn.id = "modal-hide";
     hideBtn.style.marginLeft = "8px";
-    hideBtn.textContent = msg.hidden ? "Unhide" : "Hide";  // ✅ dynamic label
+    hideBtn.textContent = msg.hidden ? "Unhide" : "Hide";  // dynamic label
 
     closeBtn.parentElement.insertBefore(hideBtn, closeBtn);
 
-    // ✅ Hide/unhide toggle logic
+    // Hide/unhide toggle logic
     hideBtn.onclick = async () => {
       const msgRef = doc(db, "rooms", currentRoomName, "messages", wrapper.dataset.messageId);
 
@@ -1272,13 +1425,13 @@ function copyWithFallback(text) {
     };
 
  } else {
-    console.log("❌ User is NOT admin – no Hide/Unhide button");
+    console.log("User is NOT admin – no Hide/Unhide button");
     
   }
 }
 
-// contacts search bar
-document.getElementById("contacts-search").addEventListener("input", (e) => {
+// Debounced search functions
+const debouncedContactsSearch = debounce((e) => {
   const term = e.target.value.trim().toLowerCase();
   const contactsUl = document.getElementById("contacts-list");
   const lis = contactsUl.querySelectorAll("li");
@@ -1287,10 +1440,9 @@ document.getElementById("contacts-search").addEventListener("input", (e) => {
     const name = li.textContent.trim().toLowerCase();
     li.style.display = name.startsWith(term) ? "flex" : "none";
   });
-});
+}, 300);
 
-// member search bar
-document.getElementById("member-search").addEventListener("input", (e) => {
+const debouncedMemberSearch = debounce((e) => {
   const term = e.target.value.trim().toLowerCase();
   const membersUl = document.getElementById("members");
   const lis = membersUl.querySelectorAll("li");
@@ -1299,14 +1451,15 @@ document.getElementById("member-search").addEventListener("input", (e) => {
     const name = li.querySelector("span").textContent.toLowerCase();
     li.style.display = name.startsWith(term) ? "flex" : "none";
   });
+}, 300);
 
-  // keep full count correct
-  updateMemberCount();
-});
+// Apply debounced search listeners
+document.getElementById("contacts-search").addEventListener("input", debouncedContactsSearch);
+document.getElementById("member-search").addEventListener("input", debouncedMemberSearch);
 
 document.getElementById("invite-member").addEventListener("click", async () => {
   if (!currentRoomName) {
-    alert("❌ No room selected");
+    alert("No room selected");
     return;
   }
 
@@ -1332,13 +1485,14 @@ document.getElementById("invite-member").addEventListener("click", async () => {
     
   } catch (error) {
     console.error('Error loading current members:', error);
-    alert('❌ Error loading members. Please try again.');
+    alert('Error loading members. Please try again.');
   }
 });
 
+// OPTIMIZED: Enhanced room creation with real-time updates
 document.getElementById("create-room").addEventListener("click", async () => {
   if (!currentUser || !currentUser.id || !currentUser.name) {
-    alert("❌ Cannot create room – currentUser is not ready yet.");
+    alert("Cannot create room – currentUser is not ready yet.");
     console.error("currentUser object is incomplete:", currentUser);
     return;
   }
@@ -1346,34 +1500,25 @@ document.getElementById("create-room").addEventListener("click", async () => {
   const rawRoomName = prompt("Enter a name for the new room (max 14 characters):");
   if (!rawRoomName) return;
 
-  // Validate the room name
   const roomName = validateRoomName(rawRoomName);
-  if (!roomName) return; // Validation failed
+  if (!roomName) return;
 
-  if (!currentUser?.id || !currentUser.name) {
-    alert("❌ Cannot create room – currentUser is not ready yet.");
-    console.error("🚫 currentUser is not set properly:", currentUser);
-    return;
-  }
-  
   const roomId = roomName.replace(/\s+/g, "_").toLowerCase();
   const roomRef = doc(db, "rooms", roomId);
 
-  const now = new Date().toISOString();
-
   try {
-    // Save the room document
+    // Create room document with real-time update triggers
     await setDoc(roomRef, {
       name: roomName,
       createdBy: currentUser.name,
-      createdAt: now,
+      createdAt: serverTimestamp(),
       lastMessage: "Room created",
+      lastMessageTimestamp: serverTimestamp(),
+      lastMessageBy: currentUser.id,
       unread: false
     });
 
-    // Add self to members subcollection with Administrator role
-    console.log("🔥 Creating admin member doc...");
-
+    // Add creator as admin member
     const adminData = {
       name: currentUser.name,
       role: "Administrator"
@@ -1388,19 +1533,23 @@ document.getElementById("create-room").addEventListener("click", async () => {
       adminData
     );
 
-    currentUser.role = "Administrator";  // 🪄 You are now admin!
+    currentUser.role = "Administrator";
 
-    console.log("✅ Admin member doc created.");
-    console.log(`✅ Room '${roomName}' created and ${currentUser.name} added as Administrator`);
-
-    populateRooms();
+    console.log(`Room '${roomName}' created successfully`);
+    
+    // Clear cache to force refresh
+    roomsCache = null;
+    
+    // The real-time listener will automatically update the room list!
+    
   } catch (err) {
-    console.error("🔥 Error creating room or adding admin member:", err);
+    console.error("Error creating room:", err);
     alert("Error creating room – see console.");
   }
 });
 
 document.getElementById("back-btn").addEventListener("click", () => showPage(chatListPage));
+
 document.getElementById("back-to-rooms").addEventListener("click", () => {
   // Mark current room as read before leaving
   if (currentRoomName && currentUser.id) {
@@ -1463,7 +1612,7 @@ document.getElementById("room-name").addEventListener("click", async () => {
   }
   
   if (!currentRoomName) {
-    alert("❌ No room selected");
+    alert("No room selected");
     return;
   }
   
@@ -1476,7 +1625,7 @@ document.getElementById("room-name").addEventListener("click", async () => {
       const roomData = roomSnap.data();
       
       if (roomData.type === "private") {
-        alert("❌ Private chat names cannot be changed");
+        alert("Private chat names cannot be changed");
         return;
       }
       
@@ -1496,21 +1645,21 @@ document.getElementById("room-name").addEventListener("click", async () => {
             name: newName
           });
           
-          console.log(`✅ Room ${currentRoomName} renamed to: ${newName}`);
-          alert(`✅ Room renamed to "${newName}"`);
+          console.log(`Room ${currentRoomName} renamed to: ${newName}`);
+          alert(`Room renamed to "${newName}"`);
           
           // Force refresh everything with new name
           await updateAllRoomNameDisplays();
           
         } catch (error) {
-          console.error("🔥 Error renaming room:", error);
-          alert("❌ Error renaming room. Please try again.");
+          console.error("Error renaming room:", error);
+          alert("Error renaming room. Please try again.");
         }
       }
     }
   } catch (error) {
-    console.error("🔥 Error checking room data:", error);
-    alert("❌ Error accessing room data. Please try again.");
+    console.error("Error checking room data:", error);
+    alert("Error accessing room data. Please try again.");
   }
 });
 
@@ -1572,7 +1721,7 @@ document.getElementById("back-to-chat").addEventListener("click", () => {
 
 document.getElementById("leave-chat").addEventListener("click", async () => {
   if (!currentRoomName) {
-    alert("❌ No room selected");
+    alert("No room selected");
     return;
   }
 
@@ -1614,7 +1763,7 @@ document.getElementById("leave-chat").addEventListener("click", async () => {
   // Different confirmation messages based on role
   let confirmMessage;
   if (isRoomCreator) {
-    confirmMessage = `⚠️ WARNING: You are the creator of "${roomDisplayName}".\n\nLeaving will DELETE the entire room for all members!\n\nAre you sure you want to delete this room permanently?`;
+    confirmMessage = `WARNING: You are the creator of "${roomDisplayName}".\n\nLeaving will DELETE the entire room for all members!\n\nAre you sure you want to delete this room permanently?`;
   } else {
     // Prevent non-creators from leaving if this is their only room
     try {
@@ -1630,7 +1779,7 @@ document.getElementById("leave-chat").addEventListener("click", async () => {
       }
       
       if (userRoomCount <= 1) {
-        alert("❌ You cannot leave your last remaining room");
+        alert("You cannot leave your last remaining room");
         return;
       }
     } catch (error) {
@@ -1646,7 +1795,7 @@ document.getElementById("leave-chat").addEventListener("click", async () => {
     try {
       if (isRoomCreator) {
         // Creator leaving = DELETE ENTIRE ROOM
-        console.log(`🔥 Room creator leaving - deleting entire room: ${currentRoomName}`);
+        console.log(`Room creator leaving - deleting entire room: ${currentRoomName}`);
         
         // Delete all messages in the room
         const messagesSnapshot = await getDocs(collection(db, "rooms", currentRoomName, "messages"));
@@ -1666,17 +1815,17 @@ document.getElementById("leave-chat").addEventListener("click", async () => {
         const roomRef = doc(db, "rooms", currentRoomName);
         await deleteDoc(roomRef);
         
-        alert(`💥 Room "${roomDisplayName}" has been deleted for all members`);
+        alert(`Room "${roomDisplayName}" has been deleted for all members`);
         
       } else {
         // Regular member leaving = just remove them
         const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
         await deleteDoc(memberRef);
         
-        alert(`✅ You have left "${roomDisplayName}"`);
+        alert(`You have left "${roomDisplayName}"`);
       }
       
-      console.log(`✅ Successfully processed leave request for: ${currentRoomName}`);
+      console.log(`Successfully processed leave request for: ${currentRoomName}`);
       
       // Go back to chat list and refresh rooms
       showPage(chatListPage);
@@ -1686,8 +1835,8 @@ document.getElementById("leave-chat").addEventListener("click", async () => {
       currentRoomName = null;
       
     } catch (error) {
-      console.error("🔥 Error leaving/deleting room:", error);
-      alert("❌ Error processing request. Please try again.");
+      console.error("Error leaving/deleting room:", error);
+      alert("Error processing request. Please try again.");
     }
   }
 });
@@ -1797,7 +1946,7 @@ document.getElementById("paste-message").addEventListener("click", async () => {
 
 // open contacts page & populate list
 document.getElementById("contacts").addEventListener("click", () => {
-  console.log("📣 CONTACTS CLICKED!");
+  console.log("CONTACTS CLICKED!");
 showPage(contactsPage);
   populateContacts();
 });
@@ -1808,7 +1957,7 @@ async function populateContacts() {
 
   try {
     const snapshot = await getDocs(collection(db, "users"));
-    console.log("🔄 Got snapshot:", snapshot);
+    console.log("Got snapshot:", snapshot);
 
     listEl.innerHTML = "";
 
@@ -1890,7 +2039,7 @@ document.getElementById('find-chat-modal').addEventListener('click', (e) => {
 
 async function findAndJoinRoom(searchName) {
   try {
-    console.log("🔍 Searching for room:", searchName);
+    console.log("Searching for room:", searchName);
     
     // Get all rooms from Firebase
     const allRoomsSnapshot = await getDocs(collection(db, "rooms"));
@@ -1911,7 +2060,7 @@ async function findAndJoinRoom(searchName) {
     });
 
     if (!foundRoom) {
-      alert("❌ This chat does not exist");
+      alert("This chat does not exist");
       return;
     }
 
@@ -1920,7 +2069,7 @@ async function findAndJoinRoom(searchName) {
     const memberSnap = await getDoc(memberRef);
     
     if (memberSnap.exists()) {
-      alert("ℹ️ You are already a member of this room");
+      alert("You are already a member of this room");
       return;
     }
 
@@ -1937,15 +2086,15 @@ async function findAndJoinRoom(searchName) {
     
     await setDoc(memberRef, memberData);
     
-    console.log(`✅ Successfully joined room: ${foundRoom.data.name}`);
-    alert(`✅ Successfully joined "${foundRoom.data.name}"!`);
+    console.log(`Successfully joined room: ${foundRoom.data.name}`);
+    alert(`Successfully joined "${foundRoom.data.name}"!`);
     
     // Refresh room list to show the new room
     populateRooms();
     
   } catch (error) {
-    console.error("🔥 Error finding/joining room:", error);
-    alert("❌ Error searching for room. Please try again.");
+    console.error("Error finding/joining room:", error);
+    alert("Error searching for room. Please try again.");
   }
 }
   
@@ -2108,7 +2257,8 @@ class InviteSystem {
         this.selectedContacts.has(contact.id)
       );
 
-      for (const contact of selectedContactDetails) {
+      // Batch all the member additions
+      const invitePromises = selectedContactDetails.map(contact => {
         const memberRef = doc(db, "rooms", this.currentRoomName, "members", contact.id);
         
         const memberData = {
@@ -2121,29 +2271,31 @@ class InviteSystem {
           memberData.avatar = contact.avatar;
         }
         
-        await setDoc(memberRef, memberData, { merge: true });
-   }      
-      
-      // Trigger immediate refresh for all users on chat list page
-setTimeout(() => {
-  if (document.getElementById("chat-list").classList.contains("active")) {
-    populateRooms();
-  }
-}, 500);
+        return setDoc(memberRef, memberData, { merge: true });
+      });
+
+      // Execute all invites in parallel
+      await Promise.all(invitePromises);
+
+      // Update room's last activity to trigger real-time updates
+      const roomRef = doc(db, "rooms", this.currentRoomName);
+      await updateDoc(roomRef, {
+        lastMessage: `${selectedContactDetails.length} member(s) invited`,
+        lastMessageTimestamp: serverTimestamp(),
+        lastMessageBy: currentUser.id
+      });
 
       const names = selectedContactDetails.map(c => c.name).join(', ');
-      alert(`✅ Successfully invited ${names} to ${this.currentRoomName}!`);
+      alert(`Successfully invited ${names}!`);
 
       this.closeModal();
-populateMembers();
-
-// Immediately refresh room lists to show new invitations
-console.log("🔄 Forcing room list refresh after invitations");
-populateRooms();
-
+      
+      // The real-time listeners will automatically update everything!
+      populateMembers();
+      
     } catch (error) {
       console.error('Error inviting members:', error);
-      alert('❌ Error inviting members. Please try again.');
+      alert('Error inviting members. Please try again.');
     } finally {
       confirmBtn.innerHTML = originalText;
       confirmBtn.disabled = false;
@@ -2152,4 +2304,29 @@ populateRooms();
 }
 
 let inviteSystem;
+
+// Cleanup function
+function cleanupRealTimeListeners() {
+  console.log("Cleaning up real-time listeners");
+  
+  if (roomsListener) {
+    roomsListener();
+    roomsListener = null;
+  }
+  
+  if (userMembershipsListener) {
+    userMembershipsListener();
+    userMembershipsListener = null;
+  }
+  
+  if (unsubscribeMessages) {
+    unsubscribeMessages();
+    unsubscribeMessages = null;
+  }
+}
+
+// Add cleanup on page unload
+window.addEventListener('beforeunload', cleanupRealTimeListeners);
+window.addEventListener('pagehide', cleanupRealTimeListeners);
+
 });
