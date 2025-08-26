@@ -240,7 +240,16 @@ function selectLanguage(code) {
 }
 
 function showLanguageWelcomeModal() {
-  document.getElementById('language-welcome-modal').classList.remove('hidden');
+  const modal = document.getElementById('language-welcome-modal');
+  if (!modal) {
+    console.error('Language modal not found in DOM');
+    // Fallback - proceed directly to chat with English default
+    currentUser.preferredTranslationLang = 'en';
+    proceedToChat();
+    return;
+  }
+  
+  modal.classList.remove('hidden');
   
   // Initialize the modal components
   initializePopularLanguages();
@@ -308,21 +317,18 @@ function proceedToChat() {
   }
 }
 
+// Move these variables outside DOMContentLoaded for global access
+let currentUser = {};
+let currentRoomName = null;
+const blockedMembers = new Set();
+const mutedMembers = new Set();
 document.addEventListener("DOMContentLoaded", () => {
 
-let currentUser = {};
-
-  const chatListPage = document.getElementById("chat-list");
-  const chatRoomPage = document.getElementById("chat-room");
-  const membersListPage = document.getElementById("members-list");
-  const contactsPage = document.getElementById("contacts-page");
-
-  const pages = [chatListPage, chatRoomPage, membersListPage, contactsPage];
-  
-  let currentRoomName = null;
-
-  const blockedMembers = new Set();
-  const mutedMembers = new Set();
+const chatListPage = document.getElementById("chat-list");
+const chatRoomPage = document.getElementById("chat-room");
+const membersListPage = document.getElementById("members-list");
+const contactsPage = document.getElementById("contacts-page");
+const pages = [chatListPage, chatRoomPage, membersListPage, contactsPage];
 
 // Cache variables
 let roomsCache = null;
@@ -338,13 +344,7 @@ let unsubscribeMessages = null;
 let mutedMembersCache = new Map();
 let mutedMembersCacheTime = new Map();
 
-// Language modal event listeners
-document.getElementById('language-confirm-btn').addEventListener('click', () => {
-  if (selectedLanguage) {
-    console.log('Language confirmed:', selectedLanguage);
-    saveLanguagePreferenceAndProceed(selectedLanguage);
-  }
-});
+
 
 // Wait for Wix to send the member info
 window.addEventListener("message", async (event) => {
@@ -905,7 +905,7 @@ function populateMessages() {
           }
 
           messageBody.dataset.originalText = messageBody.innerHTML;
-          const result = await translateWithDetection(msg.text, "en");
+const result = await translateWithDetection(msg.text);
 
           messageBody.innerHTML = `
             ${result.translated}
@@ -2462,6 +2462,15 @@ class InviteSystem {
 
 let inviteSystem;
 
+// ADD THE LANGUAGE EVENT LISTENER HERE:
+// Language modal event listeners - setup after DOM is ready
+document.getElementById('language-confirm-btn').addEventListener('click', () => {
+  if (selectedLanguage) {
+    console.log('Language confirmed:', selectedLanguage);
+    saveLanguagePreferenceAndProceed(selectedLanguage);
+  }
+});
+  
 // Cleanup function
 function cleanupRealTimeListeners() {
   console.log("Cleaning up real-time listeners");
