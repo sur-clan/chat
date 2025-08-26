@@ -222,6 +222,7 @@ function initializeLanguageSearch() {
 }
 
 function selectLanguage(code) {
+  console.log("selectLanguage called with:", code); // DEBUG
   selectedLanguage = code;
   
   // Update visual selection for popular languages
@@ -232,11 +233,25 @@ function selectLanguage(code) {
   // Show selected language
   const displayDiv = document.getElementById('selected-language-display');
   const nameSpan = document.getElementById('selected-language-name');
-  nameSpan.textContent = ALL_LANGUAGES[code];
-  displayDiv.classList.remove('hidden');
+  
+  console.log("Found displayDiv:", displayDiv); // DEBUG
+  console.log("Found nameSpan:", nameSpan); // DEBUG
+  
+  if (nameSpan) {
+    nameSpan.textContent = ALL_LANGUAGES[code];
+  }
+  if (displayDiv) {
+    displayDiv.classList.remove('hidden');
+  }
   
   // Enable confirm button
-  document.getElementById('language-confirm-btn').disabled = false;
+  const confirmBtn = document.getElementById('language-confirm-btn');
+  console.log("Found confirmBtn:", confirmBtn); // DEBUG
+  
+  if (confirmBtn) {
+    confirmBtn.disabled = false;
+    console.log("Button enabled!"); // DEBUG
+  }
 }
 
 function showLanguageWelcomeModal() {
