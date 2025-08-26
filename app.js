@@ -305,6 +305,12 @@ async function saveLanguagePreferenceAndProceed(languageCode) {
 }
 
 function proceedToChat() {
+ // Don't proceed if user data isn't ready
+  if (!currentUser || !currentUser.id) {
+    console.error("Cannot proceed to chat - user data not ready");
+    return;
+  }
+
   // Initialize chat functionality
   const roomId = "general"; // default room
 
@@ -549,6 +555,11 @@ async function updateRoomsFromSnapshot(snapshot) {
 
 // OPTIMIZED: Cached room population
 async function populateRooms() {
+
+if (!currentUser || !currentUser.id) {
+    console.log("User not initialized, cannot populate rooms");
+    return;
+  }
   const roomsUl = document.getElementById("rooms");
 
   // Check cache first
@@ -1943,8 +1954,9 @@ document.getElementById("leave-chat").addEventListener("click", async () => {
       let userRoomCount = 0;
       
       for (const roomDoc of allRoomsSnapshot.docs) {
-        const memberRef = doc(db, "rooms", roomDoc.id, "members", currentUser.id);
-        const memberSnap = await getDoc(memberRef);
+
+
+const memberRef = doc(db, "rooms", roomDoc.id, "members", currentUser.id);        const memberSnap = await getDoc(memberRef);
         if (memberSnap.exists()) {
           userRoomCount++;
         }
