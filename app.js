@@ -391,16 +391,16 @@ if (!event.origin.endsWith("sur-clan.com")) return;
   const userRef = doc(db, "users", currentUser.id);
   const userSnap = await getDoc(userRef);
   
-  if (userSnap.exists() && userSnap.data().preferredTranslationLang) {
-    // Existing user with language preference
-    currentUser.preferredTranslationLang = userSnap.data().preferredTranslationLang;
-    console.log("Existing user with language:", currentUser.preferredTranslationLang);
-    proceedToChat();
-  } else {
-    // New user - show language selection modal
-    console.log("New user - showing language selection modal");
-    showLanguageWelcomeModal();
-  }
+if (userSnap.exists() && userSnap.data().preferredTranslationLang) {
+  // Existing user with language preference
+  currentUser.preferredTranslationLang = userSnap.data().preferredTranslationLang;
+  console.log("Existing user with language:", currentUser.preferredTranslationLang);
+  await proceedToChat(); // Add await here too for consistency
+} else {
+  // New user - show language selection modal
+  console.log("New user - showing language selection modal");
+  showLanguageWelcomeModal();
+}
 });
 
 const sendMessage = async (text) => {
