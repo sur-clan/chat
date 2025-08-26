@@ -31,14 +31,13 @@ html, body {
   width: 100%;
   position: relative;
   z-index: 2;
-
 }
 
 header {
   font-family: 'Cinzel Decorative', serif;
   background-color: transparent;
   color: gold;
-  padding: 0rem; 			/* distance from top */
+  padding: 0rem;
   margin: 0;
   box-shadow: 0 0 10px transparent;
 }
@@ -63,7 +62,7 @@ main {
   flex-direction: column;
   min-height: 0;
   overflow-y: auto;
-  padding: 0rem 0.5rem 0.5rem; /* Reduced top padding from 0 to 0.2rem */
+  padding: 0rem 0.5rem 0.5rem;
   box-sizing: border-box;
 }
 
@@ -79,13 +78,12 @@ main {
 }
 
 .center-buttons {
-  margin-top: auto; /* push it to the bottom of main */
+  margin-top: auto;
   display: flex;
   justify-content: center;
-  flex-wrap: nowrap; /* stay in one line */
+  flex-wrap: nowrap;
   gap: 0.5rem;
   padding: 0.8rem;
-
 }
 
 .center-buttons button {
@@ -95,7 +93,6 @@ main {
 }
 
 /* Typography & headers */
-
 h2 {
   font-family: 'Cinzel Decorative', serif;
   font-size: 1.1rem;
@@ -104,10 +101,9 @@ h2 {
   text-align: center;
   margin: 0rem 0;
   line-height: 1.2;
-  margin-bottom: rem;
   text-shadow:
     2px 2px 2px rgba(0, 0, 0, 0.6),
-    0 0 0px rgba(255, 215, 0, 1); 
+    0 0 0px rgba(255, 215, 0, 1);
 }
 
 #chat-list h2,
@@ -120,9 +116,9 @@ h2 {
   flex-wrap: nowrap;
   justify-content: space-between;
   align-items: center;
-  min-height: 3rem; /* Reduced from 3.5rem to 3rem */
+  min-height: 3rem;
   box-sizing: border-box;
-  margin-top: 0; /* Ensure no top margin */
+  margin-top: 0;
 }
 
 .header-title {
@@ -130,7 +126,7 @@ h2 {
   text-align: center;
 }
 
-/* UNIFIED HEADER BUTTON STYLES - FIXED */
+/* UNIFIED HEADER BUTTON STYLES */
 .header-btn,
 #back-btn,
 #create-room,
@@ -171,9 +167,8 @@ h2 {
   box-shadow: 0 0 5px gold !important;
 }
 
-/* Special case for view-members button to maintain icon styling */
 #view-members {
-  font-size: 1.2rem !important; /* Smaller for the icon */
+  font-size: 1.2rem !important;
   width: 2.5rem !important;
   height: 2.5rem !important;
   line-height: 2.5rem !important;
@@ -216,7 +211,6 @@ button:hover {
 }
 
 /* Rooms & list items */
-
 ul {
   list-style-type: none;
   padding: 0;
@@ -240,7 +234,7 @@ ul {
 .unread-envelope {
   font-family: "Font Awesome 5 Free" !important;
   font-weight: 900 !important;
-  content: "\f0e0" !important; /* Font Awesome envelope */
+  content: "\f0e0" !important;
   font-size: 1.1rem;
   color: #e1bd47;
   position: absolute;
@@ -249,17 +243,15 @@ ul {
 }
 
 /* Input area */
-
 .input-area {
   display: flex;
-  flex-wrap: nowrap;   /* ensure row alignment */
+  flex-wrap: nowrap;
   gap: 0.2rem;
   align-items: center;
   width: 100%;
   box-sizing: border-box;
   justify-content: center;
   margin-bottom: 13px;
-
 }
 
 .input-area textarea {
@@ -277,18 +269,18 @@ ul {
 .input-area button {
   flex: 0 0 2.5rem;
   height: 2.5rem;
-  font-size: 1.2rem;          /* adjust icon size here */
+  font-size: 1.2rem;
   border: 1px solid gold;
   border-radius: 10px;
   color: gold;
   display: flex;
-  align-items: center;        /* center vertically */
-  justify-content: center;    /* center horizontally */
+  align-items: center;
+  justify-content: center;
   background: rgba(0, 0, 0, 0.2);
 }
 
 textarea::placeholder {
-  color: #b3730d; 		/* Type your message… */
+  color: #b3730d;
   font-style: italic;
 }
 
@@ -323,15 +315,11 @@ textarea::placeholder {
   margin: 0.3rem;
 }
 
-/* Misc */
-
 #contacts-list {
   flex: 1;
   overflow-y: auto;
   margin: 1rem 0;
 }
-
-/* Footer member buttons */
 
 #members {
   flex: 1;
@@ -345,7 +333,6 @@ textarea::placeholder {
   flex-direction: column;
   justify-content: center;
   padding: 0.8rem;
-
 }
 
 .member-buttons button {
@@ -358,7 +345,7 @@ textarea::placeholder {
 #paste-message {
   flex: 0 0 2.5rem !important;
   height: 2.5rem !important;
-  font-size: 1rem !important; /* Adjusted for Font Awesome icon */
+  font-size: 1rem !important;
   border: 1px solid #b3730d;
   border-radius: 10px !important;
   color: gold !important;
@@ -379,16 +366,17 @@ textarea::placeholder {
   color: gold !important;
   font-size: 1rem !important;
 }
+
 #messages {
   flex: 1;
   overflow-y: scroll;
   margin: 0.5rem 0;
-  background: rgba(0,0,0,0.5);/* chat background */
-  border: 1px solid #b3730d;	/*chat border */
+  background: rgba(0,0,0,0.5);
+  border: 1px solid #b3730d;
   border-radius: 10px;
   text-align: left;
   padding: 0.5rem;
-  min-height: 100px; /* optional */
+  min-height: 100px;
 }
 
 .message-scroll {
@@ -396,7 +384,7 @@ textarea::placeholder {
   justify-content: space-between;
   align-items: flex-start;
   margin: 0;
-  background: transparent;	/* part frame joining messages */
+  background: transparent;
   padding: 3px;
   border-radius: 10px;
   position: relative;
@@ -421,29 +409,29 @@ textarea::placeholder {
 }
 
 .my-message .message-content {
-  border: 1px solid #474747;		/* my message border */
+  border: 1px solid #474747;
   border-radius: 10px;
   background: rgba(0,0,0,0.5);
-  color: #ccc;				/* Welcome to the chat */
+  color: #ccc;
   text-align: left;
 }
 
 .other-message .message-content {
-  border: 1px solid #474747;		/* inso message border */
+  border: 1px solid #474747;
   border-radius: 10px;
-  background: rgba(0,0,0,0.5);			/* inso message background */
-  color: #ccc;				/* Thank you! */
+  background: rgba(0,0,0,0.5);
+  color: #ccc;
 }
 
-.message-header {	
-  font-weight: normal;			/* Both names */
-  color: gold;				/* Insomniak */
+.message-header {
+  font-weight: normal;
+  color: gold;
   font-size: 13px;
   line-height: 1.3;
 }
 
 .my-message .message-header {
-  color: gold;				/* Shun */
+  color: gold;
 }
 
 .message-body {
@@ -490,31 +478,26 @@ textarea {
   align-self: flex-start;
 }
 
-/* translation button */
-
 .other-message .message-actions button {
   width: 48px;
   height: 48px;
   min-width: 48px;
   min-height: 48px;
   line-height: 48px;
-  font-size: 1.5rem; /* adjust if needed */
+  font-size: 1.5rem;
   background: transparent;
   border: none;
   box-shadow: none;
-
-  border-radius: 50%; /* → makes it a circle */
+  border-radius: 50%;
   cursor: pointer;
   color: #fff;
   text-align: center;
-  display: flex;             /* → ensures centering */
-  justify-content: center;   /* → center horizontally */
-  align-items: center;       /* → center vertically */
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 0;
   box-sizing: border-box;
 }
-
 
 .chat-container h2 {
   margin: 0;
@@ -555,10 +538,10 @@ textarea {
 
 .member-actions {
   display: flex;
-  gap: 0.3rem; 
+  gap: 0.3rem;
 }
 
-/* Hide scrollbars (Chrome / Edge / Safari) */
+/* Hide scrollbars */
 #messages::-webkit-scrollbar,
 #rooms::-webkit-scrollbar,
 #members::-webkit-scrollbar,
@@ -568,16 +551,14 @@ textarea {
   background: transparent;
 }
 
-/* Firefox & IE/Edge */
 #messages,
 #rooms,
 #members,
 #contacts-list {
-  scrollbar-width: none;          /* Firefox */
-  -ms-overflow-style: none;       /* IE/Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-/* Optional fallback track styling */
 #messages::-webkit-scrollbar-track,
 #messages::-webkit-scrollbar-thumb,
 #rooms::-webkit-scrollbar-track,
@@ -815,7 +796,7 @@ textarea {
   color: #888;
 }
 
-/* ============ FIND CHAT MODAL STYLES - COMPLETE RESET ============ */
+/* ============ FIND CHAT MODAL STYLES ============ */
 #find-chat-modal {
   position: fixed !important;
   top: 0 !important;
@@ -955,8 +936,416 @@ textarea {
   box-shadow: none !important;
 }
 
-/* Mobile responsive */
+/* Room name container styles */
+#chat-room #room-name-container,
+#members-list #room-name-container {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: row !important;
+  justify-content: center;
+  align-items: center;
+  gap: 0.3rem !important;
+  max-width: calc(100% - 5rem);
+  padding: 0 0.5rem;
+  box-sizing: border-box;
+}
+
+#chat-room #room-name,
+#members-list #room-name {
+  font-family: 'Cormorant Garamond', serif !important;
+  font-size: 1.2rem !important;
+  font-weight: 400 !important;
+  color: #efca51 !important;
+  text-align: center !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6), 0 0 0px rgba(255, 215, 0, 1) !important;
+  white-space: nowrap !important;
+  display: inline !important;
+}
+
+#room-name-container .small {
+  display: inline !important;
+  font-size: 60% !important;
+  line-height: 1 !important;
+}
+
+#room-name {
+  display: inline !important;
+  white-space: nowrap !important;
+}
+
+.private-chat-icon {
+  color: gold !important;
+  margin-right: 0.3rem !important;
+  text-shadow: 0 0 3px rgba(255, 215, 0, 0.5) !important;
+}
+
+/* Mobile background fix */
+@media (max-width: 768px) {
+  html, body {
+    position: relative !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    background-attachment: scroll !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+  }
+  
+  .content {
+    min-height: 100vh !important;
+    height: 100vh !important;
+  }
+  
+  .page {
+    min-height: calc(100vh - 4rem) !important;
+  }
+}
+
+@media (max-width: 768px) and (min-height: 800px) {
+  html, body {
+    min-height: 100vh !important;
+    height: auto !important;
+  }
+  
+  .content {
+    min-height: 100vh !important;
+    height: auto !important;
+  }
+}
+
+.translate-btn {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  line-height: 48px !important;
+  font-size: 1.2rem !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  color: gold !important;
+  text-align: center !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  text-shadow: 0 0 3px rgba(255, 215, 0, 0.5) !important;
+  transition: all 0.3s ease !important;
+}
+
+.translate-btn:hover {
+  color: #efca51 !important;
+  text-shadow: 0 0 5px rgba(239, 202, 81, 0.8) !important;
+  transform: scale(1.1) !important;
+}
+
+.translate-btn i {
+  color: gold !important;
+  text-shadow: 0 0 3px rgba(255, 215, 0, 0.5) !important;
+}
+
+#back-btn i,
+#create-room i,
+#back-to-rooms i,
+#back-to-chat i,
+#invite-member i,
+#back-to-rooms-from-contacts i {
+  font-size: 1.2rem !important;
+}
+
+.general-star {
+  color: #b6842a !important;
+  font-size: 0.8rem !important;
+  margin-right: 0.3rem !important;
+  text-shadow: none !important;
+}
+
+#rooms li strong {
+  font-size: 0.9rem !important;
+  line-height: 1.2 !important;
+}
+
+#rooms li {
+  font-size: 0.9rem !important;
+}
+
+#rooms li strong {
+  font-size: inherit !important;
+}
+
+#rooms li[style*="text-align:center"] {
+  font-size: 0.8rem !important;
+  color: gold !important;
+}
+
+#messages div[style*="text-align:center"] {
+  font-size: 0.8rem !important;
+  color: gold !important;
+}
+
+div[style*="text-align:center"][style*="color:gold"] {
+  font-size: 0.8rem !important;
+}
+
+#rooms li small {
+  font-size: 0.8rem !important;
+  color: #b6842a !important;
+}
+
+#view-members i {
+  font-size: 1.2rem !important;
+}
+
+/* ============ LANGUAGE WELCOME MODAL STYLES ============ */
+#language-welcome-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+#language-welcome-modal.hidden {
+  display: none;
+}
+
+.language-welcome-content {
+  background: #222;
+  border: 3px solid #b3730d;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  color: #e1bd47;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  max-height: 80vh;
+}
+
+.language-welcome-header {
+  background: linear-gradient(135deg, #b3730d, #d4af37);
+  color: #1a1a1a;
+  padding: 2rem;
+  text-align: center;
+}
+
+.language-welcome-header h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.8rem;
+  font-weight: bold;
+  font-family: 'Cinzel Decorative', serif;
+}
+
+.language-welcome-header p {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.language-selection-body {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex: 1;
+  overflow: hidden;
+}
+
+.language-selection-body h4 {
+  margin: 0 0 1rem 0;
+  color: #efca51;
+  font-size: 1.1rem;
+  font-family: 'Cinzel Decorative', serif;
+}
+
+.popular-languages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+}
+
+.popular-language {
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid #b3730d;
+  border-radius: 8px;
+  padding: 0.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  color: #e1bd47;
+}
+
+.popular-language:hover {
+  background: rgba(179, 115, 13, 0.2);
+  border-color: #d4af37;
+}
+
+.popular-language.selected {
+  background: rgba(179, 115, 13, 0.3);
+  border-color: #d4af37;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+}
+
+.language-search-section {
+  border-top: 1px solid #b3730d;
+  padding-top: 1rem;
+}
+
+.search-container {
+  position: relative;
+}
+
+.language-search {
+  width: 100%;
+  padding: 0.8rem;
+  padding-left: 2.5rem;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #b3730d;
+  border-radius: 8px;
+  color: #e1bd47;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.language-search:focus {
+  outline: none;
+  border-color: #d4af37;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+.language-search::placeholder {
+  color: #b3730d;
+  font-style: italic;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #b3730d;
+  font-size: 1rem;
+}
+
+.language-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #333;
+  border: 2px solid #b3730d;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.language-dropdown.hidden {
+  display: none;
+}
+
+.language-dropdown-item {
+  padding: 0.8rem;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(179, 115, 13, 0.2);
+  color: #e1bd47;
+  transition: background 0.2s;
+}
+
+.language-dropdown-item:hover {
+  background: rgba(179, 115, 13, 0.2);
+}
+
+.language-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.selected-language-display {
+  background: rgba(179, 115, 13, 0.2);
+  border: 2px solid #d4af37;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  text-align: center;
+  font-weight: bold;
+  color: #efca51;
+}
+
+.language-confirm-section {
+  border-top: 1px solid #b3730d;
+  padding-top: 1.5rem;
+  text-align: center;
+  margin-top: auto;
+}
+
+.language-confirm-btn {
+  background: linear-gradient(135deg, #b3730d, #d4af37);
+  border: none;
+  border-radius: 10px;
+  color: #1a1a1a;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 150px;
+  font-family: 'Cinzel', serif;
+}
+
+.language-confirm-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #d4af37, #f4d03f);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+  transform: translateY(-1px);
+}
+
+.language-confirm-btn:disabled {
+  background: #666;
+  color: #999;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.language-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.language-dropdown::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.language-dropdown::-webkit-scrollbar-thumb {
+  background: #b3730d;
+  border-radius: 4px;
+}
+
 @media (max-width: 480px) {
+  .popular-languages {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .language-welcome-header {
+    padding: 1.5rem;
+  }
+  
+  .language-welcome-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .language-selection-body {
+    padding: 1.5rem;
+  }
+  
   .find-chat-modal-content {
     max-width: 320px !important;
     min-width: 280px !important;
@@ -978,190 +1367,4 @@ textarea {
     padding: 0.6rem 1.5rem !important;
     font-size: 0.9rem !important;
   }
-}
-
-/* Room name container styles for chat room and members pages - FIXED */
-#chat-room #room-name-container,
-#members-list #room-name-container {
-  flex: 1;
-  text-align: center;
-  display: flex;
-  flex-direction: row !important;  /* FIXED: Changed from column to row */
-  justify-content: center;
-  align-items: center;
-  gap: 0.3rem !important;  /* Add gap between elements */
-  max-width: calc(100% - 5rem); /* Account for buttons on sides */
-  padding: 0 0.5rem;
-  box-sizing: border-box;
-}
-
-#chat-room #room-name,
-#members-list #room-name {
-  font-family: 'Cormorant Garamond', serif !important;
-  font-size: 1.2rem !important;
-  font-weight: 400 !important;
-  color: #efca51 !important;
-  text-align: center !important;
-  margin: 0 !important;
-  line-height: 1.2 !important;
-  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6), 0 0 0px rgba(255, 215, 0, 1) !important;
-  white-space: nowrap !important;
-  display: inline !important;
-}
-
-/* Make sure the small dots display inline and have proper size */
-#room-name-container .small {
-  display: inline !important;
-  font-size: 60% !important;
-  line-height: 1 !important;
-}
-
-#room-name {
-  display: inline !important;
-  white-space: nowrap !important;
-}
-
-/* Make the private chat icon consistent with the star positioning */
-.private-chat-icon {
-  color: gold !important;
-  margin-right: 0.3rem !important;
-  text-shadow: 0 0 3px rgba(255, 215, 0, 0.5) !important;
-}
-
-/* Mobile background fix */
-@media (max-width: 768px) {
-  html, body {
-    position: relative !important; /* Override position: fixed on mobile */
-    height: 100vh !important;
-    min-height: 100vh !important;
-    background-attachment: scroll !important; /* Better on mobile */
-    background-size: cover !important;
-    background-position: center center !important;
-    background-repeat: no-repeat !important;
-  }
-  
-  .content {
-    min-height: 100vh !important;
-    height: 100vh !important;
-  }
-  
-  .page {
-    min-height: calc(100vh - 4rem) !important; /* Account for header */
-  }
-}
-
-/* For very tall mobile screens */
-@media (max-width: 768px) and (min-height: 800px) {
-  html, body {
-    min-height: 100vh !important;
-    height: auto !important;
-  }
-  
-  .content {
-    min-height: 100vh !important;
-    height: auto !important;
-  }
-}
-
-/* Add this to your style_v2.css file */
-
-.translate-btn {
-  width: 48px !important;
-  height: 48px !important;
-  min-width: 48px !important;
-  min-height: 48px !important;
-  line-height: 48px !important;
-  font-size: 1.2rem !important; /* Slightly smaller for Font Awesome */
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  border-radius: 50% !important;
-  cursor: pointer !important;
-  color: gold !important; /* Gold color */
-  text-align: center !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  padding: 0 !important;
-  box-sizing: border-box !important;
-  text-shadow: 0 0 3px rgba(255, 215, 0, 0.5) !important; /* Gold glow */
-  transition: all 0.3s ease !important;
-}
-
-.translate-btn:hover {
-  color: #efca51 !important;
-  text-shadow: 0 0 5px rgba(239, 202, 81, 0.8) !important;
-  transform: scale(1.1) !important; /* Slight scale on hover */
-}
-
-.translate-btn i {
-  color: gold !important;
-  text-shadow: 0 0 3px rgba(255, 215, 0, 0.5) !important;
-}
-
-/* Make plus and arrow icons smaller and more balanced */
-#back-btn i,
-#create-room i,
-#back-to-rooms i,
-#back-to-chat i,
-#invite-member i,
-#back-to-rooms-from-contacts i {
-  font-size: 1.2rem !important; /* Smaller than the default 2rem */
-}
-
-
-
-/* Add this to your style_v2.css file for the General room star */
-.general-star {
-  color: #b6842a !important; /* Same color as timestamp text */
-  font-size: 0.8rem !important; /* Slightly smaller than room name */
-  margin-right: 0.3rem !important; /* Space between star and room name */
-  text-shadow: none !important; /* No glow effect */
-}
-
-
-/* Add these CSS rules to your style_v2.css file */
-
-/* A - Make room names in the room list smaller */
-#rooms li strong {
-  font-size: 0.9rem !important; /* Reduced from default ~1rem */
-  line-height: 1.2 !important;
-}
-
-/* Alternative more specific targeting if the above doesn't work */
-#rooms li {
-  font-size: 0.9rem !important;
-}
-
-#rooms li strong {
-  font-size: inherit !important;
-}
-
-/* B - Make loading text smaller */
-/* For "Loading rooms..." text */
-#rooms li[style*="text-align:center"] {
-  font-size: 0.8rem !important;
-  color: gold !important;
-}
-
-/* For "Loading messages..." text in chat */
-#messages div[style*="text-align:center"] {
-  font-size: 0.8rem !important;
-  color: gold !important;
-}
-
-/* More specific targeting for loading states */
-div[style*="text-align:center"][style*="color:gold"] {
-  font-size: 0.8rem !important;
-}
-
-/* Keep the timestamp text size unchanged */
-#rooms li small {
-  font-size: 0.8rem !important; /* This stays the same or adjust as needed */
-  color: #b6842a !important;
-}
-
-/* Keep the gear icon at a good size (same as view-members currently) */
-#view-members i {
-  font-size: 1.2rem !important;
 }
