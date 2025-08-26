@@ -1331,7 +1331,15 @@ div[style*="text-align:center"][style*="color:gold"] {
 
 @media (max-width: 480px) {
   .popular-languages {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr); /* Keep 2 columns */
+    gap: 0.4rem; /* Slightly smaller gap for mobile */
+    max-height: 300px; /* Add max height */
+    overflow-y: auto; /* Allow scrolling if needed */
+  }
+  
+  .popular-language {
+    padding: 0.4rem; /* Slightly smaller padding */
+    font-size: 0.85rem; /* Slightly smaller text */
   }
   
   .language-welcome-header {
@@ -1344,7 +1352,13 @@ div[style*="text-align:center"][style*="color:gold"] {
   
   .language-selection-body {
     padding: 1.5rem;
+    max-height: 60vh; /* Limit overall height */
+    overflow-y: auto; /* Allow scrolling */
   }
+}
+
+
+
   
   .find-chat-modal-content {
     max-width: 320px !important;
