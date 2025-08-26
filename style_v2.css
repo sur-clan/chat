@@ -1336,17 +1336,19 @@ div[style*="text-align:center"][style*="color:gold"] {
   .popular-languages {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.4rem;
-    max-height: 300px;
-    overflow-y: auto;
-    /* Add these mobile-specific fixes: */
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    min-height: 300px; /* Force immediate height calculation */
+    max-height: none; /* Remove this - let parent handle height */
+    overflow-y: visible; /* Remove scrolling from inner container */
   }
   
   .popular-language {
-    padding: 0.4rem; /* Slightly smaller padding */
-    font-size: 0.85rem; /* Slightly smaller text */
+    padding: 0.4rem;
+    font-size: 0.85rem;
+  }
+  
+  .language-selection-body {
+    padding: 1.5rem;
+    max-height: 60vh; /* Keep this - parent handles scrolling */
+    overflow-y: auto; /* Only parent scrolls */
   }
   
   .language-welcome-header {
@@ -1355,14 +1357,6 @@ div[style*="text-align:center"][style*="color:gold"] {
   
   .language-welcome-header h2 {
     font-size: 1.5rem;
-  }
-  
- .language-selection-body {
-    padding: 1.5rem;
-    max-height: 60vh;
-    overflow-y: auto;
-    /* Prevent the container from shifting: */
-    contain: layout;
   }
 
 
