@@ -295,17 +295,17 @@ async function saveLanguagePreferenceAndProceed(languageCode) {
   }
 
   const userRef = doc(db, "users", currentUser.id);
-  await setDoc(userRef, userPayload, { merge: true });
+  await setDoc(userRef, userPayload, { merge: true }); // Make sure this is awaited
   
   console.log("Language preference saved:", languageCode);
   
   // Hide modal and proceed to chat
   document.getElementById('language-welcome-modal').classList.add('hidden');
-  proceedToChat();
+  await proceedToChat(); // Add await here
 }
 
-function proceedToChat() {
- // Don't proceed if user data isn't ready
+async function proceedToChat() {
+  // Don't proceed if user data isn't ready
   if (!currentUser || !currentUser.id) {
     console.error("Cannot proceed to chat - user data not ready");
     return;
@@ -324,17 +324,19 @@ function proceedToChat() {
     }
 
     const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
-    setDoc(memberRef, memberPayload, { merge: true });
+    await setDoc(memberRef, memberPayload, { merge: true }); // Add await here
 
     console.log("Added user to default room:", roomId);
 
     currentRoomName = roomId;
-    populateRooms();
+    await populateRooms(); // Add await here too
     setupRoomListener();
     showPage(chatListPage);
 
   } catch (err) {
     console.error("Failed to add user to default room:", err);
+    // Show error to user and maybe retry
+    alert("Failed to join chat. Please refresh the page and try again.");
   }
 }
 
