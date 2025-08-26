@@ -1171,6 +1171,9 @@ div[style*="text-align:center"][style*="color:gold"] {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 0.5rem;
+  /* Add these to prevent layout shifts: */
+  min-height: 200px;
+  will-change: scroll-position;
 }
 
 .popular-language {
@@ -1331,10 +1334,14 @@ div[style*="text-align:center"][style*="color:gold"] {
 
 @media (max-width: 480px) {
   .popular-languages {
-    grid-template-columns: repeat(2, 1fr); /* Keep 2 columns */
-    gap: 0.4rem; /* Slightly smaller gap for mobile */
-    max-height: 300px; /* Add max height */
-    overflow-y: auto; /* Allow scrolling if needed */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem;
+    max-height: 300px;
+    overflow-y: auto;
+    /* Add these mobile-specific fixes: */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    min-height: 300px; /* Force immediate height calculation */
   }
   
   .popular-language {
@@ -1350,12 +1357,13 @@ div[style*="text-align:center"][style*="color:gold"] {
     font-size: 1.5rem;
   }
   
-  .language-selection-body {
+ .language-selection-body {
     padding: 1.5rem;
-    max-height: 60vh; /* Limit overall height */
-    overflow-y: auto; /* Allow scrolling */
+    max-height: 60vh;
+    overflow-y: auto;
+    /* Prevent the container from shifting: */
+    contain: layout;
   }
-}
 
 
 
