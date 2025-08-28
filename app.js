@@ -21,46 +21,8 @@ import {
 const app = initializeApp(window.firebaseConfig);
 const db = getFirestore(app);
 
-// Complete Google Translate supported languages
-const ALL_LANGUAGES = {
-  'af': 'Afrikaans', 'sq': 'Albanian', 'am': 'Amharic', 'ar': 'Arabic', 'hy': 'Armenian',
-  'az': 'Azerbaijani', 'eu': 'Basque', 'be': 'Belarusian', 'bn': 'Bengali', 'bs': 'Bosnian',
-  'bg': 'Bulgarian', 'ca': 'Catalan', 'ceb': 'Cebuano', 'ny': 'Chichewa', 'zh': 'Chinese',
-  'co': 'Corsican', 'hr': 'Croatian', 'cs': 'Czech', 'da': 'Danish', 'nl': 'Dutch',
-  'en': 'English', 'eo': 'Esperanto', 'et': 'Estonian', 'tl': 'Filipino', 'fi': 'Finnish',
-  'fr': 'French', 'fy': 'Frisian', 'gl': 'Galician', 'ka': 'Georgian', 'de': 'German',
-  'el': 'Greek', 'gu': 'Gujarati', 'ht': 'Haitian Creole', 'ha': 'Hausa', 'haw': 'Hawaiian',
-  'he': 'Hebrew', 'hi': 'Hindi', 'hmn': 'Hmong', 'hu': 'Hungarian', 'is': 'Icelandic',
-  'ig': 'Igbo', 'id': 'Indonesian', 'ga': 'Irish', 'it': 'Italian', 'ja': 'Japanese',
-  'jw': 'Javanese', 'kn': 'Kannada', 'kk': 'Kazakh', 'km': 'Khmer', 'ko': 'Korean',
-  'ku': 'Kurdish', 'ky': 'Kyrgyz', 'lo': 'Lao', 'la': 'Latin', 'lv': 'Latvian',
-  'lt': 'Lithuanian', 'lb': 'Luxembourgish', 'mk': 'Macedonian', 'mg': 'Malagasy', 'ms': 'Malay',
-  'ml': 'Malayalam', 'mt': 'Maltese', 'mi': 'Maori', 'mr': 'Marathi', 'mn': 'Mongolian',
-  'my': 'Myanmar', 'ne': 'Nepali', 'no': 'Norwegian', 'or': 'Odia', 'ps': 'Pashto',
-  'fa': 'Persian', 'pl': 'Polish', 'pt': 'Portuguese', 'pa': 'Punjabi', 'ro': 'Romanian',
-  'ru': 'Russian', 'sm': 'Samoan', 'gd': 'Scottish Gaelic', 'sr': 'Serbian', 'st': 'Sesotho',
-  'sn': 'Shona', 'sd': 'Sindhi', 'si': 'Sinhala', 'sk': 'Slovak', 'sl': 'Slovenian',
-  'so': 'Somali', 'es': 'Spanish', 'su': 'Sundanese', 'sw': 'Swahili', 'sv': 'Swedish',
-  'tg': 'Tajik', 'ta': 'Tamil', 'te': 'Telugu', 'th': 'Thai', 'tr': 'Turkish',
-  'uk': 'Ukrainian', 'ur': 'Urdu', 'ug': 'Uyghur', 'uz': 'Uzbek', 'vi': 'Vietnamese',
-  'cy': 'Welsh', 'xh': 'Xhosa', 'yi': 'Yiddish', 'yo': 'Yoruba', 'zu': 'Zulu'
-};
-
-// Most popular languages for quick selection
-const POPULAR_LANGUAGES = [
-  'en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'zh', 
-  'ja', 'ko', 'ar', 'hi', 'nl', 'pl', 'tr', 'sv'
-];
-
-// Language selection variables
-let selectedLanguage = null;
-let filteredLanguages = [];
-
-async function translateWithDetection(text, targetLang = null) {
-  // Use user's preferred language if no specific target provided
-  const actualTargetLang = targetLang || currentUser.preferredTranslationLang || "en";
-  
-  const apiKey = "AIzaSyBx5zeave49xDKPigO4kQVaXlCWd3FVRU4";  // Replace this with your real key
+async function translateWithDetection(text, targetLang = "en") {
+  const apiKey = "APIKEY";  // Replace this with your real key
   const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
 
   try {
@@ -71,7 +33,7 @@ async function translateWithDetection(text, targetLang = null) {
       },
       body: JSON.stringify({
         q: text,
-        target: actualTargetLang,
+        target: targetLang,
         format: "text"
       })
     });
@@ -92,7 +54,22 @@ async function translateWithDetection(text, targetLang = null) {
 }
 
 function languageNameFromCode(code) {
-  return ALL_LANGUAGES[code] || code;
+  const names = {
+    af: "Afrikaans", ar: "Arabic", az: "Azerbaijani", be: "Belarusian",
+    bg: "Bulgarian", bn: "Bengali", ca: "Catalan", cs: "Czech",
+    da: "Danish", de: "German", el: "Greek", en: "English",
+    es: "Spanish", et: "Estonian", fa: "Persian", fi: "Finnish",
+    fr: "French", gu: "Gujarati", he: "Hebrew", hi: "Hindi",
+    hr: "Croatian", hu: "Hungarian", id: "Indonesian", it: "Italian",
+    ja: "Japanese", ka: "Georgian", ko: "Korean", lt: "Lithuanian",
+    lv: "Latvian", ml: "Malayalam", mr: "Marathi", ms: "Malay",
+    nl: "Dutch", no: "Norwegian", pa: "Punjabi", pl: "Polish",
+    pt: "Portuguese", ro: "Romanian", ru: "Russian", sk: "Slovak",
+    sl: "Slovenian", sr: "Serbian", sv: "Swedish", ta: "Tamil",
+    te: "Telugu", th: "Thai", tr: "Turkish", uk: "Ukrainian",
+    ur: "Urdu", vi: "Vietnamese", zh: "Chinese"
+  };
+  return names[code] || code;
 }
 
 // Room name validation function
@@ -158,232 +135,21 @@ function debounce(func, wait) {
   };
 }
 
-// Language Modal Functions
-function initializePopularLanguages() {
-  const container = document.getElementById('popular-languages');
-  container.innerHTML = '';
-  
-  POPULAR_LANGUAGES.forEach(code => {
-    const div = document.createElement('div');
-    div.className = 'popular-language';
-    div.dataset.lang = code;
-    div.textContent = ALL_LANGUAGES[code];
-    div.addEventListener('click', () => selectLanguage(code));
-    container.appendChild(div);
-  });
-}
-
-function initializeLanguageSearch() {
-  const searchInput = document.getElementById('language-search');
-  const dropdown = document.getElementById('language-dropdown');
-  
-  searchInput.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase().trim();
-    
-    if (query.length === 0) {
-      dropdown.classList.add('hidden');
-      return;
-    }
-    
-    // Filter languages
-    filteredLanguages = Object.entries(ALL_LANGUAGES).filter(([code, name]) => 
-      name.toLowerCase().includes(query)
-    ).slice(0, 10); // Limit to 10 results
-    
-    if (filteredLanguages.length === 0) {
-      dropdown.classList.add('hidden');
-      return;
-    }
-    
-    // Populate dropdown
-    dropdown.innerHTML = '';
-    filteredLanguages.forEach(([code, name]) => {
-      const div = document.createElement('div');
-      div.className = 'language-dropdown-item';
-      div.dataset.lang = code;
-      div.textContent = name;
-      div.addEventListener('click', () => {
-        selectLanguage(code);
-        searchInput.value = '';
-        dropdown.classList.add('hidden');
-      });
-      dropdown.appendChild(div);
-    });
-    
-    dropdown.classList.remove('hidden');
-  });
-  
-  // Close dropdown when clicking outside
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.search-container')) {
-      dropdown.classList.add('hidden');
-    }
-  });
-}
-
-function selectLanguage(code) {
-  console.log("selectLanguage called with:", code); // DEBUG
-  selectedLanguage = code;
-  
-  // Update visual selection for popular languages
-  document.querySelectorAll('.popular-language').forEach(el => {
-    el.classList.toggle('selected', el.dataset.lang === code);
-  });
-  
-  // Show selected language
-  const displayDiv = document.getElementById('selected-language-display');
-  const nameSpan = document.getElementById('selected-language-name');
-  
-  console.log("Found displayDiv:", displayDiv); // DEBUG
-  console.log("Found nameSpan:", nameSpan); // DEBUG
-  
-  if (nameSpan) {
-    nameSpan.textContent = ALL_LANGUAGES[code];
-  }
-  if (displayDiv) {
-    displayDiv.classList.remove('hidden');
-  }
-  
-  // Enable confirm button
-  const confirmBtn = document.getElementById('language-confirm-btn');
-  console.log("Found confirmBtn:", confirmBtn); // DEBUG
-  
-  if (confirmBtn) {
-    confirmBtn.disabled = false;
-    console.log("Button enabled!"); // DEBUG
-  }
-}
-
-function showLanguageWelcomeModal() {
-  const modal = document.getElementById('language-welcome-modal');
-  if (!modal) {
-    console.error('Language modal not found in DOM');
-    // Fallback - proceed directly to chat with English default
-    currentUser.preferredTranslationLang = 'en';
-    initializeUserAndChat();
-    return;
-  }
-  
-  modal.classList.remove('hidden');
-  
-  // Initialize the modal components
-  initializePopularLanguages();
-  initializeLanguageSearch();
-  
-  // Auto-detect and pre-select browser language
-  const browserLang = navigator.language.split('-')[0];
-  
-  if (ALL_LANGUAGES[browserLang]) {
-    selectLanguage(browserLang);
-  } else {
-    selectLanguage('en'); // Default to English
-  }
-}
-
-// FIXED: New unified function to properly initialize user and chat
-async function initializeUserAndChat() {
-  try {
-    console.log("Starting user and chat initialization...");
-    
-    // Ensure we have a language preference
-    if (!currentUser.preferredTranslationLang) {
-      currentUser.preferredTranslationLang = 'en';
-    }
-    
-    // Save user data to Firebase
-    const userPayload = {
-      name: currentUser.name,
-      role: currentUser.role,
-      preferredTranslationLang: currentUser.preferredTranslationLang
-    };
-    
-    if (currentUser.avatar != null) {
-      userPayload.avatar = currentUser.avatar;
-    }
-
-    const userRef = doc(db, "users", currentUser.id);
-    await setDoc(userRef, userPayload, { merge: true });
-
-    console.log("User data saved to Firebase");
-
-    // Add user to default room
-    const roomId = "general";
-    const memberPayload = {
-      name: currentUser.name,
-      role: currentUser.role,
-    };
-    
-    if (currentUser.avatar != null) {
-      memberPayload.avatar = currentUser.avatar;
-    }
-
-    const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
-    await setDoc(memberRef, memberPayload, { merge: true });
-
-    console.log("Added user to default room:", roomId);
-
-    // Set current room
-    currentRoomName = roomId;
-    
-    console.log("Populating rooms...");
-    
-    // Clear cache to force fresh data
-    roomsCache = null;
-    
-    // CRITICAL: Wait for rooms to populate
-    await populateRooms();
-    
-    console.log("Setting up room listener...");
-    setupRoomListener();
-    
-    console.log("Showing chat list page...");
-    showPage(chatListPage);
-    
-    console.log("Chat initialization complete");
-
-  } catch (err) {
-    console.error("Failed to initialize user and chat:", err);
-    alert("Failed to initialize chat. Please refresh the page and try again.");
-  }
-}
-
-// FIXED: Updated language preference save function
-async function saveLanguagePreferenceAndProceed(languageCode) {
-  try {
-    console.log("Saving language preference:", languageCode);
-    
-    currentUser.preferredTranslationLang = languageCode;
-    
-    // Hide modal first
-    const modal = document.getElementById('language-welcome-modal');
-    if (modal) {
-      modal.classList.add('hidden');
-    }
-    
-    console.log("Language preference set to:", languageCode);
-    
-    // Initialize everything properly
-    await initializeUserAndChat();
-    
-  } catch (error) {
-    console.error("Error saving language preference:", error);
-    alert("Error saving language preference. Please try again.");
-  }
-}
-
-// Move these variables outside DOMContentLoaded for global access
-let currentUser = {};
-let currentRoomName = null;
-const blockedMembers = new Set();
-const mutedMembers = new Set();
-
 document.addEventListener("DOMContentLoaded", () => {
 
-const chatListPage = document.getElementById("chat-list");
-const chatRoomPage = document.getElementById("chat-room");
-const membersListPage = document.getElementById("members-list");
-const contactsPage = document.getElementById("contacts-page");
-const pages = [chatListPage, chatRoomPage, membersListPage, contactsPage];
+let currentUser = {};
+
+  const chatListPage = document.getElementById("chat-list");
+  const chatRoomPage = document.getElementById("chat-room");
+  const membersListPage = document.getElementById("members-list");
+  const contactsPage = document.getElementById("contacts-page");
+
+  const pages = [chatListPage, chatRoomPage, membersListPage, contactsPage];
+  
+  let currentRoomName = null;
+
+  const blockedMembers = new Set();
+  const mutedMembers = new Set();
 
 // Cache variables
 let roomsCache = null;
@@ -399,9 +165,9 @@ let unsubscribeMessages = null;
 let mutedMembersCache = new Map();
 let mutedMembersCacheTime = new Map();
 
-// FIXED: Wait for Wix to send the member info
+// Wait for Wix to send the member info
 window.addEventListener("message", async (event) => {
-  if (!event.origin.endsWith("sur-clan.com")) return;
+if (!event.origin.endsWith("sur-clan.com")) return;
 
   const userData = event.data;
   if (!userData || !userData.id) return;
@@ -417,29 +183,43 @@ window.addEventListener("message", async (event) => {
 
   console.log("Got userData from Wix:", currentUser);
 
+  // prepare user data without undefined
+  const userPayload = {
+    name: currentUser.name,
+    role: currentUser.role,
+  };
+  if (currentUser.avatar != null) {
+    userPayload.avatar = currentUser.avatar;
+  }
+
+  // save to users/
+  const userRef = doc(db, "users", currentUser.id);
+  await setDoc(userRef, userPayload, { merge: true });
+
+  // and add to default room
+  const roomId = "general"; // default room
+
   try {
-    // Check if user has a language preference already
-    const userRef = doc(db, "users", currentUser.id);
-    const userSnap = await getDoc(userRef);
-    
-    if (userSnap.exists() && userSnap.data().preferredTranslationLang) {
-      // Existing user with language preference
-      currentUser.preferredTranslationLang = userSnap.data().preferredTranslationLang;
-      console.log("Existing user with language:", currentUser.preferredTranslationLang);
-      
-      // FIXED: Initialize chat properly for returning users
-      await initializeUserAndChat();
-      
-    } else {
-      // New user - show language selection modal
-      console.log("New user - showing language selection modal");
-      showLanguageWelcomeModal();
+    const memberPayload = {
+      name: currentUser.name,
+      role: currentUser.role,
+    };
+    if (currentUser.avatar != null) {
+      memberPayload.avatar = currentUser.avatar;
     }
-  } catch (error) {
-    console.error("Error checking user language preference:", error);
-    // Fallback to English and proceed
-    currentUser.preferredTranslationLang = 'en';
-    await initializeUserAndChat();
+
+    const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
+    await setDoc(memberRef, memberPayload, { merge: true });
+
+    console.log("Added user to default room:", roomId);
+
+currentRoomName = roomId;
+  populateRooms(); // Load the list of rooms
+  setupRoomListener(); // Setup real-time listeners
+  showPage(chatListPage);
+
+  } catch (err) {
+    console.error("Failed to add user to default room:", err);
   }
 });
 
@@ -487,10 +267,10 @@ const sendMessage = async (text) => {
   }
 };
 
-function showPage(page) {
-  pages.forEach(p => p.classList.remove("active"));
-  page.classList.add("active");
-}
+  function showPage(page) {
+    pages.forEach(p => p.classList.remove("active"));
+    page.classList.add("active");
+  }
 
 // OPTIMIZED: Real-time room listener instead of polling
 function setupRoomListener() {
@@ -595,19 +375,9 @@ async function updateRoomsFromSnapshot(snapshot) {
   renderRoomsUI(userRooms);
 }
 
-// FIXED: Updated populateRooms function with better error handling
+// OPTIMIZED: Cached room population
 async function populateRooms() {
-  // CRITICAL: Check if user is properly initialized
-  if (!currentUser || !currentUser.id) {
-    console.log("User not initialized, cannot populate rooms");
-    return;
-  }
-
   const roomsUl = document.getElementById("rooms");
-  if (!roomsUl) {
-    console.error("Rooms container not found");
-    return;
-  }
 
   // Check cache first
   const now = Date.now();
@@ -623,10 +393,7 @@ async function populateRooms() {
   }
 
   try {
-    console.log("Fetching rooms from Firebase...");
     const allRoomsSnapshot = await getDocs(collection(db, "rooms"));
-    console.log("Got rooms snapshot, total rooms:", allRoomsSnapshot.size);
-    
     const userRooms = [];
 
     // OPTIMIZATION: Batch the membership checks
@@ -646,7 +413,6 @@ async function populateRooms() {
       );
     }
 
-    console.log("Executing membership checks...");
     // Execute all membership checks in parallel (MUCH faster!)
     const membershipResults = await Promise.all(membershipPromises);
     
@@ -679,12 +445,11 @@ async function populateRooms() {
     roomsCache = userRooms;
     lastRoomsCacheTime = now;
 
-    console.log("Populated rooms:", userRooms.length, "rooms found");
     renderRoomsUI(userRooms);
 
   } catch (err) {
     console.error("Failed to load rooms:", err);
-    roomsUl.innerHTML = `<li style="color:red; font-size: 0.8rem;">Error loading rooms - please refresh</li>`;
+    roomsUl.innerHTML = `<li style="color:red; font-size: 0.8rem;">Error loading rooms</li>`;
   }
 }
 
@@ -983,7 +748,7 @@ function populateMessages() {
           }
 
           messageBody.dataset.originalText = messageBody.innerHTML;
-          const result = await translateWithDetection(msg.text);
+          const result = await translateWithDetection(msg.text, "en");
 
           messageBody.innerHTML = `
             ${result.translated}
@@ -1118,7 +883,7 @@ async function populateMembers() {
 
     if (currentUser.role === "Administrator" && m.name !== currentUser.name) {
       const btn = document.createElement("button");
-      btn.textContent = "✖";
+      btn.textContent = "❌";
       btn.addEventListener("click", async () => {
         if (confirm(`Remove ${m.name} from this room?`)) {
           try {
@@ -1172,7 +937,7 @@ function showMemberMenu(targetElem, member) {
     `<button id="menu-mute">${muteText}</button>` : '';
 
   menu.innerHTML = `
-    <button id="menu-info">📄 Profile</button>
+    <button id="menu-info">🔍 Profile</button>
     <button id="menu-message">💬 Message</button>
     <button id="menu-block">${blockText}</button>
     ${muteButtonHtml}
@@ -1243,170 +1008,170 @@ function showMemberMenu(targetElem, member) {
   }
 }
 
-function startPrivateChat(targetUserName) {
-  if (targetUserName === currentUser.name) {
-    alert("You cannot message yourself");
-    return;
-  }
-  
-  if (blockedMembers.has(targetUserName)) {
-    alert("You have blocked this user");
-    return;
-  }
-  
-  createPrivateRoom(targetUserName);
-}
-
-async function createPrivateRoom(targetUserName) {
-  try {
-    // Create a consistent room ID for both users (alphabetical order)
-    const users = [currentUser.name, targetUserName].sort();
-    const privateRoomId = `private_${users[0]}_${users[1]}`.replace(/\s+/g, "_").toLowerCase();
-    
-    console.log("Creating/joining private room:", privateRoomId);
-    
-    // Check if private room already exists
-    const roomRef = doc(db, "rooms", privateRoomId);
-    const roomSnap = await getDoc(roomRef);
-    
-    if (!roomSnap.exists()) {
-      // Create the private room
-      await setDoc(roomRef, {
-        name: `${currentUser.name} & ${targetUserName}`,
-        type: "private",
-        participants: [currentUser.name, targetUserName],
-        createdBy: currentUser.name,
-        createdAt: new Date().toISOString(),
-        lastMessage: "Private chat created",
-        lastMessageTimestamp: serverTimestamp(),
-        lastMessageBy: currentUser.id,
-        unread: false
-      });
-      
-      console.log("Created new private room");
+  function startPrivateChat(targetUserName) {
+    if (targetUserName === currentUser.name) {
+      alert("You cannot message yourself");
+      return;
     }
     
-    // Add both users as members
-    const currentUserMemberRef = doc(db, "rooms", privateRoomId, "members", currentUser.id);
-    await setDoc(currentUserMemberRef, {
-      name: currentUser.name,
-      role: "Member",
-      avatar: currentUser.avatar || null
-    }, { merge: true });
+    if (blockedMembers.has(targetUserName)) {
+      alert("You have blocked this user");
+      return;
+    }
     
-    // Add target user (we need to find their ID first)
-    const usersSnapshot = await getDocs(collection(db, "users"));
-    let targetUserId = null;
-    
-    usersSnapshot.forEach(doc => {
-      const userData = doc.data();
-      if (userData.name === targetUserName) {
-        targetUserId = doc.id;
+    createPrivateRoom(targetUserName);
+  }
+
+  async function createPrivateRoom(targetUserName) {
+    try {
+      // Create a consistent room ID for both users (alphabetical order)
+      const users = [currentUser.name, targetUserName].sort();
+      const privateRoomId = `private_${users[0]}_${users[1]}`.replace(/\s+/g, "_").toLowerCase();
+      
+      console.log("Creating/joining private room:", privateRoomId);
+      
+      // Check if private room already exists
+      const roomRef = doc(db, "rooms", privateRoomId);
+      const roomSnap = await getDoc(roomRef);
+      
+      if (!roomSnap.exists()) {
+        // Create the private room
+        await setDoc(roomRef, {
+          name: `${currentUser.name} & ${targetUserName}`,
+          type: "private",
+          participants: [currentUser.name, targetUserName],
+          createdBy: currentUser.name,
+          createdAt: new Date().toISOString(),
+          lastMessage: "Private chat created",
+          lastMessageTimestamp: serverTimestamp(),
+          lastMessageBy: currentUser.id,
+          unread: false
+        });
+        
+        console.log("Created new private room");
       }
-    });
-    
-    if (targetUserId) {
-      const targetUserMemberRef = doc(db, "rooms", privateRoomId, "members", targetUserId);
-      await setDoc(targetUserMemberRef, {
-        name: targetUserName,
-        role: "Member"
+      
+      // Add both users as members
+      const currentUserMemberRef = doc(db, "rooms", privateRoomId, "members", currentUser.id);
+      await setDoc(currentUserMemberRef, {
+        name: currentUser.name,
+        role: "Member",
+        avatar: currentUser.avatar || null
       }, { merge: true });
       
-      console.log("Added both users to private room");
-    }
-    
-    // Switch to the private room
-    currentRoomName = privateRoomId;
-    document.getElementById("room-name").textContent = targetUserName;
-    
-    // Clear messages and load the private chat
-    const msgsDiv = document.getElementById("messages");
-    msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading private chat…</div>`;
-    
-    showPage(chatRoomPage);
-    
-    // Update current user's role for this room
-    const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
-    const existingMemberSnap = await getDoc(memberRef);
-    if (existingMemberSnap.exists()) {
-      const existingData = existingMemberSnap.data();
-      if (existingData.role) {
-        currentUser.role = existingData.role;
+      // Add target user (we need to find their ID first)
+      const usersSnapshot = await getDocs(collection(db, "users"));
+      let targetUserId = null;
+      
+      usersSnapshot.forEach(doc => {
+        const userData = doc.data();
+        if (userData.name === targetUserName) {
+          targetUserId = doc.id;
+        }
+      });
+      
+      if (targetUserId) {
+        const targetUserMemberRef = doc(db, "rooms", privateRoomId, "members", targetUserId);
+        await setDoc(targetUserMemberRef, {
+          name: targetUserName,
+          role: "Member"
+        }, { merge: true });
+        
+        console.log("Added both users to private room");
       }
+      
+      // Switch to the private room
+      currentRoomName = privateRoomId;
+      document.getElementById("room-name").textContent = targetUserName;
+      
+      // Clear messages and load the private chat
+      const msgsDiv = document.getElementById("messages");
+      msgsDiv.innerHTML = `<div style="text-align:center; color:gold;">Loading private chat…</div>`;
+      
+      showPage(chatRoomPage);
+      
+      // Update current user's role for this room
+      const memberRef = doc(db, "rooms", currentRoomName, "members", currentUser.id);
+      const existingMemberSnap = await getDoc(memberRef);
+      if (existingMemberSnap.exists()) {
+        const existingData = existingMemberSnap.data();
+        if (existingData.role) {
+          currentUser.role = existingData.role;
+        }
+      }
+      
+      // Load messages
+      safePopulateMessages();
+      
+      // Refresh room list to show the new private chat
+      populateRooms();
+      
+      alert(`Started private chat with ${targetUserName}`);
+      
+    } catch (error) {
+      console.error("Error creating private room:", error);
+      alert("Error starting private chat. Please try again.");
     }
-    
-    // Load messages
-    safePopulateMessages();
-    
-    // Refresh room list to show the new private chat
-    populateRooms();
-    
-    alert(`Started private chat with ${targetUserName}`);
-    
-  } catch (error) {
-    console.error("Error creating private room:", error);
-    alert("Error starting private chat. Please try again.");
   }
-}
 
-function showProfileModal(name) {
-  const modal = document.getElementById("message-modal");
-  const textElem = document.getElementById("modal-message-text");
+  function showProfileModal(name) {
+    const modal = document.getElementById("message-modal");
+    const textElem = document.getElementById("modal-message-text");
 
-  textElem.innerHTML = `
-    <iframe src="https://www.sur-clan.com/profile/${name}"
-            style="width:100%;height:400px;border:none;"></iframe>`;
-  modal.classList.remove("hidden");
+    textElem.innerHTML = `
+      <iframe src="https://www.sur-clan.com/profile/${name}"
+              style="width:100%;height:400px;border:none;"></iframe>`;
+    modal.classList.remove("hidden");
 
  // hide reply & copy buttons
- document.getElementById("modal-reply").style.display = "none";
- document.getElementById("modal-copy").style.display = "none";
- document.getElementById("modal-close").style.display = "none";
+  document.getElementById("modal-reply").style.display = "none";
+  document.getElementById("modal-copy").style.display = "none";
+  document.getElementById("modal-close").style.display = "none";
 
  // REMOVE the hide button if it exists
- const oldHideBtn = document.getElementById("modal-hide");
- if (oldHideBtn) oldHideBtn.remove();
+  const oldHideBtn = document.getElementById("modal-hide");
+  if (oldHideBtn) oldHideBtn.remove();
 
 // Add click listener on modal to close when clicking outside content
- modal.onclick = (e) => {
-   // only close if click is on the backdrop (not on modal content)
-   if (e.target === modal) {
-     modal.classList.add("hidden");
-     modal.onclick = null; // clean up
-   }
- };
+  modal.onclick = (e) => {
+    // only close if click is on the backdrop (not on modal content)
+    if (e.target === modal) {
+      modal.classList.add("hidden");
+      modal.onclick = null; // clean up
+    }
+  };
 }
+  
+  function blockMember(name) {
+    if (name === currentUser.name) {
+      alert("You cannot block yourself");
+      return;
+    }
+    
+    blockedMembers.add(name);
+    alert(`${name} is now blocked (you won't see their messages)`);
+    
+    // Immediately refresh messages to hide blocked user's messages
+    populateMessages();
+    
+    // Also refresh members list to show block status
+    if (document.getElementById("members-list").classList.contains("active")) {
+      populateMembers();
+    }
+  }
 
-function blockMember(name) {
-  if (name === currentUser.name) {
-    alert("You cannot block yourself");
-    return;
+  function unblockMember(name) {
+    blockedMembers.delete(name);
+    alert(`${name} has been unblocked`);
+    
+    // Immediately refresh messages to show unblocked user's messages
+    populateMessages();
+    
+    // Also refresh members list to update block status
+    if (document.getElementById("members-list").classList.contains("active")) {
+      populateMembers();
+    }
   }
-  
-  blockedMembers.add(name);
-  alert(`${name} is now blocked (you won't see their messages)`);
-  
-  // Immediately refresh messages to hide blocked user's messages
-  populateMessages();
-  
-  // Also refresh members list to show block status
-  if (document.getElementById("members-list").classList.contains("active")) {
-    populateMembers();
-  }
-}
-
-function unblockMember(name) {
-  blockedMembers.delete(name);
-  alert(`${name} has been unblocked`);
-  
-  // Immediately refresh messages to show unblocked user's messages
-  populateMessages();
-  
-  // Also refresh members list to update block status
-  if (document.getElementById("members-list").classList.contains("active")) {
-    populateMembers();
-  }
-}
 
 async function muteMember(memberName) {
   if (currentUser.role !== "Administrator") {
@@ -1520,7 +1285,7 @@ async function showModal(msg, wrapper) {
     const memberSnap = await getDoc(memberRef);
     if (memberSnap.exists()) {
       const data = memberSnap.data();
-      if (data.role) {
+if (data.role) {
         freshRole = data.role;
         currentUser.role = data.role;  // update locally too
       }
@@ -1530,11 +1295,11 @@ async function showModal(msg, wrapper) {
     // We won't stop the modal from opening if the role check fails
   }
 
-  console.log("Role check:", freshRole); // DEBUGGING LINE
+    console.log("Role check:", freshRole); // DEBUGGING LINE
 
   // STEP 2: Build modal only after role is confirmed
-  const modal = document.getElementById("message-modal");
-  modal.classList.remove("hidden");
+const modal = document.getElementById("message-modal");
+modal.classList.remove("hidden");
   
   const textElem = document.getElementById("modal-message-text");
   const replyBtn = document.getElementById("modal-reply");
@@ -1576,55 +1341,55 @@ async function showModal(msg, wrapper) {
   };
 
   // Copy the message (blocked if hidden)
-  copyBtn.onclick = () => {
-    if (msg.hidden) {
-      alert("This message is hidden and cannot be copied.");
-      modal.classList.add("hidden");
-      return;
-    }
-
-    const ts = msg.timestamp?.toDate ? msg.timestamp.toDate() : new Date();
-    const formatted = `${ts.toLocaleDateString()} ${ts.toLocaleTimeString()} ${msg.senderName}:\n${msg.text}`;
-    
-    // Try modern clipboard API first (works on iPhone and modern Android)
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(formatted)
-        .then(() => {
-          alert("Message copied!");
-          modal.classList.add("hidden");
-        })
-        .catch(err => {
-          // Fallback for Android if modern API fails
-          copyWithFallback(formatted);
-          modal.classList.add("hidden");
-        });
-    } else {
-      // Fallback for older browsers/Android
-      copyWithFallback(formatted);
-      modal.classList.add("hidden");
-    }
-  };
-
-  function copyWithFallback(text) {
-    // Create temporary textarea (same approach as your paste function)
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.style.position = "fixed";
-    textArea.style.top = "-1000px";
-    textArea.style.left = "-1000px";
-    textArea.style.opacity = "0";
-    document.body.appendChild(textArea);
-    textArea.select();
-    
-    try {
-      document.execCommand('copy');
-      alert("Message copied!");
-    } catch (err) {
-      alert("Failed to copy message");
-    }
-    
-    document.body.removeChild(textArea);
+copyBtn.onclick = () => {
+  if (msg.hidden) {
+    alert("This message is hidden and cannot be copied.");
+    modal.classList.add("hidden");
+    return;
   }
+
+  const ts = msg.timestamp?.toDate ? msg.timestamp.toDate() : new Date();
+  const formatted = `${ts.toLocaleDateString()} ${ts.toLocaleTimeString()} ${msg.senderName}:\n${msg.text}`;
+  
+  // Try modern clipboard API first (works on iPhone and modern Android)
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(formatted)
+      .then(() => {
+        alert("Message copied!");
+        modal.classList.add("hidden");
+      })
+      .catch(err => {
+        // Fallback for Android if modern API fails
+        copyWithFallback(formatted);
+        modal.classList.add("hidden");
+      });
+  } else {
+    // Fallback for older browsers/Android
+    copyWithFallback(formatted);
+    modal.classList.add("hidden");
+  }
+};
+
+function copyWithFallback(text) {
+  // Create temporary textarea (same approach as your paste function)
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position = "fixed";
+  textArea.style.top = "-1000px";
+  textArea.style.left = "-1000px";
+  textArea.style.opacity = "0";
+  document.body.appendChild(textArea);
+  textArea.select();
+  
+  try {
+    document.execCommand('copy');
+    alert("Message copied!");
+  } catch (err) {
+    alert("Failed to copy message");
+  }
+  
+  document.body.removeChild(textArea);
+}
 
   // Close modal
   closeBtn.onclick = () => {
@@ -1635,9 +1400,9 @@ async function showModal(msg, wrapper) {
   const oldHideBtn = document.getElementById("modal-hide");
   if (oldHideBtn) oldHideBtn.remove();
 
-  // STEP 3: Only add Hide/Unhide button if freshRole is admin
+ // STEP 3: Only add Hide/Unhide button if freshRole is admin
   if (freshRole === "Administrator") {
-    console.log("Adding Hide/Unhide button for admin");
+        console.log("Adding Hide/Unhide button for admin");
 
     const hideBtn = document.createElement("button");
     hideBtn.id = "modal-hide";
@@ -1658,8 +1423,10 @@ async function showModal(msg, wrapper) {
 
       modal.classList.add("hidden");
     };
-  } else {
+
+ } else {
     console.log("User is NOT admin – no Hide/Unhide button");
+    
   }
 }
 
@@ -2075,20 +1842,20 @@ document.getElementById("leave-chat").addEventListener("click", async () => {
 });
 
 document.getElementById("send-message").addEventListener("click", async () => {
-  const text = document.getElementById("message-input").value.trim();
-  if (!text) return;
+    const text = document.getElementById("message-input").value.trim();
+    if (!text) return;
 
-  await sendMessage(text);
+     await sendMessage(text);
 
-  document.getElementById("message-input").value = "";
-});
+    document.getElementById("message-input").value = "";
+  });
 
-document.getElementById("message-input").addEventListener("keypress", e => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    document.getElementById("send-message").click();
-  }
-});
+  document.getElementById("message-input").addEventListener("keypress", e => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      document.getElementById("send-message").click();
+    }
+  });
 
 document.getElementById("paste-message").addEventListener("click", async () => {
   const messageInput = document.getElementById("message-input");
@@ -2105,7 +1872,7 @@ document.getElementById("paste-message").addEventListener("click", async () => {
     // Continue to fallback methods
   }
   
-  // Method 2: Direct paste into the actual message input
+  // Method 2: Direct paste into the actual message input (like Total Battle probably does)
   try {
     // Store original state
     const originalValue = messageInput.value;
@@ -2180,7 +1947,7 @@ document.getElementById("paste-message").addEventListener("click", async () => {
 // open contacts page & populate list
 document.getElementById("contacts").addEventListener("click", () => {
   console.log("CONTACTS CLICKED!");
-  showPage(contactsPage);
+showPage(contactsPage);
   populateContacts();
 });
 
@@ -2331,11 +2098,14 @@ async function findAndJoinRoom(searchName) {
   }
 }
   
-const modalCloseBtn = document.getElementById("modal-close");
-const modal = document.getElementById("message-modal");
-modalCloseBtn.onclick = () => modal.style.display = "none";
+  const modalCloseBtn = document.getElementById("modal-close");
+  const modal = document.getElementById("message-modal");
+  modalCloseBtn.onclick = () => modal.style.display = "none";
 
-// ============ INVITE SYSTEM ============
+  populateRooms();
+  showPage(chatListPage);
+
+  // ============ INVITE SYSTEM ============
 class InviteSystem {
   constructor() {
     this.selectedContacts = new Set();
@@ -2535,14 +2305,6 @@ class InviteSystem {
 
 let inviteSystem;
 
-// Language modal event listeners - setup after DOM is ready
-document.getElementById('language-confirm-btn').addEventListener('click', () => {
-  if (selectedLanguage) {
-    console.log('Language confirmed:', selectedLanguage);
-    saveLanguagePreferenceAndProceed(selectedLanguage);
-  }
-});
-  
 // Cleanup function
 function cleanupRealTimeListeners() {
   console.log("Cleaning up real-time listeners");
