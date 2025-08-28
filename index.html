@@ -193,6 +193,48 @@
   </div>
 </div>
 
+<!-- LANGUAGE WELCOME MODAL -->
+<div id="language-welcome-modal" class="hidden">
+  <div class="language-welcome-content">
+    <div class="language-welcome-header">
+      <h2><i class="fa-solid fa-globe"></i> Welcome to SUR-CLAN CHAT</h2>
+      <p>Choose your preferred translation language</p>
+    </div>
+    
+    <div class="language-selection-body">
+      <!-- Popular Languages Section -->
+      <div>
+        <h4>Popular Languages:</h4>
+        <div class="popular-languages" id="popular-languages">
+          <!-- Popular languages will be populated by JavaScript -->
+        </div>
+      </div>
+      
+      <!-- Search Section -->
+      <div class="language-search-section">
+        <h4>Or search for any language:</h4>
+        <div class="search-container">
+          <i class="fa-solid fa-search search-icon"></i>
+          <input type="text" id="language-search" class="language-search" 
+                 placeholder="Type to search languages..." autocomplete="off">
+          <div id="language-dropdown" class="language-dropdown hidden"></div>
+        </div>
+      </div>
+      
+      <!-- Selected Language Display -->
+      <div id="selected-language-display" class="selected-language-display hidden">
+        Selected: <span id="selected-language-name"></span>
+      </div>
+      
+      <div class="language-confirm-section">
+        <button id="language-confirm-btn" class="language-confirm-btn" disabled>
+          <i class="fa-solid fa-check"></i> Continue to Chat
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
   
 <script src="app.js" type="module"></script>
 </body>
