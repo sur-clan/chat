@@ -21,8 +21,51 @@ import {
 const app = initializeApp(window.firebaseConfig);
 const db = getFirestore(app);
 
-async function translateWithDetection(text, targetLang = "en") {
-  const apiKey = "APIKEY";  // Replace this with your real key
+// Language preference setup (non-blocking)
+let preferredLang = localStorage.getItem('preferredLang') || 'en';
+
+
+
+// Complete Google Translate supported languages
+const ALL_LANGUAGES = {
+  'af': 'Afrikaans', 'sq': 'Albanian', 'am': 'Amharic', 'ar': 'Arabic', 'hy': 'Armenian',
+  'az': 'Azerbaijani', 'eu': 'Basque', 'be': 'Belarusian', 'bn': 'Bengali', 'bs': 'Bosnian',
+  'bg': 'Bulgarian', 'ca': 'Catalan', 'ceb': 'Cebuano', 'ny': 'Chichewa', 'zh': 'Chinese',
+  'co': 'Corsican', 'hr': 'Croatian', 'cs': 'Czech', 'da': 'Danish', 'nl': 'Dutch',
+  'en': 'English', 'eo': 'Esperanto', 'et': 'Estonian', 'tl': 'Filipino', 'fi': 'Finnish',
+  'fr': 'French', 'fy': 'Frisian', 'gl': 'Galician', 'ka': 'Georgian', 'de': 'German',
+  'el': 'Greek', 'gu': 'Gujarati', 'ht': 'Haitian Creole', 'ha': 'Hausa', 'haw': 'Hawaiian',
+  'he': 'Hebrew', 'hi': 'Hindi', 'hmn': 'Hmong', 'hu': 'Hungarian', 'is': 'Icelandic',
+  'ig': 'Igbo', 'id': 'Indonesian', 'ga': 'Irish', 'it': 'Italian', 'ja': 'Japanese',
+  'jw': 'Javanese', 'kn': 'Kannada', 'kk': 'Kazakh', 'km': 'Khmer', 'ko': 'Korean',
+  'ku': 'Kurdish', 'ky': 'Kyrgyz', 'lo': 'Lao', 'la': 'Latin', 'lv': 'Latvian',
+  'lt': 'Lithuanian', 'lb': 'Luxembourgish', 'mk': 'Macedonian', 'mg': 'Malagasy', 'ms': 'Malay',
+  'ml': 'Malayalam', 'mt': 'Maltese', 'mi': 'Maori', 'mr': 'Marathi', 'mn': 'Mongolian',
+  'my': 'Myanmar', 'ne': 'Nepali', 'no': 'Norwegian', 'or': 'Odia', 'ps': 'Pashto',
+  'fa': 'Persian', 'pl': 'Polish', 'pt': 'Portuguese', 'pa': 'Punjabi', 'ro': 'Romanian',
+  'ru': 'Russian', 'sm': 'Samoan', 'gd': 'Scottish Gaelic', 'sr': 'Serbian', 'st': 'Sesotho',
+  'sn': 'Shona', 'sd': 'Sindhi', 'si': 'Sinhala', 'sk': 'Slovak', 'sl': 'Slovenian',
+  'so': 'Somali', 'es': 'Spanish', 'su': 'Sundanese', 'sw': 'Swahili', 'sv': 'Swedish',
+  'tg': 'Tajik', 'ta': 'Tamil', 'te': 'Telugu', 'th': 'Thai', 'tr': 'Turkish',
+  'uk': 'Ukrainian', 'ur': 'Urdu', 'ug': 'Uyghur', 'uz': 'Uzbek', 'vi': 'Vietnamese',
+  'cy': 'Welsh', 'xh': 'Xhosa', 'yi': 'Yiddish', 'yo': 'Yoruba', 'zu': 'Zulu'
+};
+
+// Most popular languages for quick selection
+const POPULAR_LANGUAGES = [
+  'en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'zh', 
+  'ja', 'ko', 'ar', 'hi', 'nl', 'pl', 'tr', 'sv'
+];
+
+// Language selection variables
+let selectedLanguage = null;
+let filteredLanguages = [];
+
+async function translateWithDetection(text, targetLang = null) {
+  // Use user's preferred language if no specific target provided
+  const actualTargetLang = targetLang || currentUser.preferredTranslationLang || "en";
+  
+  const apiKey = "AIzaSyBx5zeave49xDKPigO4kQVaXlCWd3FVRU4";  // Replace this with your real key
   const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
 
   try {
@@ -33,7 +76,7 @@ async function translateWithDetection(text, targetLang = "en") {
       },
       body: JSON.stringify({
         q: text,
-        target: targetLang,
+        target: actualTargetLang,
         format: "text"
       })
     });
@@ -54,22 +97,7 @@ async function translateWithDetection(text, targetLang = "en") {
 }
 
 function languageNameFromCode(code) {
-  const names = {
-    af: "Afrikaans", ar: "Arabic", az: "Azerbaijani", be: "Belarusian",
-    bg: "Bulgarian", bn: "Bengali", ca: "Catalan", cs: "Czech",
-    da: "Danish", de: "German", el: "Greek", en: "English",
-    es: "Spanish", et: "Estonian", fa: "Persian", fi: "Finnish",
-    fr: "French", gu: "Gujarati", he: "Hebrew", hi: "Hindi",
-    hr: "Croatian", hu: "Hungarian", id: "Indonesian", it: "Italian",
-    ja: "Japanese", ka: "Georgian", ko: "Korean", lt: "Lithuanian",
-    lv: "Latvian", ml: "Malayalam", mr: "Marathi", ms: "Malay",
-    nl: "Dutch", no: "Norwegian", pa: "Punjabi", pl: "Polish",
-    pt: "Portuguese", ro: "Romanian", ru: "Russian", sk: "Slovak",
-    sl: "Slovenian", sr: "Serbian", sv: "Swedish", ta: "Tamil",
-    te: "Telugu", th: "Thai", tr: "Turkish", uk: "Ukrainian",
-    ur: "Urdu", vi: "Vietnamese", zh: "Chinese"
-  };
-  return names[code] || code;
+  return ALL_LANGUAGES[code] || code;
 }
 
 // Room name validation function
@@ -135,21 +163,214 @@ function debounce(func, wait) {
   };
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+// Language Modal Functions
+function initializePopularLanguages() {
+  const container = document.getElementById('popular-languages');
+  container.innerHTML = '';
+  
+  POPULAR_LANGUAGES.forEach(code => {
+    const div = document.createElement('div');
+    div.className = 'popular-language';
+    div.dataset.lang = code;
+    div.textContent = ALL_LANGUAGES[code];
+    div.addEventListener('click', () => selectLanguage(code));
+    container.appendChild(div);
+  });
+}
 
+function initializeLanguageSearch() {
+  const searchInput = document.getElementById('language-search');
+  const dropdown = document.getElementById('language-dropdown');
+  
+  searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase().trim();
+    
+    if (query.length === 0) {
+      dropdown.classList.add('hidden');
+      return;
+    }
+    
+    // Filter languages
+    filteredLanguages = Object.entries(ALL_LANGUAGES).filter(([code, name]) => 
+      name.toLowerCase().includes(query)
+    ).slice(0, 10); // Limit to 10 results
+    
+    if (filteredLanguages.length === 0) {
+      dropdown.classList.add('hidden');
+      return;
+    }
+    
+    // Populate dropdown
+    dropdown.innerHTML = '';
+    filteredLanguages.forEach(([code, name]) => {
+      const div = document.createElement('div');
+      div.className = 'language-dropdown-item';
+      div.dataset.lang = code;
+      div.textContent = name;
+      div.addEventListener('click', () => {
+        selectLanguage(code);
+        searchInput.value = '';
+        dropdown.classList.add('hidden');
+      });
+      dropdown.appendChild(div);
+    });
+    
+    dropdown.classList.remove('hidden');
+  });
+  
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-container')) {
+      dropdown.classList.add('hidden');
+    }
+  });
+}
+
+function selectLanguage(code) {
+  console.log("selectLanguage called with:", code); // DEBUG
+  selectedLanguage = code;
+  
+  // Update visual selection for popular languages
+  document.querySelectorAll('.popular-language').forEach(el => {
+    el.classList.toggle('selected', el.dataset.lang === code);
+  });
+  
+  // Show selected language
+  const displayDiv = document.getElementById('selected-language-display');
+  const nameSpan = document.getElementById('selected-language-name');
+  
+  console.log("Found displayDiv:", displayDiv); // DEBUG
+  console.log("Found nameSpan:", nameSpan); // DEBUG
+  
+  if (nameSpan) {
+    nameSpan.textContent = ALL_LANGUAGES[code];
+  }
+  if (displayDiv) {
+    displayDiv.classList.remove('hidden');
+  }
+  
+  // Enable confirm button
+  const confirmBtn = document.getElementById('language-confirm-btn');
+  console.log("Found confirmBtn:", confirmBtn); // DEBUG
+  
+  if (confirmBtn) {
+    confirmBtn.disabled = false;
+    console.log("Button enabled!"); // DEBUG
+  }
+}
+
+function showLanguageWelcomeModal() {
+  const modal = document.getElementById('language-welcome-modal');
+  if (!modal) {
+    console.error('Language modal not found in DOM');
+    // Fallback - proceed directly to chat with English default
+    currentUser.preferredTranslationLang = 'en';
+    proceedToChat();
+    return;
+  }
+  
+  modal.classList.remove('hidden');
+  
+  // Initialize the modal components
+  initializePopularLanguages();
+  initializeLanguageSearch();
+  
+  // Auto-detect and pre-select browser language
+  const browserLang = navigator.language.split('-')[0];
+  
+  if (ALL_LANGUAGES[browserLang]) {
+    selectLanguage(browserLang);
+  } else {
+    selectLanguage('en'); // Default to English
+  }
+}
+
+  
+
+
+
+
+// Move these variables outside DOMContentLoaded for global access
 let currentUser = {};
+let currentRoomName = null;
+const blockedMembers = new Set();
+const mutedMembers = new Set();
+
+document.addEventListener("DOMContentLoaded", () => {
 
   const chatListPage = document.getElementById("chat-list");
   const chatRoomPage = document.getElementById("chat-room");
   const membersListPage = document.getElementById("members-list");
   const contactsPage = document.getElementById("contacts-page");
 
-  const pages = [chatListPage, chatRoomPage, membersListPage, contactsPage];
-  
-  let currentRoomName = null;
 
-  const blockedMembers = new Set();
-  const mutedMembers = new Set();
+// Needed by showPage()
+const pages = [chatListPage, chatRoomPage, membersListPage, contactsPage];
+
+// Bind language confirm (welcome modal)
+document.getElementById('language-confirm-btn')?.addEventListener('click', () => {
+  if (selectedLanguage) {
+    saveLanguagePreferenceAndProceed(selectedLanguage);
+  }
+});
+
+// These two functions must live here so they can use chatListPage/showPage
+async function saveLanguagePreferenceAndProceed(languageCode) {
+  currentUser.preferredTranslationLang = languageCode;
+  preferredLang = languageCode; // <- add this
+  try { localStorage.setItem('preferredLang', languageCode); } catch (_) {}
+
+
+  // save to Firestore
+  const userPayload = {
+    name: currentUser.name,
+    role: currentUser.role,
+    preferredTranslationLang: languageCode
+  };
+  if (currentUser.avatar != null) userPayload.avatar = currentUser.avatar;
+
+  const userRef = doc(db, "users", currentUser.id);
+  await setDoc(userRef, userPayload, { merge: true });
+
+  // close modal + proceed
+  document.getElementById('language-welcome-modal')?.classList.add('hidden');
+  await proceedToChat();
+}
+
+
+async function proceedToChat() {
+  if (!currentUser || !currentUser.id) {
+    console.error("Cannot proceed to chat - user data not ready");
+    return;
+  }
+
+  const roomId = "general";
+
+  try {
+    const memberPayload = {
+      name: currentUser.name,
+      role: currentUser.role,
+    };
+    if (currentUser.avatar != null) memberPayload.avatar = currentUser.avatar;
+
+    const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
+    await setDoc(memberRef, memberPayload, { merge: true });
+
+    console.log("Added user to default room:", roomId);
+
+    currentRoomName = roomId;
+    await populateRooms();
+    setupRoomListener();
+    showPage(chatListPage);
+
+  } catch (err) {
+    console.error("Failed to add user to default room:", err);
+    alert("Failed to join chat. Please refresh the page and try again.");
+  }
+}
+
+  // === end language setup ===
+
 
 // Cache variables
 let roomsCache = null;
@@ -164,6 +385,8 @@ let unsubscribeMessages = null;
 // Muted members cache
 let mutedMembersCache = new Map();
 let mutedMembersCacheTime = new Map();
+
+
 
 // Wait for Wix to send the member info
 window.addEventListener("message", async (event) => {
@@ -183,44 +406,20 @@ if (!event.origin.endsWith("sur-clan.com")) return;
 
   console.log("Got userData from Wix:", currentUser);
 
-  // prepare user data without undefined
-  const userPayload = {
-    name: currentUser.name,
-    role: currentUser.role,
-  };
-  if (currentUser.avatar != null) {
-    userPayload.avatar = currentUser.avatar;
-  }
-
-  // save to users/
+  // Check if user has a language preference already
   const userRef = doc(db, "users", currentUser.id);
-  await setDoc(userRef, userPayload, { merge: true });
-
-  // and add to default room
-  const roomId = "general"; // default room
-
-  try {
-    const memberPayload = {
-      name: currentUser.name,
-      role: currentUser.role,
-    };
-    if (currentUser.avatar != null) {
-      memberPayload.avatar = currentUser.avatar;
-    }
-
-    const memberRef = doc(db, "rooms", roomId, "members", currentUser.id);
-    await setDoc(memberRef, memberPayload, { merge: true });
-
-    console.log("Added user to default room:", roomId);
-
-currentRoomName = roomId;
-  populateRooms(); // Load the list of rooms
-  setupRoomListener(); // Setup real-time listeners
-  showPage(chatListPage);
-
-  } catch (err) {
-    console.error("Failed to add user to default room:", err);
-  }
+  const userSnap = await getDoc(userRef);
+  
+if (userSnap.exists() && userSnap.data().preferredTranslationLang) {
+  // Existing user with language preference
+  currentUser.preferredTranslationLang = userSnap.data().preferredTranslationLang;
+  console.log("Existing user with language:", currentUser.preferredTranslationLang);
+  await proceedToChat(); // Add await here too for consistency
+} else {
+  // New user - show language selection modal
+  console.log("New user - showing language selection modal");
+  showLanguageWelcomeModal();
+}
 });
 
 const sendMessage = async (text) => {
@@ -377,6 +576,11 @@ async function updateRoomsFromSnapshot(snapshot) {
 
 // OPTIMIZED: Cached room population
 async function populateRooms() {
+
+if (!currentUser || !currentUser.id) {
+    console.log("User not initialized, cannot populate rooms");
+    return;
+  }
   const roomsUl = document.getElementById("rooms");
 
   // Check cache first
@@ -748,7 +952,7 @@ function populateMessages() {
           }
 
           messageBody.dataset.originalText = messageBody.innerHTML;
-          const result = await translateWithDetection(msg.text, "en");
+const result = await translateWithDetection(msg.text, preferredLang);  // instead of "en"
 
           messageBody.innerHTML = `
             ${result.translated}
@@ -1771,8 +1975,9 @@ document.getElementById("leave-chat").addEventListener("click", async () => {
       let userRoomCount = 0;
       
       for (const roomDoc of allRoomsSnapshot.docs) {
-        const memberRef = doc(db, "rooms", roomDoc.id, "members", currentUser.id);
-        const memberSnap = await getDoc(memberRef);
+
+
+const memberRef = doc(db, "rooms", roomDoc.id, "members", currentUser.id);        const memberSnap = await getDoc(memberRef);
         if (memberSnap.exists()) {
           userRoomCount++;
         }
@@ -2305,6 +2510,10 @@ class InviteSystem {
 
 let inviteSystem;
 
+// ADD THE LANGUAGE EVENT LISTENER HERE:
+// Language modal event listeners - setup after DOM is ready
+
+  
 // Cleanup function
 function cleanupRealTimeListeners() {
   console.log("Cleaning up real-time listeners");
