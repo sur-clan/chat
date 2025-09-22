@@ -1382,7 +1382,7 @@ div[style*="text-align:center"][style*="color:gold"] {
 }
 
 .language-confirm-btn {
-  background: linear-gradient(135deg, #5a5a5a, #bd7c41); /* Slate to sunset gradient */
+  background: linear-gradient(135deg, #5a5a5a, #2d4a6b); /* Slate to sunset gradient */
   border: none;
   border-radius: 10px;
   color: #ffffff;
