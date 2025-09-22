@@ -49,7 +49,7 @@ html, body {
 header {
   font-family: 'Cinzel', serif;
   background-color: transparent;
-  color: #010101; /* gold */
+  color: #b0b0b0; /* Silver grey for main headers */
   padding: 0rem;
   margin: 0;
   box-shadow: 0 0 10px transparent;
@@ -118,7 +118,7 @@ h2 {
   font-family: 'Cinzel', serif;
   font-size: 1.1rem;
   font-weight: 400;
-  color: #bd7c41; /* gold */
+  color: #010101; /* gold */
   text-align: center;
   margin: 0rem 0;
   line-height: 1.2;
