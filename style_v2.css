@@ -219,7 +219,7 @@ h2 {
 
 #view-members:hover {
   background: rgba(64, 64, 64, 0.2) !important;
-  border-color: #d4827a !important;
+  border-color: #bd7c41 !important;
   box-shadow: 0 0 8px rgba(212, 130, 122, 0.4) !important;
 }
 
@@ -401,7 +401,7 @@ textarea::placeholder {
 
 .member-buttons button:hover {
   background: rgba(64, 64, 64, 0.3);
-  border-color: #d4827a;
+  border-color: #bd7c41;
 }
 
 #send-message,
@@ -411,7 +411,7 @@ textarea::placeholder {
   font-size: 1rem !important;
   border: 1px solid #5a5a5a !important;
   border-radius: 10px !important;
-  color: #d4827a !important; /* Sunset glow text */
+  color: #bd7c41 !important; /* Sunset glow text */
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -610,7 +610,7 @@ textarea {
 
 .members-list li:hover {
   background: rgba(64, 64, 64, 0.2);
-  border-color: #d4827a;
+  border-color: #bd7c41;
 }
 
 .member-actions {
@@ -645,7 +645,7 @@ textarea {
 #rooms::-webkit-scrollbar-thumb:hover,
 #members::-webkit-scrollbar-thumb:hover,
 #contacts-list::-webkit-scrollbar-thumb:hover {
-  background: #d4827a;
+  background: #bd7c41;
 }
 
 /* Small font utilities */
@@ -664,7 +664,7 @@ textarea {
 .unhide-btn {
   margin-left: 0.5em;
   cursor: pointer;
-  color: #d4827a; /* Sunset glow for unhide button */
+  color: #bd7c41; /* Sunset glow for unhide button */
   background: none;
   border: none;
 }
@@ -672,7 +672,7 @@ textarea {
 .member-menu {
   position: absolute;
   background: #1a1a1a; /* Shadow black background */
-  color: #d4827a; /* Sunset glow text */
+  color: #bd7c41; /* Sunset glow text */
   border: 1px solid #5a5a5a; /* Slate grey border */
   border-radius: 6px;
   padding: 0.5rem;
@@ -685,7 +685,7 @@ textarea {
   text-align: left;
   background: transparent;
   border: none;
-  color: #d4827a; /* Sunset glow text */
+  color: #bd7c41; /* Sunset glow text */
   padding: 0.3rem;
   cursor: pointer;
 }
@@ -742,11 +742,11 @@ textarea {
 
 .invite-tick-btn {
   background: transparent;
-  border: 2px solid #d4827a; /* Sunset glow for confirm button */
+  border: 2px solid #bd7c41; /* Sunset glow for confirm button */
   border-radius: 50%;
   width: 40px;
   height: 40px;
-  color: #d4827a;
+  color: #bd7c41;
   font-size: 1.5rem;
   cursor: pointer;
   display: flex;
@@ -757,9 +757,9 @@ textarea {
 }
 
 .invite-tick-btn:hover:not(:disabled) {
-  background: #d4827a;
+  background: #bd7c41;
   color: white;
-  box-shadow: 0 0 10px #d4827a;
+  box-shadow: 0 0 10px #bd7c41;
 }
 
 .invite-tick-btn:disabled {
@@ -792,7 +792,7 @@ textarea {
 
 .invite-search input:focus {
   outline: none;
-  border-color: #d4827a;
+  border-color: #bd7c41;
   box-shadow: 0 0 5px rgba(212, 130, 122, 0.3);
 }
 
@@ -828,7 +828,7 @@ textarea {
   height: 20px;
   margin-right: 1rem;
   cursor: pointer;
-  accent-color: #d4827a;
+  accent-color: #bd7c41;
 }
 
 .invite-contact-name {
@@ -976,7 +976,7 @@ textarea {
 
 .find-chat-search input:focus {
   outline: none !important;
-  border-color: #d4827a !important;
+  border-color: #bd7c41 !important;
   box-shadow: 0 0 5px rgba(212, 130, 122, 0.3) !important;
 }
 
@@ -1218,7 +1218,7 @@ div[style*="text-align:center"][style*="color:gold"] {
 }
 
 .language-welcome-header {
-  background: linear-gradient(135deg, #5a5a5a, #d4827a); /* Slate to sunset gradient */
+  background: linear-gradient(135deg, #5a5a5a, #bd7c41); /* Slate to sunset gradient */
   color: #ffffff;
   padding: 2rem;
   text-align: center;
@@ -1276,12 +1276,12 @@ div[style*="text-align:center"][style*="color:gold"] {
 
 .popular-language:hover {
   background: rgba(212, 130, 122, 0.2);
-  border-color: #d4827a;
+  border-color: #bd7c41;
 }
 
 .popular-language.selected {
   background: rgba(212, 130, 122, 0.3);
-  border-color: #d4827a;
+  border-color: #bd7c41;
   box-shadow: 0 0 10px rgba(212, 130, 122, 0.5);
 }
 
@@ -1308,7 +1308,7 @@ div[style*="text-align:center"][style*="color:gold"] {
 
 .language-search:focus {
   outline: none;
-  border-color: #d4827a;
+  border-color: #bd7c41;
   box-shadow: 0 0 10px rgba(212, 130, 122, 0.3);
 }
 
@@ -1362,13 +1362,13 @@ div[style*="text-align:center"][style*="color:gold"] {
 
 .selected-language-display {
   background: rgba(212, 130, 122, 0.2);
-  border: 2px solid #d4827a;
+  border: 2px solid #bd7c41;
   border-radius: 8px;
   padding: 1rem;
   margin-top: 1rem;
   text-align: center;
   font-weight: bold;
-  color: #d4827a;
+  color: #bd7c41;
 }
 
 .language-confirm-section {
@@ -1379,7 +1379,7 @@ div[style*="text-align:center"][style*="color:gold"] {
 }
 
 .language-confirm-btn {
-  background: linear-gradient(135deg, #5a5a5a, #d4827a); /* Slate to sunset gradient */
+  background: linear-gradient(135deg, #5a5a5a, #bd7c41); /* Slate to sunset gradient */
   border: none;
   border-radius: 10px;
   color: #ffffff;
@@ -1394,7 +1394,7 @@ div[style*="text-align:center"][style*="color:gold"] {
 }
 
 .language-confirm-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #d4827a, #c4735a);
+  background: linear-gradient(135deg, #bd7c41, #c4735a);
   box-shadow: 0 4px 15px rgba(212, 130, 122, 0.4);
   transform: translateY(-1px);
 }
