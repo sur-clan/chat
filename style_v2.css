@@ -1,4 +1,11 @@
-/* SuR Chat - Ravens & Castle Theme with Sunset Glow Accents */
+/* SuR Chat - Ravens & Castle Theme with Refined Color Accents */
+
+/* Color Variables:
+   - Deep Sky Blue: #4a6b8a (for focus borders, translate icons, chat names)
+   - Sunset Glow: #d4827a (for member icons, star icons) 
+   - White: #ffffff (for send/paste button icons)
+   - Slate Grey: #5a5a5a (for neutral borders)
+*/
 
 html, body {
   margin: 0;
@@ -191,9 +198,9 @@ h2 {
   padding: 0 !important;
   text-align: center !important;
   background: rgba(45, 45, 45, 0.3) !important;
-  border: 1px solid #b0b0b0 !important; /* Silver grey border */
+  border: 1px solid #d4827a !important; /* Sunset glow border */
   border-radius: 10px !important;
-  color: #b0b0b0 !important; /* Silver grey text */
+  color: #d4827a !important; /* Sunset glow text */
   cursor: pointer !important;
   display: flex !important;
   align-items: center !important;
@@ -290,8 +297,8 @@ ul {
 }
 
 .input-area textarea:focus {
-  border-color: #d4827a;
-  box-shadow: 0 0 3px rgba(212, 130, 122, 0.3);
+  border-color: #4a6b8a; /* Deep sky blue for focus */
+  box-shadow: 0 0 8px rgba(74, 107, 138, 0.4);
 }
 
 .input-area button {
@@ -415,7 +422,7 @@ textarea::placeholder {
 
 #paste-message i,
 #send-message i {
-  color: #d4827a !important; /* Sunset glow icons */
+  color: #ffffff !important; /* White icons for send/paste */
   font-size: 1rem !important;
 }
 
@@ -477,13 +484,13 @@ textarea::placeholder {
 
 .message-header {
   font-weight: normal;
-  color: #b0b0b0; /* Silver grey for names */
+  color: #4a6b8a; /* Deep sky blue for names */
   font-size: 13px;
   line-height: 1.3;
 }
 
 .my-message .message-header {
-  color: #d4827a; /* Sunset glow for own name */
+  color: #4a6b8a; /* Deep sky blue for own name too */
 }
 
 .message-body {
@@ -543,7 +550,7 @@ textarea {
   box-shadow: none;
   border-radius: 50%;
   cursor: pointer;
-  color: #d4827a; /* Sunset glow for translate button */
+  color: #4a6b8a; /* Deep sky blue for translate button */
   text-align: center;
   display: flex;
   justify-content: center;
@@ -553,8 +560,8 @@ textarea {
 }
 
 .other-message .message-actions button:hover {
-  color: #c4735a; /* Deeper ember on hover */
-  text-shadow: 0 0 5px rgba(212, 130, 122, 0.5);
+  color: #6b8db0; /* Lighter blue on hover */
+  text-shadow: 0 0 8px rgba(74, 107, 138, 0.6);
 }
 
 .chat-container h2 {
@@ -976,9 +983,9 @@ textarea {
 
 .find-chat-join-btn {
   background: rgba(45, 45, 45, 0.4) !important;
-  border: 2px solid #d4827a !important; /* Sunset glow border */
+  border: 2px solid #5a5a5a !important; /* Grey border like other elements */
   border-radius: 10px !important;
-  color: #d4827a !important; /* Sunset glow text */
+  color: #cccccc !important; /* Ash grey text */
   padding: 0.8rem 2rem !important;
   font-size: 1rem !important;
   font-family: 'Cinzel', serif !important;
@@ -989,9 +996,9 @@ textarea {
 }
 
 .find-chat-join-btn:hover {
-  background: #d4827a !important;
-  color: #1a1a1a !important; /* Shadow black text on hover */
-  box-shadow: 0 0 10px rgba(212, 130, 122, 0.5) !important;
+  background: rgba(64, 64, 64, 0.3) !important;
+  border-color: #4a6b8a !important; /* Deep sky blue on hover */
+  box-shadow: 0 0 8px rgba(74, 107, 138, 0.4) !important;
 }
 
 .find-chat-join-btn:disabled {
@@ -1094,26 +1101,26 @@ textarea {
   box-shadow: none !important;
   border-radius: 50% !important;
   cursor: pointer !important;
-  color: #d4827a !important; /* Sunset glow for translate button */
+  color: #4a6b8a !important; /* Deep sky blue for translate button */
   text-align: center !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
   padding: 0 !important;
   box-sizing: border-box !important;
-  text-shadow: 0 0 3px rgba(212, 130, 122, 0.5) !important;
+  text-shadow: 0 0 3px rgba(74, 107, 138, 0.5) !important;
   transition: all 0.3s ease !important;
 }
 
 .translate-btn:hover {
-  color: #c4735a !important;
-  text-shadow: 0 0 5px rgba(196, 115, 90, 0.8) !important;
+  color: #6b8db0 !important;
+  text-shadow: 0 0 8px rgba(107, 141, 176, 0.8) !important;
   transform: scale(1.1) !important;
 }
 
 .translate-btn i {
-  color: #d4827a !important; /* Sunset glow for translate icon */
-  text-shadow: 0 0 3px rgba(212, 130, 122, 0.5) !important;
+  color: #4a6b8a !important; /* Deep sky blue for translate icon */
+  text-shadow: 0 0 3px rgba(74, 107, 138, 0.5) !important;
 }
 
 #back-btn i,
@@ -1126,7 +1133,7 @@ textarea {
 }
 
 .general-star {
-  color: #8a8a8a !important; /* Pale stone for general star */
+  color: #d4827a !important; /* Sunset glow for general star */
   font-size: 0.8rem !important;
   margin-right: 0.3rem !important;
   text-shadow: none !important;
