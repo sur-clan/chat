@@ -115,10 +115,10 @@ main {
 
 /* Typography & headers */
 h2 {
-  font-family: 'Cinzel Decorative', serif;
+  font-family: 'Cinzel', serif;
   font-size: 1.1rem;
   font-weight: 400;
-  color: #b0b0b0; /* Silver grey */
+  color: #bd7c41; /* gold */
   text-align: center;
   margin: 0rem 0;
   line-height: 1.2;
@@ -1228,7 +1228,7 @@ div[style*="text-align:center"][style*="color:gold"] {
   margin: 0 0 0.5rem 0;
   font-size: 1.8rem;
   font-weight: bold;
-  font-family: 'Cinzel Decorative', serif;
+  font-family: 'Cinzel', serif;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
@@ -1251,7 +1251,7 @@ div[style*="text-align:center"][style*="color:gold"] {
   margin: 0 0 1rem 0;
   color: #b0b0b0; /* Silver grey for section headers */
   font-size: 1.1rem;
-  font-family: 'Cinzel Decorative', serif;
+  font-family: 'Cinzel', serif;
 }
 
 .popular-languages {
