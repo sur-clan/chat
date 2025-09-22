@@ -109,7 +109,7 @@ main {
 
 .center-buttons button:hover {
   background: rgba(64, 64, 64, 0.3);
-  border-color: #2d4a6b; /* Stormy blue */
+  border-color: #bd7c41; /* gold */
   box-shadow: 0 0 8px rgba(45, 74, 107, 0.4);
 }
 
@@ -186,7 +186,7 @@ h2 {
 #invite-member:hover,
 #back-to-rooms-from-contacts:hover {
   background: rgba(64, 64, 64, 0.2) !important;
-  border-color: #2d4a6b !important; /* Stormy blue border */
+  border-color: #bd7c41 !important; /* Stormy blue border */
   box-shadow: 0 0 8px rgba(45, 74, 107, 0.4) !important;
 }
 
@@ -198,9 +198,9 @@ h2 {
   padding: 0 !important;
   text-align: center !important;
   background: rgba(45, 45, 45, 0.3) !important;
-  border: 1px solid #2d4a6b !important; /* Stormy blue border */
+  border: 1px solid #bd7c41 !important; /* gold border */
   border-radius: 10px !important;
-  color: #2d4a6b !important; /* Stormy blue text */
+  color: #bd7c41 !important; /* gold text */
   cursor: pointer !important;
   display: flex !important;
   align-items: center !important;
@@ -213,7 +213,7 @@ h2 {
 
 #view-members:hover {
   background: rgba(64, 64, 64, 0.2) !important;
-  border-color: #2d4a6b !important;
+  border-color: #bd7c41 !important;
   box-shadow: 0 0 8px rgba(45, 74, 107, 0.4) !important;
 }
 
@@ -237,7 +237,7 @@ button {
 
 button:hover {
   background: rgba(64, 64, 64, 0.2);
-  border-color: #2d4a6b; /* Stormy blue */
+  border-color: #bd7c41; /* gold */
   box-shadow: 0 0 8px rgba(45, 74, 107, 0.4);
 }
 
@@ -264,7 +264,7 @@ ul {
 
 #rooms li:hover {
   background: rgba(64, 64, 64, 0.2);
-  border-color: #2d4a6b;
+  border-color: #bd7c41;
 }
 
 .unread-envelope {
@@ -272,7 +272,7 @@ ul {
   font-weight: 900 !important;
   content: "\f0e0" !important;
   font-size: 1.1rem;
-  color: #2d4a6b; /* Stormy blue for unread indicator */
+  color: #bd7c41; /* gold for unread indicator */
   position: absolute;
   top: 4px;
   right: 8px;
@@ -303,7 +303,7 @@ ul {
 }
 
 .input-area textarea:focus {
-  border-color: #2d4a6b; /* Stormy blue for focus */
+  border-color: #bd7c41; /* Stormy blue for focus */
   box-shadow: 0 0 8px rgba(45, 74, 107, 0.4);
 }
 
@@ -311,9 +311,9 @@ ul {
   flex: 0 0 2.5rem;
   height: 2.5rem;
   font-size: 1.2rem;
-  border: 1px solid #2d4a6b; /* Stormy blue border */
+  border: 1px solid #bd7c41; /* gold border */
   border-radius: 10px;
-  color: #2d4a6b; /* Stormy blue text */
+  color: #bd7c41; /* gold text */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -367,7 +367,7 @@ textarea::placeholder {
 
 .modal-buttons button:hover {
   background: rgba(64, 64, 64, 0.3);
-  border-color: #2d4a6b;
+  border-color: #bd7c41;
   box-shadow: 0 0 8px rgba(45, 74, 107, 0.4);
 }
 
@@ -490,13 +490,13 @@ textarea::placeholder {
 
 .message-header {
   font-weight: normal;
-  color: #2d4a6b; /* Stormy blue for names */
+  color: #bd7c41; /* gold for names */
   font-size: 13px;
   line-height: 1.3;
 }
 
 .my-message .message-header {
-  color: #2d4a6b; /* Stormy blue for own name too */
+  color: #bd7c41; /* gold for own name too */
 }
 
 .message-body {
@@ -556,7 +556,7 @@ textarea {
   box-shadow: none;
   border-radius: 50%;
   cursor: pointer;
-  color: #2d4a6b; /* Stormy blue for translate button */
+  color: #3262b7; /* blue for translate button */
   text-align: center;
   display: flex;
   justify-content: center;
@@ -1107,7 +1107,7 @@ textarea {
   box-shadow: none !important;
   border-radius: 50% !important;
   cursor: pointer !important;
-  color: #2d4a6b !important; /* Stormy blue for translate button */
+  color: #3262b7 !important; /* Stormy blue for translate button */
   text-align: center !important;
   display: flex !important;
   justify-content: center !important;
@@ -1125,7 +1125,7 @@ textarea {
 }
 
 .translate-btn i {
-  color: #2d4a6b !important; /* Stormy blue for translate icon */
+  color: #3262b7 !important; /* Stormy blue for translate icon */
   text-shadow: 0 0 3px rgba(45, 74, 107, 0.5) !important;
 }
 
@@ -1394,7 +1394,7 @@ div[style*="text-align:center"][style*="color:gold"] {
 }
 
 .language-confirm-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #2d4a6b, #5679b7);c4735a
+  background: linear-gradient(135deg, #2d4a6b, #5679b7);
   box-shadow: 0 4px 15px rgba(212, 130, 122, 0.4);
   transform: translateY(-1px);
 }
