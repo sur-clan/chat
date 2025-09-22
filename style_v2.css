@@ -1,8 +1,8 @@
 /* SuR Chat - Ravens & Castle Theme with Refined Color Accents */
 
 /* Color Variables:
-   - Deep Sky Blue: #4a6b8a (for focus borders, translate icons, chat names)
-   - Sunset Glow: #d4827a (for member icons, star icons) 
+   - Stormy Blue: #2d4a6b (bright dark blue from ravens/storm sky)
+   - Bronze Gold: #bd7c41 (textured bronze for stars and special accents)
    - White: #ffffff (for send/paste button icons)
    - Slate Grey: #5a5a5a (for neutral borders)
 */
@@ -109,8 +109,8 @@ main {
 
 .center-buttons button:hover {
   background: rgba(64, 64, 64, 0.3);
-  border-color: #d4827a; /* Sunset glow */
-  box-shadow: 0 0 8px rgba(212, 130, 122, 0.4);
+  border-color: #2d4a6b; /* Stormy blue */
+  box-shadow: 0 0 8px rgba(45, 74, 107, 0.4);
 }
 
 /* Typography & headers */
@@ -186,8 +186,8 @@ h2 {
 #invite-member:hover,
 #back-to-rooms-from-contacts:hover {
   background: rgba(64, 64, 64, 0.2) !important;
-  border-color: #d4827a !important; /* Sunset glow border */
-  box-shadow: 0 0 8px rgba(212, 130, 122, 0.4) !important;
+  border-color: #2d4a6b !important; /* Stormy blue border */
+  box-shadow: 0 0 8px rgba(45, 74, 107, 0.4) !important;
 }
 
 #view-members {
@@ -198,9 +198,9 @@ h2 {
   padding: 0 !important;
   text-align: center !important;
   background: rgba(45, 45, 45, 0.3) !important;
-  border: 1px solid #d4827a !important; /* Sunset glow border */
+  border: 1px solid #2d4a6b !important; /* Stormy blue border */
   border-radius: 10px !important;
-  color: #d4827a !important; /* Sunset glow text */
+  color: #2d4a6b !important; /* Stormy blue text */
   cursor: pointer !important;
   display: flex !important;
   align-items: center !important;
@@ -209,6 +209,12 @@ h2 {
   flex-shrink: 0 !important;
   position: relative !important;
   top: 0 !important;
+}
+
+#view-members:hover {
+  background: rgba(64, 64, 64, 0.2) !important;
+  border-color: #2d4a6b !important;
+  box-shadow: 0 0 8px rgba(45, 74, 107, 0.4) !important;
 }
 
 #view-members:hover {
@@ -231,8 +237,8 @@ button {
 
 button:hover {
   background: rgba(64, 64, 64, 0.2);
-  border-color: #d4827a; /* Sunset glow */
-  box-shadow: 0 0 8px rgba(212, 130, 122, 0.4);
+  border-color: #2d4a6b; /* Stormy blue */
+  box-shadow: 0 0 8px rgba(45, 74, 107, 0.4);
 }
 
 /* Rooms & list items */
@@ -258,7 +264,7 @@ ul {
 
 #rooms li:hover {
   background: rgba(64, 64, 64, 0.2);
-  border-color: #d4827a;
+  border-color: #2d4a6b;
 }
 
 .unread-envelope {
@@ -266,7 +272,7 @@ ul {
   font-weight: 900 !important;
   content: "\f0e0" !important;
   font-size: 1.1rem;
-  color: #d4827a; /* Sunset glow for unread indicator */
+  color: #2d4a6b; /* Stormy blue for unread indicator */
   position: absolute;
   top: 4px;
   right: 8px;
@@ -297,17 +303,17 @@ ul {
 }
 
 .input-area textarea:focus {
-  border-color: #4a6b8a; /* Deep sky blue for focus */
-  box-shadow: 0 0 8px rgba(74, 107, 138, 0.4);
+  border-color: #2d4a6b; /* Stormy blue for focus */
+  box-shadow: 0 0 8px rgba(45, 74, 107, 0.4);
 }
 
 .input-area button {
   flex: 0 0 2.5rem;
   height: 2.5rem;
   font-size: 1.2rem;
-  border: 1px solid #d4827a; /* Sunset glow border */
+  border: 1px solid #2d4a6b; /* Stormy blue border */
   border-radius: 10px;
-  color: #d4827a; /* Sunset glow text */
+  color: #2d4a6b; /* Stormy blue text */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -315,8 +321,8 @@ ul {
 }
 
 .input-area button:hover {
-  background: rgba(212, 130, 122, 0.2);
-  box-shadow: 0 0 8px rgba(212, 130, 122, 0.4);
+  background: rgba(45, 74, 107, 0.2);
+  box-shadow: 0 0 8px rgba(45, 74, 107, 0.4);
 }
 
 textarea::placeholder {
@@ -361,8 +367,8 @@ textarea::placeholder {
 
 .modal-buttons button:hover {
   background: rgba(64, 64, 64, 0.3);
-  border-color: #d4827a;
-  box-shadow: 0 0 8px rgba(212, 130, 122, 0.4);
+  border-color: #2d4a6b;
+  box-shadow: 0 0 8px rgba(45, 74, 107, 0.4);
 }
 
 #contacts-list {
@@ -484,13 +490,13 @@ textarea::placeholder {
 
 .message-header {
   font-weight: normal;
-  color: #4a6b8a; /* Deep sky blue for names */
+  color: #2d4a6b; /* Stormy blue for names */
   font-size: 13px;
   line-height: 1.3;
 }
 
 .my-message .message-header {
-  color: #4a6b8a; /* Deep sky blue for own name too */
+  color: #2d4a6b; /* Stormy blue for own name too */
 }
 
 .message-body {
@@ -550,7 +556,7 @@ textarea {
   box-shadow: none;
   border-radius: 50%;
   cursor: pointer;
-  color: #4a6b8a; /* Deep sky blue for translate button */
+  color: #2d4a6b; /* Stormy blue for translate button */
   text-align: center;
   display: flex;
   justify-content: center;
@@ -560,8 +566,8 @@ textarea {
 }
 
 .other-message .message-actions button:hover {
-  color: #6b8db0; /* Lighter blue on hover */
-  text-shadow: 0 0 8px rgba(74, 107, 138, 0.6);
+  color: #3f5a7a; /* Lighter stormy blue on hover */
+  text-shadow: 0 0 8px rgba(45, 74, 107, 0.6);
 }
 
 .chat-container h2 {
@@ -1101,26 +1107,26 @@ textarea {
   box-shadow: none !important;
   border-radius: 50% !important;
   cursor: pointer !important;
-  color: #4a6b8a !important; /* Deep sky blue for translate button */
+  color: #2d4a6b !important; /* Stormy blue for translate button */
   text-align: center !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
   padding: 0 !important;
   box-sizing: border-box !important;
-  text-shadow: 0 0 3px rgba(74, 107, 138, 0.5) !important;
+  text-shadow: 0 0 3px rgba(45, 74, 107, 0.5) !important;
   transition: all 0.3s ease !important;
 }
 
 .translate-btn:hover {
-  color: #6b8db0 !important;
-  text-shadow: 0 0 8px rgba(107, 141, 176, 0.8) !important;
+  color: #3f5a7a !important;
+  text-shadow: 0 0 8px rgba(63, 90, 122, 0.8) !important;
   transform: scale(1.1) !important;
 }
 
 .translate-btn i {
-  color: #4a6b8a !important; /* Deep sky blue for translate icon */
-  text-shadow: 0 0 3px rgba(74, 107, 138, 0.5) !important;
+  color: #2d4a6b !important; /* Stormy blue for translate icon */
+  text-shadow: 0 0 3px rgba(45, 74, 107, 0.5) !important;
 }
 
 #back-btn i,
@@ -1133,10 +1139,14 @@ textarea {
 }
 
 .general-star {
-  color: #d4827a !important; /* Sunset glow for general star */
+  color: #bd7c41 !important; /* Bronze gold for general star */
   font-size: 0.8rem !important;
   margin-right: 0.3rem !important;
-  text-shadow: none !important;
+  text-shadow: 
+    1px 1px 2px rgba(0, 0, 0, 0.8),
+    0 0 3px rgba(189, 124, 65, 0.6),
+    inset 0 1px 0 rgba(255, 200, 150, 0.3) !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
 }
 
 #rooms li strong {
