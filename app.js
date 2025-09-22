@@ -26,32 +26,32 @@ let preferredLang = localStorage.getItem('preferredLang') || 'en';
 
 
 
-// Complete Google Translate supported languages
+// Complete Google Translate supported languages in their native names
 const ALL_LANGUAGES = {
-  'af': 'Afrikaans', 'sq': 'Albanian', 'am': 'Amharic', 'ar': 'Arabic', 'hy': 'Armenian',
-  'az': 'Azerbaijani', 'eu': 'Basque', 'be': 'Belarusian', 'bn': 'Bengali', 'bs': 'Bosnian',
-  'bg': 'Bulgarian', 'ca': 'Catalan', 'ceb': 'Cebuano', 'ny': 'Chichewa', 'zh': 'Chinese',
-  'co': 'Corsican', 'hr': 'Croatian', 'cs': 'Czech', 'da': 'Danish', 'nl': 'Dutch',
-  'en': 'English', 'eo': 'Esperanto', 'et': 'Estonian', 'tl': 'Filipino', 'fi': 'Finnish',
-  'fr': 'French', 'fy': 'Frisian', 'gl': 'Galician', 'ka': 'Georgian', 'de': 'German',
-  'el': 'Greek', 'gu': 'Gujarati', 'ht': 'Haitian Creole', 'ha': 'Hausa', 'haw': 'Hawaiian',
-  'he': 'Hebrew', 'hi': 'Hindi', 'hmn': 'Hmong', 'hu': 'Hungarian', 'is': 'Icelandic',
-  'ig': 'Igbo', 'id': 'Indonesian', 'ga': 'Irish', 'it': 'Italian', 'ja': 'Japanese',
-  'jw': 'Javanese', 'kn': 'Kannada', 'kk': 'Kazakh', 'km': 'Khmer', 'ko': 'Korean',
-  'ku': 'Kurdish', 'ky': 'Kyrgyz', 'lo': 'Lao', 'la': 'Latin', 'lv': 'Latvian',
-  'lt': 'Lithuanian', 'lb': 'Luxembourgish', 'mk': 'Macedonian', 'mg': 'Malagasy', 'ms': 'Malay',
-  'ml': 'Malayalam', 'mt': 'Maltese', 'mi': 'Maori', 'mr': 'Marathi', 'mn': 'Mongolian',
-  'my': 'Myanmar', 'ne': 'Nepali', 'no': 'Norwegian', 'or': 'Odia', 'ps': 'Pashto',
-  'fa': 'Persian', 'pl': 'Polish', 'pt': 'Portuguese', 'pa': 'Punjabi', 'ro': 'Romanian',
-  'ru': 'Russian', 'sm': 'Samoan', 'gd': 'Scottish Gaelic', 'sr': 'Serbian', 'st': 'Sesotho',
-  'sn': 'Shona', 'sd': 'Sindhi', 'si': 'Sinhala', 'sk': 'Slovak', 'sl': 'Slovenian',
-  'so': 'Somali', 'es': 'Spanish', 'su': 'Sundanese', 'sw': 'Swahili', 'sv': 'Swedish',
-  'tg': 'Tajik', 'ta': 'Tamil', 'te': 'Telugu', 'th': 'Thai', 'tr': 'Turkish',
-  'uk': 'Ukrainian', 'ur': 'Urdu', 'ug': 'Uyghur', 'uz': 'Uzbek', 'vi': 'Vietnamese',
-  'cy': 'Welsh', 'xh': 'Xhosa', 'yi': 'Yiddish', 'yo': 'Yoruba', 'zu': 'Zulu'
+  'af': 'Afrikaans', 'sq': 'Shqip', 'am': 'አማርኛ', 'ar': 'العربية', 'hy': 'Հայերեն',
+  'az': 'Azərbaycan', 'eu': 'Euskera', 'be': 'Беларуская', 'bn': 'বাংলা', 'bs': 'Bosanski',
+  'bg': 'Български', 'ca': 'Català', 'ceb': 'Cebuano', 'ny': 'Chichewa', 'zh': '中文',
+  'co': 'Corsu', 'hr': 'Hrvatski', 'cs': 'Čeština', 'da': 'Dansk', 'nl': 'Nederlands',
+  'en': 'English', 'eo': 'Esperanto', 'et': 'Eesti', 'tl': 'Filipino', 'fi': 'Suomi',
+  'fr': 'Français', 'fy': 'Frysk', 'gl': 'Galego', 'ka': 'ქართული', 'de': 'Deutsch',
+  'el': 'Ελληνικά', 'gu': 'ગુજરાતી', 'ht': 'Kreyòl Ayisyen', 'ha': 'Hausa', 'haw': 'ʻŌlelo Hawaiʻi',
+  'he': 'עברית', 'hi': 'हिन्दी', 'hmn': 'Hmong', 'hu': 'Magyar', 'is': 'Íslenska',
+  'ig': 'Igbo', 'id': 'Bahasa Indonesia', 'ga': 'Gaeilge', 'it': 'Italiano', 'ja': '日本語',
+  'jw': 'Basa Jawa', 'kn': 'ಕನ್ನಡ', 'kk': 'Қазақша', 'km': 'ខ្មែរ', 'ko': '한국어',
+  'ku': 'Kurdî', 'ky': 'Кыргызча', 'lo': 'ລາວ', 'la': 'Latina', 'lv': 'Latviešu',
+  'lt': 'Lietuvių', 'lb': 'Lëtzebuergesch', 'mk': 'Македонски', 'mg': 'Malagasy', 'ms': 'Bahasa Melayu',
+  'ml': 'മലയാളം', 'mt': 'Malti', 'mi': 'Māori', 'mr': 'मराठी', 'mn': 'Монгол',
+  'my': 'မြန်မာ', 'ne': 'नेपाली', 'no': 'Norsk', 'or': 'ଓଡ଼ିଆ', 'ps': 'پښتو',
+  'fa': 'فارسی', 'pl': 'Polski', 'pt': 'Português', 'pa': 'ਪੰਜਾਬੀ', 'ro': 'Română',
+  'ru': 'Русский', 'sm': 'Gagana Samoa', 'gd': 'Gàidhlig', 'sr': 'Српски', 'st': 'Sesotho',
+  'sn': 'Shona', 'sd': 'سنڌي', 'si': 'සිංහල', 'sk': 'Slovenčina', 'sl': 'Slovenščina',
+  'so': 'Soomaali', 'es': 'Español', 'su': 'Basa Sunda', 'sw': 'Kiswahili', 'sv': 'Svenska',
+  'tg': 'Тоҷикӣ', 'ta': 'தமிழ்', 'te': 'తెలుగు', 'th': 'ไทย', 'tr': 'Türkçe',
+  'uk': 'Українська', 'ur': 'اردو', 'ug': 'ئۇيغۇرچە', 'uz': 'Oʻzbek', 'vi': 'Tiếng Việt',
+  'cy': 'Cymraeg', 'xh': 'isiXhosa', 'yi': 'ייִדיש', 'yo': 'Yorùbá', 'zu': 'isiZulu'
 };
 
-// Most popular languages for quick selection
+// Most popular languages for quick selection (in native names)
 const POPULAR_LANGUAGES = [
   'en', 'es', 'fr', 'de', 'it', 'pt', 'ru', 'zh', 
   'ja', 'ko', 'ar', 'hi', 'nl', 'pl', 'tr', 'sv'
@@ -96,6 +96,7 @@ async function translateWithDetection(text, targetLang = null) {
   }
 }
 
+// Updated languageNameFromCode function
 function languageNameFromCode(code) {
   return ALL_LANGUAGES[code] || code;
 }
