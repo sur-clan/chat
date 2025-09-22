@@ -125,11 +125,16 @@ h2 {
 
 }
 
-#chat-list h2,
+#chat-list h2 {
+  font-size: 2rem;
+  color: #C89B3C; /* GOLD for sur-clan chat header */
+}
+
 #contacts-page h2 {
   font-size: 1.6rem;
-  color: #bd7c41; /* GOLD for main headers */
+  color: #b0b0b0; /* silver for contacts headers */
 }
+
 
 .header-with-buttons {
   display: flex;
