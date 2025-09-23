@@ -1208,17 +1208,18 @@ div[style*="text-align:center"][style*="color:gold"] {
 
 /* Update modal borders to grey with darker blue accents */
 .language-welcome-content {
-  background: #1a1a1a; /* Shadow black background */
-  border: 3px solid #5a5a5a; /* Grey border instead of bronze */
+  background: #1a1a1a;
+  border: 3px solid #5a5a5a;
   border-radius: 20px;
   width: 90%;
   max-width: 500px;
   display: flex;
   flex-direction: column;
-  color: #cccccc; /* Ash grey text */
+  color: #cccccc;
   box-shadow: 0 8px 32px rgba(26, 26, 26, 0.9);
   overflow: hidden;
   max-height: 80vh;
+  min-height: 400px; /* Ensure minimum height */
 }
 
 /* Updated Language Welcome Modal Header - Dark Stormy Blue Theme */
@@ -1266,7 +1267,8 @@ div[style*="text-align:center"][style*="color:gold"] {
   flex-direction: column;
   gap: 1.5rem;
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto; /* This allows scrolling */
+  max-height: calc(80vh - 200px); /* Subtract header height */
 }
 
 .language-selection-body h4 {
