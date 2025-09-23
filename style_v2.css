@@ -1191,7 +1191,7 @@ div[style*="text-align:center"][style*="color:gold"] {
   font-size: 1.2rem !important;
 }
 
-/* ============ LANGUAGE WELCOME MODAL STYLES - RAVENS THEME ============ */
+/* ============ LANGUAGE WELCOME MODAL STYLES - RAVENS THEME WITH DARKER BLUES ============ */
 #language-welcome-modal {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -1206,7 +1206,7 @@ div[style*="text-align:center"][style*="color:gold"] {
   display: none;
 }
 
-/* Update modal borders to grey with blue accents */
+/* Update modal borders to grey with darker blue accents */
 .language-welcome-content {
   background: #1a1a1a; /* Shadow black background */
   border: 3px solid #5a5a5a; /* Grey border instead of bronze */
@@ -1221,9 +1221,9 @@ div[style*="text-align:center"][style*="color:gold"] {
   max-height: 80vh;
 }
 
-/* Updated Language Welcome Modal Header - Blue Theme */
+/* Updated Language Welcome Modal Header - Dark Stormy Blue Theme */
 .language-welcome-header {
-  background: linear-gradient(135deg, #2d4a6b, #4a6b8a); /* Stormy blue gradient */
+  background: linear-gradient(135deg, #1a2633, #2c3e50); /* Dark stormy blue gradient */
   color: #ffffff;
   padding: 2rem;
   text-align: center;
@@ -1243,6 +1243,23 @@ div[style*="text-align:center"][style*="color:gold"] {
   opacity: 0.9;
 }
 
+/* Add instruction text styling - BIGGER AND WITH ARROW */
+.language-welcome-header .instruction {
+  margin: 0;
+  font-size: 1.1rem; /* Made bigger */
+  opacity: 0.9; /* More visible */
+  font-style: italic;
+  color: #b8c5d1; /* Muted blue-grey for instructions */
+  font-weight: 500; /* Slightly bolder */
+}
+
+.language-welcome-header .instruction::after {
+  content: " ↓"; /* Down arrow */
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-left: 0.3rem;
+}
+
 .language-selection-body {
   padding: 2rem;
   display: flex;
@@ -1251,20 +1268,6 @@ div[style*="text-align:center"][style*="color:gold"] {
   flex: 1;
   overflow: hidden;
 }
-
-
-/* Add instruction text styling */
-.language-welcome-header .instruction {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.8;
-  font-style: italic;
-  color: #e6f2ff; /* Light blue for instructions */
-}
-
-
-
-
 
 .language-selection-body h4 {
   margin: 0 0 1rem 0;
@@ -1293,16 +1296,16 @@ div[style*="text-align:center"][style*="color:gold"] {
   color: #cccccc; /* Ash grey text */
 }
 
-.popular-language:hover {
-  background: rgba(45, 74, 107, 0.2); /* Blue hover instead of bronze */
-  border-color: #2d4a6b;
+/* Update popular language buttons with darker blue accent */
+.popular-language.selected {
+  background: rgba(26, 38, 51, 0.4); /* Dark stormy blue selection */
+  border-color: #1a2633; /* Dark stormy blue border */
+  box-shadow: 0 0 10px rgba(26, 38, 51, 0.6);
 }
 
-/* Update popular language buttons with blue accent */
-.popular-language.selected {
-  background: rgba(45, 74, 107, 0.3); /* Blue selection instead of bronze */
-  border-color: #2d4a6b; /* Stormy blue border */
-  box-shadow: 0 0 10px rgba(45, 74, 107, 0.5);
+.popular-language:hover {
+  background: rgba(26, 38, 51, 0.2); /* Dark blue hover */
+  border-color: #1a2633;
 }
 
 .language-search-section {
@@ -1326,11 +1329,11 @@ div[style*="text-align:center"][style*="color:gold"] {
   box-sizing: border-box;
 }
 
-/* Update search focus to blue accent */
+/* Update search focus to darker blue accent */
 .language-search:focus {
   outline: none;
-  border-color: #2d4a6b; /* Blue focus border */
-  box-shadow: 0 0 10px rgba(45, 74, 107, 0.3);
+  border-color: #1a2633; /* Dark stormy blue focus border */
+  box-shadow: 0 0 10px rgba(26, 38, 51, 0.4);
 }
 
 .language-search::placeholder {
@@ -1381,16 +1384,16 @@ div[style*="text-align:center"][style*="color:gold"] {
   border-bottom: none;
 }
 
-/* Update selected language display with blue accent */
+/* Update selected language display with darker blue accent */
 .selected-language-display {
-  background: rgba(45, 74, 107, 0.2); /* Blue background */
-  border: 2px solid #2d4a6b; /* Blue border */
+  background: rgba(26, 38, 51, 0.3); /* Dark blue background */
+  border: 2px solid #1a2633; /* Dark blue border */
   border-radius: 8px;
   padding: 1rem;
   margin-top: 1rem;
   text-align: center;
   font-weight: bold;
-  color: #4a6b8a; /* Lighter blue text */
+  color: #2c3e50; /* Dark blue-grey text */
 }
 
 .language-confirm-section {
@@ -1400,9 +1403,9 @@ div[style*="text-align:center"][style*="color:gold"] {
   margin-top: auto;
 }
 
-/* Update confirm button with blue theme */
+/* Update confirm button with darker blue theme */
 .language-confirm-btn {
-  background: linear-gradient(135deg, #2d4a6b, #4a6b8a); /* Blue gradient */
+  background: linear-gradient(135deg, #1a2633, #2c3e50); /* Dark stormy blue gradient */
   border: none;
   border-radius: 10px;
   color: #ffffff;
@@ -1417,8 +1420,8 @@ div[style*="text-align:center"][style*="color:gold"] {
 }
 
 .language-confirm-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #4a6b8a, #5679b7); /* Lighter blue on hover */
-  box-shadow: 0 4px 15px rgba(45, 74, 107, 0.4);
+  background: linear-gradient(135deg, #2c3e50, #34495e); /* Slightly lighter on hover */
+  box-shadow: 0 4px 15px rgba(26, 38, 51, 0.5);
   transform: translateY(-1px);
 }
 
@@ -1468,6 +1471,11 @@ div[style*="text-align:center"][style*="color:gold"] {
   .language-welcome-header h2 {
     font-size: 1.5rem;
   }
+  
+  /* Make instruction text responsive */
+  .language-welcome-header .instruction {
+    font-size: 1rem;
+  }
 
   .find-chat-modal-content {
     max-width: 320px !important;
@@ -1491,9 +1499,3 @@ div[style*="text-align:center"][style*="color:gold"] {
     font-size: 0.9rem !important;
   }
 }
-
-
-
-
-
-
