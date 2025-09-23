@@ -1206,9 +1206,10 @@ div[style*="text-align:center"][style*="color:gold"] {
   display: none;
 }
 
+/* Update modal borders to grey with blue accents */
 .language-welcome-content {
   background: #1a1a1a; /* Shadow black background */
-  border: 3px solid #5a5a5a; /* Slate grey border */
+  border: 3px solid #5a5a5a; /* Grey border instead of bronze */
   border-radius: 20px;
   width: 90%;
   max-width: 500px;
@@ -1220,8 +1221,9 @@ div[style*="text-align:center"][style*="color:gold"] {
   max-height: 80vh;
 }
 
+/* Updated Language Welcome Modal Header - Blue Theme */
 .language-welcome-header {
-  background: linear-gradient(135deg, #5a5a5a, #bd7c41); /* Slate to sunset gradient */
+  background: linear-gradient(135deg, #2d4a6b, #4a6b8a); /* Stormy blue gradient */
   color: #ffffff;
   padding: 2rem;
   text-align: center;
@@ -1236,7 +1238,7 @@ div[style*="text-align:center"][style*="color:gold"] {
 }
 
 .language-welcome-header p {
-  margin: 0;
+  margin: 0 0 0.8rem 0; /* Add bottom margin for instruction spacing */
   font-size: 1rem;
   opacity: 0.9;
 }
@@ -1249,6 +1251,20 @@ div[style*="text-align:center"][style*="color:gold"] {
   flex: 1;
   overflow: hidden;
 }
+
+
+/* Add instruction text styling */
+.language-welcome-header .instruction {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  font-style: italic;
+  color: #e6f2ff; /* Light blue for instructions */
+}
+
+
+
+
 
 .language-selection-body h4 {
   margin: 0 0 1rem 0;
@@ -1278,14 +1294,15 @@ div[style*="text-align:center"][style*="color:gold"] {
 }
 
 .popular-language:hover {
-  background: rgba(212, 130, 122, 0.2);
-  border-color: #bd7c41;
+  background: rgba(45, 74, 107, 0.2); /* Blue hover instead of bronze */
+  border-color: #2d4a6b;
 }
 
+/* Update popular language buttons with blue accent */
 .popular-language.selected {
-  background: rgba(212, 130, 122, 0.3);
-  border-color: #bd7c41;
-  box-shadow: 0 0 10px rgba(212, 130, 122, 0.5);
+  background: rgba(45, 74, 107, 0.3); /* Blue selection instead of bronze */
+  border-color: #2d4a6b; /* Stormy blue border */
+  box-shadow: 0 0 10px rgba(45, 74, 107, 0.5);
 }
 
 .language-search-section {
@@ -1309,10 +1326,11 @@ div[style*="text-align:center"][style*="color:gold"] {
   box-sizing: border-box;
 }
 
+/* Update search focus to blue accent */
 .language-search:focus {
   outline: none;
-  border-color: #bd7c41;
-  box-shadow: 0 0 10px rgba(212, 130, 122, 0.3);
+  border-color: #2d4a6b; /* Blue focus border */
+  box-shadow: 0 0 10px rgba(45, 74, 107, 0.3);
 }
 
 .language-search::placeholder {
@@ -1363,15 +1381,16 @@ div[style*="text-align:center"][style*="color:gold"] {
   border-bottom: none;
 }
 
+/* Update selected language display with blue accent */
 .selected-language-display {
-  background: rgba(212, 130, 122, 0.2);
-  border: 2px solid #bd7c41;
+  background: rgba(45, 74, 107, 0.2); /* Blue background */
+  border: 2px solid #2d4a6b; /* Blue border */
   border-radius: 8px;
   padding: 1rem;
   margin-top: 1rem;
   text-align: center;
   font-weight: bold;
-  color: #bd7c41;
+  color: #4a6b8a; /* Lighter blue text */
 }
 
 .language-confirm-section {
@@ -1381,8 +1400,9 @@ div[style*="text-align:center"][style*="color:gold"] {
   margin-top: auto;
 }
 
+/* Update confirm button with blue theme */
 .language-confirm-btn {
-  background: linear-gradient(135deg, #5a5a5a, #2d4a6b); /* Slate to sunset gradient */
+  background: linear-gradient(135deg, #2d4a6b, #4a6b8a); /* Blue gradient */
   border: none;
   border-radius: 10px;
   color: #ffffff;
@@ -1397,8 +1417,8 @@ div[style*="text-align:center"][style*="color:gold"] {
 }
 
 .language-confirm-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #2d4a6b, #5679b7);
-  box-shadow: 0 4px 15px rgba(212, 130, 122, 0.4);
+  background: linear-gradient(135deg, #4a6b8a, #5679b7); /* Lighter blue on hover */
+  box-shadow: 0 4px 15px rgba(45, 74, 107, 0.4);
   transform: translateY(-1px);
 }
 
