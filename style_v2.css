@@ -1206,20 +1206,20 @@ div[style*="text-align:center"][style*="color:gold"] {
   display: none;
 }
 
-/* Update modal borders to grey with darker blue accents */
+/* Update modal borders to grey with darker blue accents - FIXED SCROLLING */
 .language-welcome-content {
-  background: #1a1a1a;
-  border: 3px solid #5a5a5a;
+  background: #1a1a1a; /* Shadow black background */
+  border: 3px solid #5a5a5a; /* Grey border instead of bronze */
   border-radius: 20px;
   width: 90%;
   max-width: 500px;
+  min-height: 400px; /* Minimum height to ensure scrolling triggers */
+  max-height: 85vh; /* Slightly larger max height */
   display: flex;
   flex-direction: column;
-  color: #cccccc;
+  color: #cccccc; /* Ash grey text */
   box-shadow: 0 8px 32px rgba(26, 26, 26, 0.9);
-  overflow: hidden;
-  max-height: 80vh;
-  min-height: 400px; /* Ensure minimum height */
+  overflow: hidden; /* Hide overflow on container */
 }
 
 /* Updated Language Welcome Modal Header - Dark Stormy Blue Theme */
@@ -1267,8 +1267,10 @@ div[style*="text-align:center"][style*="color:gold"] {
   flex-direction: column;
   gap: 1.5rem;
   flex: 1;
-  overflow-y: auto; /* This allows scrolling */
-  max-height: calc(80vh - 200px); /* Subtract header height */
+  overflow-y: auto; /* Enable scrolling */
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  max-height: calc(80vh - 160px); /* Account for header height */
+  min-height: 0; /* Allow shrinking */
 }
 
 .language-selection-body h4 {
@@ -1298,16 +1300,18 @@ div[style*="text-align:center"][style*="color:gold"] {
   color: #cccccc; /* Ash grey text */
 }
 
-/* Update popular language buttons with darker blue accent */
+/* Update popular language buttons with better visibility */
 .popular-language.selected {
-  background: rgba(26, 38, 51, 0.4); /* Dark stormy blue selection */
-  border-color: #1a2633; /* Dark stormy blue border */
-  box-shadow: 0 0 10px rgba(26, 38, 51, 0.6);
+  background: rgba(45, 74, 107, 0.5); /* Lighter blue selection for better visibility */
+  border-color: #2d4a6b; /* Lighter blue border */
+  box-shadow: 0 0 12px rgba(45, 74, 107, 0.6);
+  color: #ffffff; /* White text for selected state */
 }
 
 .popular-language:hover {
-  background: rgba(26, 38, 51, 0.2); /* Dark blue hover */
-  border-color: #1a2633;
+  background: rgba(45, 74, 107, 0.3); /* Lighter blue hover */
+  border-color: #2d4a6b;
+  color: #ffffff; /* White text on hover */
 }
 
 .language-search-section {
@@ -1331,11 +1335,11 @@ div[style*="text-align:center"][style*="color:gold"] {
   box-sizing: border-box;
 }
 
-/* Update search focus to darker blue accent */
+/* Update search focus to lighter blue accent */
 .language-search:focus {
   outline: none;
-  border-color: #1a2633; /* Dark stormy blue focus border */
-  box-shadow: 0 0 10px rgba(26, 38, 51, 0.4);
+  border-color: #2d4a6b; /* Lighter blue focus border for better visibility */
+  box-shadow: 0 0 10px rgba(45, 74, 107, 0.4);
 }
 
 .language-search::placeholder {
@@ -1386,16 +1390,16 @@ div[style*="text-align:center"][style*="color:gold"] {
   border-bottom: none;
 }
 
-/* Update selected language display with darker blue accent */
+/* Update selected language display with better visibility */
 .selected-language-display {
-  background: rgba(26, 38, 51, 0.3); /* Dark blue background */
-  border: 2px solid #1a2633; /* Dark blue border */
+  background: rgba(45, 74, 107, 0.4); /* Lighter blue background */
+  border: 2px solid #2d4a6b; /* Lighter blue border */
   border-radius: 8px;
   padding: 1rem;
   margin-top: 1rem;
   text-align: center;
   font-weight: bold;
-  color: #2c3e50; /* Dark blue-grey text */
+  color: #ffffff; /* White text for better visibility */
 }
 
 .language-confirm-section {
